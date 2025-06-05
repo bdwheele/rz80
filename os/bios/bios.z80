@@ -3,11 +3,17 @@
 ; This file is distributable under the terms of the 2-clause BSD license.
 ; See COPYING.cpmish in the distribution root directory for more information.
 
-    maclib cpm
-    maclib cpmish
+    ;maclib cpm
+    ;maclib cpmish
+
+    extern CBASE, FBASE
+IOBYTE equ 0x0004
+CDISK  equ 0x0003
 
     cseg
-label BBASE
+
+    public BBASE
+BBASE:
 
 ; BIOS jump table.
 
@@ -40,17 +46,24 @@ label BBASE
 ; Cold boot on system startup.
 BOOTE:
     ; set up a stack, which we only need for printing the version
-    ld sp, 0x0100            ; ephemeral startup stack
-
-    ; print the banner
-    call print
-    cpmish_banner 'Retro Z80 Emulator'
-    db 0
+    ld sp, 0x0100 
 
     ; clear the IOBYTE and the DISK
     xor a
     ld (IOBYTE), a
     ld (CDISK), a
+
+    ; say hello
+    ld hl, welcome
+hello:
+    ld a, (hl)
+    inc hl
+    or a
+    jr z, WBOOTE
+    ld c, a
+    call CONOUTE
+    jr hello
+
 
 
 ; Warm boot on application exit.
@@ -132,26 +145,14 @@ LISTSTE:
 SECTRANE:
     call_em(16)
 
-
-; Prints the text immediately following the call to print.
-print:
-    pop hl                   ; return address points to text to print
-    ld a, (hl)
-    inc hl
-    push hl                  ; save address after current char
-
-    or a
-    ret z                    ; if byte was zero, return
-    ld c, a
-    call CONOUTE
-    jr print
-
     ; Data Segment
     dseg
 
     ; DPBASE is the start of the Disk Parameter Header.  It's public because
     ; the emulator may need to touch it or some of the things it refers to.
-label DPBASE
+
+    public DPBASE
+DPBASE:
 drive_a_dph:
     dw 0            ; Sector translation vector
     dw 0, 0, 0      ; BDOS scratchpad
@@ -208,5 +209,7 @@ drive_a_check_vector: ds 32
 drive_b_check_vector: ds 32
 
 dirbuf: ds 128  ; BDOS scratch directory
+
+welcome: db "RZ80 BIOS 1.0", 0
 
 end:    dw  0x55aa

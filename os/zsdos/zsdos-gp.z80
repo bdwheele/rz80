@@ -80,7 +80,7 @@
 ; CWC		entered with tab counter =0.
 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-	MACLIB	ZSDOS.LIB	; Get initialization code
+	MACLIB	zsdos	; Get initialization code
 
 RAMLOW	EQU	0000H		; Start address memory
 
@@ -100,7 +100,7 @@ WBOOT	EQU	BIOS+0003H	; Warm Boot
 CONST	EQU	BIOS+0006H	; Console Status
 CONIN	EQU	BIOS+0009H	; Console Input
 CONOUT	EQU	BIOS+000CH	; Console Output
-LIST	EQU	BIOS+000FH	; List Output
+LST		EQU	BIOS+000FH	; List Output
 PUNCH	EQU	BIOS+0012H	; Punch Output
 READER	EQU	BIOS+0015H	; Reader Input
 HOME	EQU	BIOS+0018H	; Home Disk
@@ -396,7 +396,7 @@ CTABLE:
 	DEFW	WRCON		; Console output
 	DEFW	READER		; Reader input (BIOS)
 	DEFW	PUNCH		; Punch output (BIOS)
-	DEFW	LIST		; List output (BIOS)
+	DEFW	LST		; List output (BIOS)
 	DEFW	CMND06		; Direct console I/O
 	DEFW	CMND07		; Get I/O byte
 	DEFW	CMND08		; Set I/O byte
@@ -752,7 +752,7 @@ BGPTCH0	EQU	$+1		;<-- BGii patches this address
 	PUSH	BC		; Save it again
 	LD	A,(FCONTP)	; Get printer echo flag
 	OR	A		; Test it
-	CALL	NZ,LIST		; Non zero => output char to printer
+	CALL	NZ,LST		; Non zero => output char to printer
 	POP	BC		; Restore character
 	LD	A,C		; Fall through to count routine
 	POP	DE
@@ -1174,9 +1174,9 @@ CMND12:	LD	HL,22H		; Set CP/M compatable version number
 
 CMND48:
 	  IF  ZS
-	LD	HL,'S' SHL 8 + VERS ;"S" indicates ZSDOS - ZRDOS returns 0
+	LD	HL,('S' SHL 8) + VERS ;"S" indicates ZSDOS - ZRDOS returns 0
 	  ELSE
-	LD	HL,'D' SHL 8 + VERS ;"D" indicates ZDDOS - ZRDOS returns 0
+	LD	HL,('D' SHL 8) + VERS ;"D" indicates ZDDOS - ZRDOS returns 0
 	  ENDIF
 	DEFB	0DDH		; Trash IX and fall through
 
