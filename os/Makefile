@@ -6,19 +6,19 @@ all: memory.cim
 #        warns: extchain
 #        input: [-l] [-P address] [-D address] [-C name,address] [-E entry]... file
 
-
-memory.cim: bios/boot.rel bios/bios.rel zcpr1/zcpr.rel zsdos/zsdos.rel
+.PHONY: bios zcpr1 zsdos 
+memory.cim: bios zcpr1 zsdos
 	../bin/ld80 -m -O bin -o memory.cim -s /dev/tty \
 		-P 0x0000 bios/boot.rel \
-		-P 0xe690 zcpr1/zcpr.rel \
-		-P 0xee80 zsdos/zsdos.rel \
-		bios/bios.rel 
+		-P 0xe660 zcpr1/zcpr.rel \
+		-P 0xee60 zsdos/zsdos.rel \
+		-P 0xfc60 bios/bios.rel 
 
-bios/boot.rel:
+bios:
 	make -C bios
 
-zcpr1/zcpr.rel:
+zcpr1:
 	make -C zcpr1
 
-zsdos/zsdos.rel:
+zsdos:
 	make -C zsdos

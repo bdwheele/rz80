@@ -74,7 +74,7 @@ WBOOTE:
     ; it again. Inefficient, but not really worried.  On warm boot the
     ; image gets loaded on top the existing one so it's not a problem
     ; if it's exactly the same.  Could be interesting if it isnt.
-    ; This also will initialize the Disk Paramter Tables based on the
+    ; This also will initialize the Disk Parameter Tables based on the
     ; configuraiton of the emulator
     out (1), a
 
@@ -210,6 +210,6 @@ drive_b_check_vector: ds 32
 
 dirbuf: ds 128  ; BDOS scratch directory
 
-welcome: db "RZ80 BIOS 1.0", 0
+welcome: db "RZ80 BIOS 1.0", 10, 13, 0
 
 end:    dw  0x55aa

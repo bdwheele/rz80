@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include "z80ex.h"
+#include "z80ex_dasm.h"
 
 #define MEMORY_IMAGE "retro_z80.mem"
 
@@ -74,11 +75,21 @@ void load_memory_image(Z80EX_CONTEXT *cpu, system_t *system) {
 /* The callbacks */
 Z80EX_BYTE read_memory(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *data) {
     system_t *system = (system_t *)data;
-    return system->ram[addr];
+    Z80EX_BYTE v = system->ram[addr];
+    int pc = z80ex_get_reg(cpu, regPC) - 1;
+    if(m1_state != 1 && pc != addr)
+        fprintf(stderr, "[%04x (%d) TRACE MEMORY READ %04x => %02x]\n", pc, m1_state, addr, v);
+    return v;
+}
+
+Z80EX_BYTE read_debug_memory(Z80EX_WORD addr, void *data) {
+    char *ram = data;
+    return ram[addr];
 }
 
 void write_memory(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *data) {
     system_t *system = (system_t *)data;
+    fprintf(stderr, "[%04x TRACE MEMORY WRITE %04x => %02x]\n", z80ex_get_reg(cpu, regPC), addr, value);
     system->ram[addr] = value;
 }
 
@@ -253,8 +264,8 @@ int main(int argc, char *argv[]) {
     int lastpc = 0xffff;
     while(1) {
         int pc = z80ex_get_reg(cpu, regPC);
-        //if(pc < lastpc || (pc - lastpc) > 5) 
-        //    printf("[TRACE: PC %04x -> %02x]", pc, sys->ram[pc]);
+        if(pc < lastpc || (pc - lastpc) > 5) 
+            fprintf(stderr, "[TRACE: PC %04x -> %02x]\n", pc, sys->ram[pc]);
         z80ex_step(cpu);
         lastpc = pc;
     }
