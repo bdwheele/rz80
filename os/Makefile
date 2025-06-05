@@ -8,9 +8,11 @@ all: memory.cim
 
 
 memory.cim: bios/boot.rel bios/bios.rel zcpr1/zcpr.rel zsdos/zsdos.rel
-	../bin/ld80 -o memory.cim \
-		-C FBASE,e000 \
-		bios/boot.rel zcpr1/zcpr.rel zsdos/zsdos.rel bios/bios.rel
+	../bin/ld80 -m -O bin -o memory.cim -s /dev/tty \
+		-P 0x0000 bios/boot.rel \
+		-P 0xe690 zcpr1/zcpr.rel \
+		-P 0xee80 zsdos/zsdos.rel \
+		bios/bios.rel 
 
 bios/boot.rel:
 	make -C bios

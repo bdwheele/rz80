@@ -161,6 +161,9 @@ NXTREC	EQU	32		; Next record number
 ;*	 Z S D O S	P r o g r a m	  S t a r t	      *
 ;**************************************************************
 
+	public FBASE
+FBASE:
+
 ; WARNING!!  Do NOT change labels or sequences of ZSDOS through ZSDOS+25H
 ;   ID string added for easy identification in running system (hfb)
 
