@@ -1,2 +1,6 @@
 # rz80
-Home build Z80 computer, but with modern bits
+Home-built Z80 computer, but with modern bits
+
+## Requirements
+
+* cpmtools
