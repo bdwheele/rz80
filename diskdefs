@@ -1,0 +1,14 @@
+# It's just a PC-style 1.44M disk formatted disk, but with a CP/M
+# filesystem starting at block 0
+diskdef rz80_floppy
+	seclen 512
+	tracks 160
+	sectrk 18
+	blocksize 2048
+	maxdir 128
+	boottrk 0
+	os 2.2
+end
+
+
+

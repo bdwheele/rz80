@@ -1,3 +1,10 @@
+# output
+bin/cpm*
+bin/*.cpm
+bin/ld80
+bin/zmac
+
+
 # Prerequisites
 *.d
 

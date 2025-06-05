@@ -1,0 +1,20 @@
+; The bottom bits of memory, mostly to give the emulator 
+; the locations of BBASE and FBASE
+
+    extern BBASE
+    extern FBASE
+    extern CBASE
+    extern DPBASE
+
+boot:
+    jp BBASE        ; the BIOS BOOT Entrypoint (since we need to cold boot anyway)
+    dw 0            ; CDISK and IOBYTE
+    jp FBASE + 6    ; the BDOS entrypoint (starts with "ZSDOS " so skip it)
+
+    ; put some values into the BIOS scratch data space that the emulator
+    ; will need to process this file
+    org 0x40
+    dw CBASE        ; CCP BASE
+    dw FBASE        ; BDOS BASE
+    dw BBASE        ; BIOS BASE
+    dw DPBASE       ; Start of the Disk Parameter Header

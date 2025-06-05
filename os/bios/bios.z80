@@ -1,0 +1,212 @@
+; BIOS for the Retro Z80 emulator , based on the Kaypro II  and nc200 bios here.
+; © 2025 Brian Wheeler
+; This file is distributable under the terms of the 2-clause BSD license.
+; See COPYING.cpmish in the distribution root directory for more information.
+
+    maclib cpm
+    maclib cpmish
+
+    cseg
+label BBASE
+
+; BIOS jump table.
+
+    jp BOOTE
+    jp WBOOTE
+    jp CONSTE
+    jp CONINE
+    jp CONOUTE
+    jp LISTE
+    jp PUNCHE
+    jp READERE
+    jp HOMEE
+    jp SELDSKE
+    jp SETTRKE
+    jp SETSECE
+    jp SETDMAE
+    jp READE
+    jp WRITEE
+    jp LISTSTE
+    jp SECTRANE
+
+; Actual BIOS entrypoints.
+;
+; The BIOS calls typically use a simple calling convention where the parameter
+; is in BC and the result is returned in A and HL. The docs don't mention
+; anything about other registers so we'll assume they can be corrupted. In
+; addition, our syscall stuff assumes that on return A = L, just like in the
+; BDOS, so we have a single parameter and a single response --- all very simple.
+
+; Cold boot on system startup.
+BOOTE:
+    ; set up a stack, which we only need for printing the version
+    ld sp, 0x0100            ; ephemeral startup stack
+
+    ; print the banner
+    call print
+    cpmish_banner 'Retro Z80 Emulator'
+    db 0
+
+    ; clear the IOBYTE and the DISK
+    xor a
+    ld (IOBYTE), a
+    ld (CDISK), a
+
+
+; Warm boot on application exit.
+WBOOTE:
+    ; tell the emulator to reload the CCP/BDOS/BIOS image into
+    ; memory from other storage.  On initial startup, it will get loaded 
+    ; by the emulator and then we fall through from BOOTE and load
+    ; it again. Inefficient, but not really worried.  On warm boot the
+    ; image gets loaded on top the existing one so it's not a problem
+    ; if it's exactly the same.  Could be interesting if it isnt.
+    ; This also will initialize the Disk Paramter Tables based on the
+    ; configuraiton of the emulator
+    out (1), a
+
+    ; set things up to call the CCP
+    ld a, 0xc3
+    ld hl, BBASE + 3         ; init BIOS entrypoint
+    ld (0x0000), a
+    ld (0x0001), hl
+
+    ld hl, FBASE + 6         ; init BDOS entrypoint
+    ld (0x0005), a
+    ld (0x0006), hl
+
+    ld a, (CDISK)            ; current selected disk
+    ld c, a
+    jp CBASE                 ; pass control to CCP
+
+; The rest of the BIOS calls all just call the emulator and return
+; this macro simplifies it.
+call_em macro FN
+	out (FN), a
+	or a
+	ret
+    endm
+
+CONSTE:
+    call_em(2)
+
+CONINE:
+    call_em(3)
+
+CONOUTE:
+    call_em(4)
+
+LISTE:
+    call_em(5)
+
+PUNCHE:
+    call_em(6)
+
+READERE:
+    call_em(7)
+
+HOMEE:
+    call_em(8)
+
+SELDSKE:
+    call_em(9)
+
+SETTRKE:
+    call_em(10)
+
+SETSECE:
+    call_em(11)
+
+SETDMAE:
+    call_em(12)
+
+READE:
+    call_em(13)
+
+WRITEE:
+    call_em(14)
+
+LISTSTE:
+    call_em(15)
+
+SECTRANE:
+    call_em(16)
+
+
+; Prints the text immediately following the call to print.
+print:
+    pop hl                   ; return address points to text to print
+    ld a, (hl)
+    inc hl
+    push hl                  ; save address after current char
+
+    or a
+    ret z                    ; if byte was zero, return
+    ld c, a
+    call CONOUTE
+    jr print
+
+    ; Data Segment
+    dseg
+
+    ; DPBASE is the start of the Disk Parameter Header.  It's public because
+    ; the emulator may need to touch it or some of the things it refers to.
+label DPBASE
+drive_a_dph:
+    dw 0            ; Sector translation vector
+    dw 0, 0, 0      ; BDOS scratchpad
+    dw dirbuf       ; Directory scratchpad
+    dw fd1440k      ; Drive parameter block
+    dw drive_a_check_vector ; Disk change check vector
+    dw drive_a_bitmap ; Allocation bitmap
+drive_b_dph:
+    dw 0            ; Sector translation vector
+    dw 0, 0, 0      ; BDOS scratchpad
+    dw dirbuf       ; Directory scratchpad
+    dw fd1440k      ; Drive parameter block
+    dw drive_b_check_vector ; Disk change check vector
+    dw drive_b_bitmap ; Allocation bitmap
+drive_c_dph:
+    dw 0            ; Sector translation vector
+    dw 0, 0, 0      ; BDOS scratchpad
+    dw dirbuf       ; Directory scratchpad
+    dw hd32m        ; Drive parameter block
+    dw 0            ; Disk change check vector: none as this is a fixed disk
+    dw drive_c_bitmap ; Allocation bitmap
+
+FD1440_SIZE = 1440 ; kb
+FD1440_BLOCKS = FD1440_SIZE / 2 ; 2kB blocks, no reserved tracks
+fd1440k:            ; disk parameter block for a 1.44M floppy
+    dw 18*4         ; Number of CP/M sectors per track
+    db 4, 15        ; BSH/BLM for 2048-byte blocks
+    db 0            ; EXM for 2048-byte allocation units and >255 blocks
+    dw FD1440_BLOCKS-1 ; DSM
+    dw 127          ; DRM, one fewer than the number of directory entries
+    db 0xc0, 0x00   ; Initial allocation vector for two directory blocks
+    dw 32           ; Size of disk change check vector: (DRM+1)/4
+    dw 0            ; Number of reserved tracks
+
+HD32M_SIZE = 32*1024             ; kB; this is the *maximum* size
+HD32M_BLOCKS = HD32M_SIZE / 16 ; 16kB blocks, no reserved tracks
+hd32m:
+    dw 256*4        ; Number of CP/M sectors per track
+    db 7, 127       ; BSH/BLM for 16384-byte blocks
+    db 7            ; EXM for 16384-byte allocation units and >255 blocks
+    dw HD32M_BLOCKS-1 ; DSM
+    dw 511          ; DRM, one fewer than the number of directory entries
+    db 0x80, 0x00   ; Initial allocation vector for one directory block
+    dw 0            ; Size of disk change check vector: zero as this is a fixed disk
+    dw 0            ; Number of reserved tracks
+
+; Drive Bitmaps
+drive_a_bitmap:  ds (FD1440_BLOCKS+7) / 8
+drive_b_bitmap:  ds (FD1440_BLOCKS+7) / 8
+drive_c_bitmap:  ds (HD32M_BLOCKS+7) / 8
+
+; Drive Check Vectors
+drive_a_check_vector: ds 32
+drive_b_check_vector: ds 32
+
+dirbuf: ds 128  ; BDOS scratch directory
+
+end:    dw  0x55aa
