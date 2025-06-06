@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "gather_perfdata": "python",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "format": "c"
     }
 }

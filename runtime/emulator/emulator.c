@@ -17,27 +17,6 @@
 
 #define MEMORY_IMAGE "emulator.mem"
 
-#define ReadA() ((z80ex_get_reg(cpu, regAF) & 0xff00) >> 8)
-#define ReadBC() (z80ex_get_reg(cpu, regBC))
-#define ReadC() (z80ex_get_reg(cpu, regBC) & 0xff)
-#define ReadDE() (z80ex_get_reg(cpu, regDE))
-#define ReadE() (z80ex_get_reg(cpu, regDE) & 0xff)
-#define ReadF() (z80ex_get_reg(cpu, regAF) & 0xff)
-#define ReadHL() (z80ex_get_reg(cpu, regHL))
-
-
-#define WriteA(v) z80ex_set_reg(cpu, regAF, (((v & 0xff)) << 8) + ReadF())
-#define WriteHL(v) z80ex_set_reg(cpu, regHL, v)
-
-
-
-fd_set fds;
-struct timeval tv;
-
-
-
-
-
 int main(int argc, char *argv[]) {
     /* Create the main emulator structure*/
     struct emulator *emulator = (struct emulator *)calloc(1, sizeof(struct emulator));
@@ -57,13 +36,6 @@ int main(int argc, char *argv[]) {
     emulator->halt = 0;
     z80ex_set_reg(emulator->cpu, regPC, 0);
 
-
-    FD_ZERO(&fds); 
-    FD_SET(STDIN_FILENO, &fds); 
-
-    tv.tv_usec = 50;   
-
-    int lastpc = 0xffff;
     while(1) {
         // poll the hardware state
         if(emulator->hwimpl->poll)

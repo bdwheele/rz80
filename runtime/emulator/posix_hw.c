@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/select.h>
+#include <sys/time.h>
 #include "posix_hw.h"
 /*
     Hardware implementation for POSIX-based virtual devices
@@ -17,37 +19,27 @@ struct posix_state {
     int list_out;
     int aux_in;
     int aux_out;
+    fd_set con_set;
+    struct timeval con_tv;
 };
 
 
-void posix_startup(struct emulator *emulator) {
-    
-
-}
-
-void posix_shutdown(struct emulator *emulator) {
-
-}
-
 void posix_poll(struct emulator *emulator) {
-
+    struct posix_state *state = (struct posix_state *)emulator->hwimpldata;
 }
 
 void posix_warmboot(struct emulator *emulator) {
-
+    struct posix_state *state = (struct posix_state *)emulator->hwimpldata;
 }
 
 int posix_console_ready(struct emulator *emulator) {
-
-    select(STDIN_FILENO+1, &fds, NULL, NULL, &tv); 
-    if (FD_ISSET(STDIN_FILENO, &fds)){
-        WriteA(0xff);
-    } else {
-        WriteA(0x00);
-    }
+    struct posix_state *state = (struct posix_state *)emulator->hwimpldata;
+    select(state->con_in + 1, &state->con_set, NULL, NULL, &state->con_tv); 
+    return FD_ISSET(state->con_in, &state->con_set)? DEV_READY : DEV_BUSY;
 }
 
 char posix_console_read(struct emulator *emulator) {
+    struct posix_state *state = (struct posix_state *)emulator->hwimpldata;
     do {
         read(STDIN_FILENO, &nextchar, 1);
     } while(!nextchar);              
@@ -58,6 +50,8 @@ char posix_console_read(struct emulator *emulator) {
 }
 
 void posix_console_write(struct emulator *emulator, char c) {
+    struct posix_state *state = (struct posix_state *)emulator->hwimpldata;
+    
     chr = ReadC() & 0x7f;
     putc(chr, stdout);
     fflush(stdout);
@@ -92,18 +86,21 @@ int posix_home_disk(struct emulator *emulator, int disk) {
     // home the head
 }
 
-int posix_read_block(struct emulator *emulator, int disk, long offset, void *buffer) {
-
+int posix_read_block(struct emulator *emulator, int disk, int lba, void *buffer) {
+    struct posix_state *state = (struct posix_state *)emulator->hwimpldata;    
+    lseek(state->drives[disk], lba * 128, SEEK_SET);
+    read(state->drives[disk], buffer, 128);
+    
 }
 
-int posix_write_block(struct emulator *emulator, int disk, long offset, void *buffer) {
-
+int posix_write_block(struct emulator *emulator, int disk, int lba, void *buffer) {
+    struct posix_state *state = (struct posix_state *)emulator->hwimpldata;
+    lseek(state->drives[disk], lba * 128, SEEK_SET);
+    write(state->drives[disk], buffer, 128);
 }
 
 
 struct hwimpl posix_impl = {
-    .startup = posix_startup,
-    .shutdown = posix_shutdown,
     .poll = posix_poll,
     .warmboot =posix_warmboot,
     .console_ready = posix_console_ready,
@@ -155,7 +152,6 @@ void posix_init(struct emulator *emulator) {
     state->list_out = fopen("/tmp/list.out", "a");
     state->list_out = open("/tmp/list.out", O_CREAT | O_WRONLY);
 
-
     // Open the disk files
     char *filename_pattern = "disk_x.img";
     for(char i = 0; i <= 2; i++) {
@@ -163,6 +159,14 @@ void posix_init(struct emulator *emulator) {
         filename[5] = i + 'a';        
         state->drives[i] = open(filename, O_RDWR);
     }
+
+    // set up the select on stdin
+    FD_ZERO(&(state->con_set));
+    FD_SET(state->con_in, &state->con_set);
+
+    state->con_tv.tv_sec = 0;
+    state->con_tv.tv_usec = 100;
+
 
 
 }

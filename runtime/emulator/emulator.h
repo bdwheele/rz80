@@ -23,13 +23,24 @@
 #define WriteMem(addr, v) emulator->ram[addr] = v & 0xff
 #define WriteMemWord(addr, v) WriteMem(addr, v); WriteMem(addr + 1, v >> 8)
 
+// read/write registers.
+#define ReadA() ((z80ex_get_reg(cpu, regAF) & 0xff00) >> 8)
+#define ReadBC() (z80ex_get_reg(cpu, regBC))
+#define ReadC() (z80ex_get_reg(cpu, regBC) & 0xff)
+#define ReadDE() (z80ex_get_reg(cpu, regDE))
+#define ReadE() (z80ex_get_reg(cpu, regDE) & 0xff)
+#define ReadF() (z80ex_get_reg(cpu, regAF) & 0xff)
+#define ReadHL() (z80ex_get_reg(cpu, regHL))
+#define WriteA(v) z80ex_set_reg(cpu, regAF, (((v & 0xff)) << 8) + ReadF())
+#define WriteHL(v) z80ex_set_reg(cpu, regHL, v)
+
+
+
 #define DEBUG(args...) fprintf(stderr, "DEBUG: " args)
 
 struct emulator;
 
 struct hwimpl {
-    void *(*startup)(struct emulator *emulator);
-    void (*shutdown)(struct emulator *emulator);
     void (*poll)(struct emulator *emulator);
     void (*warmboot)(struct emulator *emulator);
     int (*console_ready)(struct emulator *emulator);
@@ -40,8 +51,8 @@ struct hwimpl {
     char (*aux_read)(struct emulator *emulator);
     void (*aux_write)(struct emulator *emulator, char c);
     int (*home_disk)(struct emulator *emulator, int disk);
-    int (*read_block)(struct emulator *emulator, int disk, long offset, void *buffer);
-    int (*write_block)(struct emulator *emulator, int disk, long offset, void *buffer);
+    int (*read_block)(struct emulator *emulator, int disk, int lba, void *buffer);
+    int (*write_block)(struct emulator *emulator, int disk, int lba, void *buffer);
 };
 
 struct emulator {
