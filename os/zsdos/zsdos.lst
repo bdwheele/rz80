@@ -1,0 +1,3467 @@
+   1:				;****************************************************************************
+   2:				;				Z S D O S
+   3:				;   A CP/M 2.2 compatible replacement Basic Disk Operating System (BDOS)
+   4:				;
+   5:				;     Copyright (C) 1986,7,8 by:
+   6:				;
+   7:				;          Harold F. Bower        and       Cameron W. Cotrill
+   8:				;
+   9:				;         7914 Redglobe Ct.                2160 N.W. 159th Place
+  10:				;         Severn, MD 21144-1048            Beaverton, OR  97006
+  11:				;         USA.                             USA.
+  12:				;
+  13:				;       HalBower@worldnet.att.net         ccotrill@symantec.com
+  14:				;
+  15:				;   This program is free software; you can redistribute it and/or modify
+  16:				;   it under the terms of the GNU General Public License as published by
+  17:				;   the Free Software Foundation; either version 2 of the License, or
+  18:				;   (at your option) any later version.
+  19:				;
+  20:				;   This program is distributed in the hope that it will be useful,
+  21:				;   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  22:				;   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  23:				;   General Public License (file LICENSE.TXT) for more details.
+  24:				;
+  25:				;   You should have received a copy of the GNU General Public License
+  26:				;   along with this program; if not, write to the Free Software
+  27:				;   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  28:				;---------------------------------------------------------------------------
+  29:				; ZSDOS is a CP/M 2.2 compatable BDOS replacement that contains numerous
+  30:				; enhancements.  It is based on P2DOS 2.1 by HAJ Ten Brugge and revisions
+  31:				; to P2DOS made by Harold F. Bower, Benjamin Ho, and Cameron W. Cotrill.
+  32:				; Several good ideas from both CP/M Plus(tm) and ZRDOS(tm) have been added.
+  33:				; The authors wish to thank Bridger Mitchell of Plu*Perfect Systems for
+  34:				; suggesting we put our heads together, for reviewing the efforts, and for
+  35:				; suggesting better methods for coding some sections.  Thanks also to Joe
+  36:				; Wright of Alpha Systems for his review and suggestions, as well as
+  37:				; squeezing a few more bytes for us.
+  38:				
+  39:				; Support for Plu*Perfect'a BackGrounder ii(tm) and ZDS DateStamper(tm) is
+  40:				; included, as well as support for ZCPR/BGii WHEEL and PATH.
+  41:				; ZSDOS is compatable with NZCOM by Joe Wright of Alpha Systems.
+  42:				
+  43:				; ZSDOS is designed for Z80 compatible processors ONLY!!!
+  44:				; ZSDOS is coded to run in Z280 protected mode and may be ROMmed.
+  45:				
+  46:				; LEGAL DEPARTMENT:   P2DOS was written by H.A.J. Ten Brugge,  ZSDOS
+  47:				; modifications were by Cameron W. Cotrill and Harold F. Bower.
+  48:				; ZDDOS modifications were done by Carson Wilson, Cameron W. Cotrill
+  49:				; and Harold F. Bower.
+  50:				
+  51:				; No author assumes responsibility or liability in the use of this
+  52:				; program or any of its support utilities.
+  53:				
+  54:				; P2DOS is Copyright (C) 1985 by H.A.J. Ten Brugge  - All Rights Reserved
+  55:				;	H.A.J. Ten Brugge
+  56:				;	F. Zernikestraat 207
+  57:				;	7553 EC Hengelo
+  58:				;	Netherlands
+  59:				; Permission to use P2DOS code in ZSDOS granted to Harold F. Bower and
+  60:				;   Cameron W. Cotrill in letter 28 March 1988
+  61:				
+  62:				;   Code sections marked (bm) are revisions suggested by Bridger Mitchell.
+  63:				;   Code sections marked (bh) are from SUPRBDOS mods to P2DOS by Benjamin Ho.
+  64:				;   Code sections marked (crw) are revisions to support internal datestamper
+  65:				;      and are Copyright (C) 1988 by Carson Wilson.
+  66:				
+  67:				; NOTES: Backgrounder ii and DateStamper are trademarks of Plu*Perfect
+  68:				;  Systems.  CP/M is a trademark of Digital Research, Incorporated.
+  69:				;  ZRDOS is a trademark of Echelon, Incorporated.
+  71:				;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  72:				; Version 1.2a, 11/04/89
+  73:				; Assemble with : SLR Z80ASMP or ZMAC
+  74:				; Revisions:
+  75:				; 11/04/89	Moved home call to rddir so bios hostbuf always
+  76:				;		updated before dir read.
+  77:				; 07/18/89	Fixed tderr routine in ZDDOS so return codes not
+  78:				; CWC		altered from tderr unless called from 102 or 103.
+  79:				; 06/20/89	Fixed bug in F10 ^R that output 256 spaces if ^R
+  80:				; CWC		entered with tab counter =0.
+  81:				;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  82:				
+  83:					MACLIB	zsdos	; Get initialization code
+**** zsdos.lib ****
+   1:				;.....
+   2:				; ZSDOS Customization.  		-HFB,  18 Sept 1987
+   3:				;					revised 07/17/88 CWC
+   4:				
+   5:     -	0000'         	FALSE	EQU	0
+   6:     -	FFFF'         	TRUE	EQU	NOT FALSE
+   7:				
+   8:				; Set these conditionals before assembly
+   9:				
+  10:				;****************************************************************************
+  11:				; In the General Public Release version, we have included an equate which
+  12:				; controls an additional unreleased fix (which only Howard Goldstein found).
+  13:				; If the following equate is set TRUE, a version 1.1 BDOS will be produced
+  14:				; which will require no changes to any released utilities.  If set to FALSE,
+  15:				; a version 1.2 BDOS will result, and many support utility libraries and
+  16:				; overlays will need to be revised to make them function properly.    HFB
+  17:				
+  18:     -	FFFF'         	ZSDOS11	EQU	TRUE			; Set True for Ver 1.1, False for 1.2
+  19:				
+  20:				;****************************************************************************
+  21:				
+  22:     -	FFFF'         	ZS	EQU	TRUE      		; Set True for ZSDOS, False for ZDDOS
+  23:				
+  24:				;----------
+  25:				;   Select assembler for ZSDOS.  Any modifications to source code must
+  26:				; support these assemblers at minimum.
+  27:				
+  28:     -	FFFF'         	SLR	EQU	TRUE		; SLR Z80ASM or SLR180 Assembler, OR ZMAC
+  29:     -	0000'         	ZAS	EQU	FALSE 		; MITEK/ECHELON ZAS Assembler (3.0 or later)
+  30:				
+  31:     -	0000'         		  IF ZAS
+  33:					  ENDIF
+  34:				
+  35:     -	FFFF'         		  IF  SLR
+  36:					.Z80
+  37:					NAME	('DOS')
+  38:					  ENDIF
+  39:				
+  40:     -	0000'         		  IF ZAS AND ZS
+  46:					  ENDIF
+  47:     -	0000'         		  IF ZAS AND (NOT ZS)
+  53:					  ENDIF
+  54:				
+  55:     -	FFFF'         		  IF SLR AND ZS
+  56:     -	FFFF'         		   IF  ZSDOS11
+  57:					TITLE	"ZSDOS 1.1 - Enhanced CP/M BDOS Replacement"
+  58:					   ELSE		;~Zsdos11
+  60:					   ENDIF	;Zsdos11
+  61:					  ENDIF
+  62:     -	0000'         		  IF SLR AND (NOT ZS)
+  68:					  ENDIF
+  69:				
+  70:				;----------
+  71:				;   P2DOS introduced a search path feature compatible with that used in
+  72:				; Richard Conn's ZCPR2 and ZCPR3.  If a requested file is not located in
+  73:				; the currently logged Drive/User, the SEARCH routine will sequentially
+  74:				; scan along the path until either the file is found or the end of the
+  75:				; path is reached.
+  76:				
+  77:     -	FFFF'         		  IF	ZS
+  78:     -	0DF1'         	PATHAD	EQU	IPATH		; Set to the desired ZCPR2/3 search path.
+  79:					  ELSE			; use 0000H to disable path.  A short
+  81:					  ENDIF			; in ZSDOS.  ZDDOS does not use path.
+  82:				
+  83:				;----------
+  84:				;   The WHEEL byte may be sensed from within ZSDOS by setting the following
+  85:				; address to that of the ZCPR3 WHEEL byte.  A value of 0 disables the WHEEL
+  86:				; byte sensing.
+  87:				
+  88:     -	0000'         	WHLADR	EQU	00000H		; Set WHEEL byte address (0FDFFH for SB180)
+  89:				
+  90:				;----------
+  91:				;   Some systems, like the Kaypro 4, only recognize changes between single
+  92:				; and double-sided disks when the system is warm booted; BDOS Function 13
+  93:				; (reset disk) will not work.  By adding a "hook" to the BIOS of these mach-
+  94:				; ines and setting RESDSK to TRUE, BDOS functions 13 and 37 will allow changes
+  95:				; between single and double-sided disks; very handy for disk housekeeping
+  96:				; utilities such as NSWP, NULU, and cataloging programs.
+  97:				
+  98:				;   The "hook" is added as follows: Obtain the source to your computer's BIOS.
+  99:				; Examine the code for WARM BOOT.  Somewhere, there should be a call to a rou-
+ 100:				; tine which initializes the disk system after a warm boot, or which detects
+ 101:				; changes between single and double-sided disks.  Call this routine DISKINT
+ 102:				; for purposes of discussion.  Modify your BIOS's cold boot routine to ini-
+ 103:				; tialize 3 bytes at address SETDSK as "JP DISKINT".  The location of SETDSK
+ 104:				; is arbitrary, it may be in your BIOS, or in a reserved spot in CP/M's page 0.
+ 105:				
+ 106:     -	0000'         	RESDSK	EQU	FALSE
+ 107:				
+ 108:     -	0000'         	   IF	   RESDSK
+ 110:				   ENDIF		; resdsk (bh)
+ 111:				
+ 112:				;----------
+ 113:				;   The following equate is used to produce separate code and data segments
+ 114:				; for blowing ZSDOS into ROM.  Calling BDOS Function 0 will initialize the
+ 115:				; Data Segment to default values.
+ 116:				
+ 117:     -	0000'         	ROM	EQU	FALSE		; Separate data and code?
+ 118:				
+ 119:				;----------
+ 120:				;   Many ZSDOS features can be controlled while ZSDOS is running by altering
+ 121:				; the FLAG byte.  Set the following equate to your desired configuration based
+ 122:				; on your requirements.  The individual bit assignments in the FLAG byte are:
+ 123:				;
+ 124:				; Bit -	7 6 5 4 3 2 1 0
+ 125:				;	 \ \ \ \ \ \ \ \__Public File Enable (1) / Disable (0)
+ 126:				;	  \ \ \ \ \ \ \___Public/Path Write Enable (1) / Disable (0)
+ 127:				;	   \ \ \ \ \ \____Read-Only Enable (1) / Disable (0)
+ 128:				;	    \ \ \ \ \_____Fast Fixed Disk Relog Enable (1) / Disable (0)
+ 129:				;	     \ \ \ \______Disk Change Warning Enable (1) / Disable (0)
+ 130:				;	      \ \ \_______ZCPR2/3 Path Enable (1) / Disable (0)
+ 131:				;	       \ \________Path without System Enable (1) / Disable (0)
+ 132:				;		\_________(Reserved)
+ 133:				
+ 134:     -	006D'         	FLGBITS	EQU	01101101B	; PUBLIC On, P/P Write Off, R/O On, 
+ 135:								; Fast Relog On,Disk Change warning Off, 
+ 136:								; Path On, No System path On
+ 137:				
+ 138:				; The operation of Bit 6 represents a deviation from the description of PUBLIC
+ 139:				; Files as given in DDJ Article by Bridger Mitchell and Derek McKay of Plu*
+ 140:				; Perfect Systems.  The PUBLIC Specification states that Public Files will NOT
+ 141:				; be found by any wildcard reference except when a "?" is in the FCB+0 byte.
+ 142:				; The code here relaxes that requirement as follows:  If we are in the same
+ 143:				; user area as the public file, then don't report the file as PUBLIC, but find
+ 144:				; it.  This has a nasty side effect - it allows erasing of PUBLIC files if we
+ 145:				; are in the same area.  However, these files also show up on the directory
+ 146:				; (they wouldn't otherwise), so at least we should know we're blasting them.
+ 147:				
+ 148:				;----------
+ 149:				; Equates for selecting ZSDOS or ZDDOS configurations
+ 150:				
+ 151:				; Since much ZSDOS code must be deleted to embed DateStamper in ZDDOS, the
+ 152:				; following flags do the stripping:
+ 153:				;	PICKEY	- True = Don't save users' DE register
+ 154:				;	CTLREN	- True = Add ^R Retype line to cons read, False = No ^R
+ 155:				;	UNROLL	- True = Inline code for shifts, False = collapse into loops
+ 156:				;	UPATH	- True = Add User path from OS, False = No OS path search
+ 157:				
+ 158:     -	FFFF'         		  IF ZS
+ 159:     -	FFFF'         	CTLREN	EQU	TRUE
+ 160:     -	FFFF'         	UNROLL	EQU	TRUE
+ 161:     -	FFFF'         	UPATH	EQU	TRUE
+ 162:     -	0000'         	PICKEY	EQU	FALSE
+ 163:					  ELSE
+ 168:					  ENDIF
+ 169:				
+ 170:				;----------
+ 171:				; To Use the Named-COMMON aspect of NZCOM and JETLOADER (tm), the BIOS must
+ 172:				; be referenced from the _BIOS_ name.  If operating under this scheme, set
+ 173:				; the ZRL equate to TRUE.  With the ZRL equate set to FALSE, a standalone
+ 174:				; .REL file will be produced with no external requirements.
+ 175:				
+ 176:     -	FFFF'         	ZRL	EQU	TRUE		; Set True .ZRL file with COMMON for NZCOM,
+ 177:								;     False to produce straight .REL file
+**** zsdos-gp.z80 ****
+  84:				
+  85:     -	0000'         	RAMLOW	EQU	0000H		; Start address memory
+  86:				
+  87:					CSEG
+  88:     -	0000'         	ZSDOS	EQU	$		; Start address ZSDOS
+  89:				
+  90:     -	FFFF'         		  IF  	ZRL
+  91:					COMMON	/_BIOS_/
+  92:     -	0000!         	BIOS:
+  93:					CSEG
+  94:					  ELSE
+  96:					  ENDIF
+  97:				
+  98:     -	0000'         	BOOT	EQU	BIOS+0000H	; Cold Boot
+  99:     -	0003'         	WBOOT	EQU	BIOS+0003H	; Warm Boot
+ 100:     -	0006'         	CONST	EQU	BIOS+0006H	; Console Status
+ 101:     -	0009'         	CONIN	EQU	BIOS+0009H	; Console Input
+ 102:     -	000C'         	CONOUT	EQU	BIOS+000CH	; Console Output
+ 103:     -	000F'         	LISTO	EQU	BIOS+000FH	; List Output
+ 104:     -	0012'         	PUNCH	EQU	BIOS+0012H	; Punch Output
+ 105:     -	0015'         	READER	EQU	BIOS+0015H	; Reader Input
+ 106:     -	0018'         	HOME	EQU	BIOS+0018H	; Home Disk
+ 107:     -	001B'         	SELDSK	EQU	BIOS+001BH	; Select Disk
+ 108:     -	001E'         	SETTRK	EQU	BIOS+001EH	; Select Track
+ 109:     -	0021'         	SETSEC	EQU	BIOS+0021H	; Select Sector
+ 110:     -	0024'         	SETDMA	EQU	BIOS+0024H	; Set DMA Address
+ 111:     -	0027'         	READ	EQU	BIOS+0027H	; Read 128 Bytes
+ 112:     -	002A'         	WRITE	EQU	BIOS+002AH	; Write 128 Bytes
+ 113:     -	002D'         	LISTST	EQU	BIOS+002DH	; List Status
+ 114:     -	0030'         	SECTRN	EQU	BIOS+0030H	; Sector Translation
+ 115:				
+ 116:				; Internal Definitions
+ 117:     -	FFFF'         		  IF  ZSDOS11
+ 118:     -	0001'         	VERMAJ	EQU	1		; Major version number
+ 119:     -	0001'         	VERMIN	EQU	1		; Minor version number
+ 120:					  ELSE
+ 123:					  ENDIF		;Zs
+ 124:     -	0011'         	VERS	EQU	VERMAJ*10H+VERMIN
+ 125:				
+ 126:     -	0003'         	CONTC	EQU	03H		; Key to generate warm boot
+ 127:     -	0008'         	CONTH	EQU	08H		; Backspace
+ 128:     -	0009'         	TAB	EQU	09H		; Tab
+ 129:     -	000A'         	LF	EQU	0AH		; Line feed
+ 130:     -	000D'         	CR	EQU	0DH		; Carriage return
+ 131:     -	0010'         	CONTP	EQU	10H		; Set/reset print flag
+ 132:     -	0012'         	CONTR	EQU	12H		; Retype line
+ 133:     -	0013'         	CONTS	EQU	13H		; Stop console output
+ 134:     -	0018'         	CONTX	EQU	18H		; Delete line (backspaces)
+ 135:     -	0015'         	CONTU	EQU	15H		; Same as Control-X
+ 136:     -	007F'         	RUBOUT	EQU	7FH		; Delete last char
+ 137:				
+ 138:     -	001F'         	MAXEXT	EQU	1FH		; Maximum extent number
+ 139:     -	003F'         	MAXMOD	EQU	3FH		; Maximum data module number
+ 140:				
+ 141:     -	0091'         	TDCKSM	EQU	91H		; CHECKSUM OF !!!TIME&.DAT
+ 142:				
+ 143:				; Attribute Bit Definitions
+ 144:				
+ 145:     -	0002'         	PUBATT	EQU	2		; Public attribute offset
+ 146:     -	0007'         	PSFATT	EQU	7		; Public/system file (internal only)
+ 147:     -	0008'         	WHLATT	EQU	8		; Wheel protect attribute offset
+ 148:     -	0009'         	ROATT	EQU	9		; Read only attribute offset
+ 149:     -	000A'         	SYSATT	EQU	10		; System attribute offset
+ 150:     -	000B'         	ARCATT	EQU	11		; Archive attribute offset
+ 151:				
+ 152:				; FCB POSITION EQUATES
+ 153:				
+ 154:     -	000C'         	FCBEXT	EQU	12		; Extent number
+ 155:     -	000D'         	FCBUSR	EQU	13		; User valid at offset 13 if set (internal)
+ 156:     -	000E'         	FCBMOD	EQU	14		; Data module number - D7 used as unmod flag
+ 157:     -	000F'         	FCBREC	EQU	15		; Record number
+ 158:     -	0020'         	NXTREC	EQU	32		; Next record number
+ 160:				;**************************************************************
+ 161:				;*	 Z S D O S	P r o g r a m	  S t a r t	      *
+ 162:				;**************************************************************
+ 163:				
+ 164:					public FBASE
+ 165:     -	0000'         	FBASE:
+ 166:				
+ 167:				; WARNING!!  Do NOT change labels or sequences of ZSDOS through ZSDOS+25H
+ 168:				;   ID string added for easy identification in running system (hfb)
+ 169:				
+ 170:     -	FFFF'         		  IF  ZS
+ 171:     -	0000' 5A53444F		DEFB	'ZSDOS '	; Used in CP/M for serial number. these bytes
+	              5320
+ 172:					  ELSE			; are patched by INSTALOS to contain the serial
+ 174:					  ENDIF			; still be used without problems.
+ 175:				
+ 176:				; ZSDOS Entry Point
+ 177:				
+ 178:    0+10	0006' C39B00  	START:	JP	ENTRY		; Jump to start of program code
+ 179:				
+ 180:				; CP/M 2.2 Compatable Error Vector Table
+ 181:				
+ 182:     -	0009' 4C03    	STBDSC:	DEFW	ERROR		; Bad sector message
+ 183:     -	000B' 4C03    	STSEL:	DEFW	ERROR		; Select error
+ 184:     -	000D' 4C03    	STRO:	DEFW	ERROR		; Drive read only
+ 185:     -	000F' 4C03    	SFILRO:	DEFW	ERROR		; File read only
+ 186:				
+ 187:				; External Path Name
+ 188:				
+ 189:     -	0011' F10D    	PATH:	DEFW	PATHAD		; Path address for file open, 0 if no path
+ 190:				
+ 191:				; Wheel Byte Pointer
+ 192:				
+ 193:     -	0013' 0000    	WHEEL:	DEFW	WHLADR		; Address of wheel byte, 0 if none
+ 194:				
+ 195:				; User configuration byte
+ 196:				
+ 197:     -	0015' 6D      	FLAGS:	DEFB	FLGBITS		; Flag byte set in zsdos.lib
+ 198:				
+ 199:				; Dispatch table for time/date stamp routines
+ 200:				
+ 201:				; ZSDOS uses all vectors in this table as indicated.  ZDDOS uses all but
+ 202:				; STUPDV, GETSTV, and PUTSTV.  STCRV is used to store the address of the
+ 203:				; stamp for ZDDOS, thus allowing ZSCONFIG to enable and disable stamping
+ 204:				; of Last Access and Modify.
+ 205:				
+ 206:     -	0016' DD0D    	GSTIME:	DEFW	DOTDER		; Address of get/set time/date routine (hfb)
+ 207:     -	FFFF'         		  IF	ZS
+ 208:     -	0018' DD0D    	STLAV:	DEFW	DOTDER		; Address of stamp last access routine
+ 209:     -	001A' DD0D    	STCRV:	DEFW	DOTDER		; Address of stamp create routine
+ 210:     -	001C' DD0D    	STUPDV:	DEFW	DOTDER		; Address of stamp modify routine
+ 211:					  ELSE
+ 215:					  ENDIF
+ 216:     -	001E' DD0D    	GETSTV:	DEFW	DOTDER		; Address of get stamp routine
+ 217:     -	0020' DD0D    	PUTSTV:	DEFW	DOTDER		; Address of set stamp routine
+ 218:     -	0022' DD0D    		DEFW	DOTDER		; Dummy vector to disable with ZSCONFIG
+ 219:     -	0024' 0000    	UNLOAD:	DEFW	0		; Pointer to remove Time Stamp routine
+ 220:				
+ 222:				;********************************************************
+ 223:				;*	 Z S D O S	L o w	 R A M	 D a t a	*
+ 224:				;********************************************************
+ 225:				
+ 226:				; RAM has been moved down here to an area that is compatable with ZRDOS per
+ 227:				; suggestion by Hal Bower.  The actual addresses used are NOT compatable with
+ 228:				; ZRDOS.
+ 229:				
+ 230:				; Due to ZSDOS's smaller RAM area, any program that saves RAM in accordance
+ 231:				; with ZRDOS's specifications for re-entry into BDOS should work under ZSDOS
+ 232:				; without problems.  Some code will be saved also, as well as the Flag Byte,
+ 233:				; but this should be no problem for IOP'S.
+ 234:				
+ 235:				; The Write Protect, Login, and Hard Disk Login Vectors are kept at the top of
+ 236:				; ZSDOS, as they must reflect the current status of the Disk System and hence
+ 237:				; should NOT be saved with other system variables Under ANY Circumstance!
+ 238:				
+ 239:     -	0000'         		  IF  ROM
+ 241:					  ENDIF
+ 242:     -	0026'         	BGLORAM:
+ 243:				;--------------------------------------------------------------------
+ 244:				; The following locations MUST remain in EXACTLY this order
+ 245:				
+ 246:     -	0026' 00      	TABCNT:	DEFB	0		; Tab counter
+ 247:     -	0027' 00      	TABCX1:	DEFB	0		; Temporary Tab counter (used by RDBUF)
+ 248:				;--------------------------------------------------------------------
+ 249:				
+ 250:     -	0028' 00      	FCONTP:	DEFB	0		; List enable flag (Control-P) - used by BGii
+ 251:     -	0029' 00      	LASTCH:	DEFB	0		; Last character - used by BGii
+ 252:				
+ 253:				;--------------------------------------------------------------------
+ 254:				; The following locations MUST remain in EXACTLY this order
+ 255:				
+ 256:     -	002A' 00      	USER:	DEFB	0		; User number - used by BGii
+ 257:     -	002B' 00      	DEFDRV:	DEFB	0		; Default drive number - used by BGii and DS
+ 258:     -	002C' 00      	DRIVE:	DEFB	0		; Drive number
+ 259:				;--------------------------------------------------------------------
+ 260:				
+ 261:     -	002D' 00      	FCB0:	DEFB	0		; FCB byte 0
+ 262:				
+ 263:     -	002E'         	BGHIRAM:
+ 264:     -	002E' 8000    	DMA:	DEFW	0080H		; DMA address
+ 265:				
+ 266:     -	0030' 0000    	TRANS:	DEFW	0		; Translation vector
+ 267:     -	0032' 0000    	TEMP0:	DEFW	0		; Number of files on drive
+ 268:				
+ 269:				
+ 270:     -	0034' 0000    	DIRBUF:	DEFW	0		; Directory buffer pointer - used by bgii
+ 271:     -	0036' 0000    	IXP:	DEFW	0		; Disk parameter block
+ 272:     -	0038' 0000    	CSV:	DEFW	0		; Check sum pointer
+ 273:     -	003A' 0000    	ALV:	DEFW	0		; Allocation vector pointer
+ 274:				
+ 275:				;--------------------------------------------------------------------
+ 276:				; The following locations MUST remain in EXACTLY this order
+ 277:				; Copy of DPB for Current Drive
+ 278:				
+ 279:     -	003C'         	DPBOF	EQU	$-ZSDOS		; Value needed by ZSDOS
+ 280:				
+ 281:     -	003C' 0000    	MAXSEC:	DEFW	0		; Number of sectors/track
+ 282:     -	003E' 00      	NBLOCK:	DEFB	0		; Block shift
+ 283:     -	003F' 00      	NMASK:	DEFB	0		; Mask number of blocks
+ 284:     -	0040' 00      	NEXTND:	DEFB	0		; Extent mask
+ 285:     -	0041' 0000    	MAXLEN:	DEFW	0		; Maximum block number-1
+ 286:     -	0043' 0000    	NFILES:	DEFW	0		; Maximum number of files-1
+ 287:     -	0045' 00      	NDIR0:	DEFB	0		; First two entries ALV buffer
+ 288:     -	0046' 00      		DEFB	0		; ..(NDIR1)
+ 289:     -	0047' 0000    	NCHECK:	DEFW	0		; Number of checksum entries
+ 290:     -	0049' 0000    	NFTRK:	DEFW	0		; First track number
+ 291:				;--------------------------------------------------------------------
+ 292:     -	004B' 00      	FUNCT:	DEFB	0		; Function number
+ 293:     -	004C' 0000    	PEXIT:	DEFW	0		; Exit code
+ 294:				;--------------------------------------------------------------------
+ 295:				; The following locations MUST remain in EXACTLY this order
+ 296:				
+ 297:     -	004E' 00      	FLDRV:	DEFB	0		; Drive select used flag
+ 298:     -	004F' 00      	RDWR:	DEFB	0		; Read/write flag
+ 299:     -	0050' 00      	SEARQU:	DEFB	0		; Search question mark used
+ 300:     -	0051' 00      	SEARPU:	DEFB	0		; Search public file
+ 301:				;--------------------------------------------------------------------
+ 302:     -	0052' 0000    	RECDIR:	DEFW	0		; Record directory (checksum)
+ 303:     -	0054' 0000    	FILCNT:	DEFW	0		; File counter
+ 304:     -	0056' 00      	SECPNT:	DEFB	0		; Sector pointer
+ 305:     -	0057' 00      	SUBFLG:	DEFB	0		; Submit flag (reset disk command)
+ 306:				
+ 307:     -	0058' 0000    	DCOPY:	DEFW	0		; Copy address FCB
+ 308:     -	005A' 00      	SEAREX:	DEFB	0		; Exit code search
+ 309:     -	005B' 00      	SEARNB:	DEFB	0		; Search number of bytes
+ 310:     -	005C' 00      	ERMODE:	DEFB	0		; BDOS error mode
+ 311:				
+ 312:     -	005D' 0000    	ARWORD:	DEFW	0		; De argument on entry - used for BGii
+ 313:     -	005F' 0000    	DEVAL:	DEFW	0		; Return value for DE reg
+ 314:     -	0061' 0000    	SPSAVE:	DEFW	0		; Stack pointer location
+ 315:     -	FFFF'         		  IF  ZS
+ 316:     -	0063' 5A53444F		DEFB	'ZSDOS 1.1 Copyri'
+	              5320312E
+	              3120436F
+	              70797269
+ 317:					  ELSE
+ 319:					  ENDIF
+ 320:     -	0073' 67687420		DEFB	'ght (c) 1987,88 '
+	              28632920
+	              31393837
+	              2C383820
+ 321:     -	0083' 20432E57		DEFB	' C.W.Cotrill & H'
+	              2E436F74
+	              72696C6C
+	              20262048
+ 322:     -	0093' 2E462E42		DEFB	'.F.Bow'
+	              6F77
+ 323:     -	0099' 6572    	IXSAVE:	DEFB	'er'		; User's IX register
+ 324:     -	009B'         	ZSDOSS:				; ZSDOS stack
+ 325:				
+ 326:     -	009B'         	BGRAMTOP EQU	ZSDOSS
+ 328:					CSEG
+ 329:				;**********************************************************************
+ 330:				;*		 Z S D O S   e n t r y	 p o i n t		      *
+ 331:				;**********************************************************************
+ 332:				
+ 333:   10+4	009B' AF      	ENTRY:	XOR	A		; Clear A
+ 334:   14+4	009C' 47      		LD	B,A		; For later 16 bit adds
+ 335:   18+4	009D' 6F      		LD	L,A
+ 336:   22+4	009E' 67      		LD	H,A		; Set HL to zero
+ 337:   26+16	009F' 224C00  		LD	(PEXIT),HL	; Clear exit code
+ 338:   42+16	00A2' 224E00  		LD	(FLDRV),HL	; Reset drive select and R/W flags
+ 339:   58+20	00A5' ED736100		LD	(SPSAVE),SP	; Save stack pointer
+ 340:   78+10	00A9' 319B00  		LD	SP,ZSDOSS	; Get internal stack pointer
+ 341:   88+15	00AC' DDE5    		PUSH	IX		; Save index register on our stack
+ 342:  103+11	00AE' D5      		PUSH	DE		; Save parameter register
+ 343:  114+14	00AF' DDE1    		POP	IX		; Get it back in IX
+ 344:  128+20	00B1' DD225D00		LD	(ARWORD),IX	; Save in memory for BGii
+ 345:     -	FFFF'         		  IF  NOT PICKEY
+ 346:  148+20	00B5' DD225F00		LD	(DEVAL),IX	; ..and for non-file access returns
+ 347:					  ENDIF
+ 348:  168+10	00B9' 21E603  		LD	HL,DOSEXIT	; Get exit address ZSDOS
+ 349:  178+11	00BC' E5      		PUSH	HL		; Save it on stack to return from ZSDOS
+ 350:  189+4	00BD' 79      		LD	A,C		; Get function code - B reg = 0
+ 351:  193+13	00BE' 324B00  		LD	(FUNCT),A	; Save it for later use
+ 352:  206+7	00C1' FE0C    		CP	12		; Is it a non-disk function?
+ 353:  213+7+5	00C3' 380D    		JR	C,ENTRY0	; ..jump if so
+ 354:  220+7	00C5' FE31    		CP	MAXCMD		; Cmnd < Maximum Command Number (48)?
+ 355:  227+7+5	00C7' 380D    		JR	C,ENTRY1	; ..jump if disk function
+ 356:				
+ 357:				; Extended function scanner for added functions
+ 358:				
+ 359:  234+7	00C9' FE62    		CP	98		; Is it less than Cmd98?
+ 360:  241+5+6	00CB' D8      		RET	C		; ..return if so
+ 361:  246+7	00CC' FE68    		CP	103+1		; Is it greater than Cmd103?
+ 362:  253+5+6	00CE' D0      		RET	NC		; ..quit if so
+ 363:  258+7	00CF' D631    		SUB	98-MAXCMD	; Rework so 98-->49..103-->54
+ 364:  265+4	00D1' 4F      		LD	C,A		; Save reworked function #
+ 365:							; ..fall thru to entry0..
+ 366:				
+ 367:				; If Non-disk Function (ie Function # less than 12), push the address of
+ 368:				;  the SAVEA routine on the Stack (save A reg as return code).	Saves
+ 369:				;  code in Console Routines, as simple RET can be used in most cases.
+ 370:				
+ 371:  269+10	00D2' 21BB04  	ENTRY0:	LD	HL,SAVEA
+ 372:  279+11	00D5' E5      		PUSH	HL		; Vector return thru A reg save
+ 373:  290+10	00D6' 21E200  	ENTRY1:	LD	HL,CTABLE	; Load table
+ 374:  300+11	00D9' 09      		ADD	HL,BC		; Add
+ 375:  311+11	00DA' 09      		ADD	HL,BC		; Add twice to get word value
+ 376:  322+7	00DB' 7E      		LD	A,(HL)		; Get LSB
+ 377:  329+6	00DC' 23      		INC	HL		; Pointer to MSB
+ 378:  335+7	00DD' 66      		LD	H,(HL)		; Get MSB
+ 379:  342+4	00DE' 6F      		LD	L,A		; Save LSB in L
+ 380:				
+ 381:				; Copy byte argument into A and C to simplify Function calls.  This allows
+ 382:				;  direct BIOS jumps for several functions with resulting code savings.
+ 383:				
+ 384:  346+4	00DF' 4B      		LD	C,E		; Place arg in C for BIOS
+ 385:  350+4	00E0' 7B      		LD	A,E		; And in A for others
+ 386:  354+4	00E1' E9      		JP	(HL)		; Jump to routine
+ 387:				
+ 389:				;******************************************************
+ 390:				;*	 C O M M A N D	    T A B L E		      *
+ 391:				;******************************************************
+ 392:     -	00E2'         	CTABLE:
+ 393:     -	0000'         		  IF  ROM
+ 395:					  ELSE
+ 396:     -	00E2' CA03    		DEFW	ERROR5		; Warm boot (BIOS) with ERMODE clear
+ 397:					  ENDIF
+ 398:     -	00E4' 5001    		DEFW	CMND01		; Console input
+ 399:     -	00E6' 6402    		DEFW	WRCON		; Console output
+ 400:     -	00E8' 1500    		DEFW	READER		; Reader input (BIOS)
+ 401:     -	00EA' 1200    		DEFW	PUNCH		; Punch output (BIOS)
+ 402:     -	00EC' 0F00    		DEFW	LISTO		; List output (BIOS)
+ 403:     -	00EE' 5A01    		DEFW	CMND06		; Direct console I/O
+ 404:     -	00F0' 9101    		DEFW	CMND07		; Get I/O byte
+ 405:     -	00F2' 8E01    		DEFW	CMND08		; Set I/O byte
+ 406:     -	00F4' D502    		DEFW	CMND09		; Print string
+ 407:     -	00F6' 9501    		DEFW	CMND10		; Read console buffer
+ 408:     -	00F8' B702    		DEFW	CMND11		; Get console status
+ 409:     -	00FA' CF04    		DEFW	CMND12		; Return version number
+ 410:     -	00FC' 0A04    		DEFW	CMND13		; Reset disk system
+ 411:     -	00FE' 7A05    		DEFW	CMND14		; Select disk
+ 412:     -	0100' B40A    		DEFW	CMND15		; Open file
+ 413:     -	0102' A807    		DEFW	CMND16		; Close file
+ 414:     -	0104' 6E04    		DEFW	CMND17		; Search for first
+ 415:     -	0106' 9504    		DEFW	CMND18		; Search for next
+ 416:     -	0108' A504    		DEFW	CMND19		; Delete file
+ 417:     -	010A' BE0B    		DEFW	CMND20		; Read sequential
+ 418:     -	010C' FF0B    		DEFW	CMND21		; Write sequential
+ 419:     -	010E' 020B    		DEFW	CMND22		; Make file
+ 420:     -	0110' B004    		DEFW	CMND23		; Rename file
+ 421:     -	0112' E804    		DEFW	CMND24		; Return login vector
+ 422:     -	0114' B804    		DEFW	CMND25		; Return current disk
+ 423:     -	0116' 3308    		DEFW	CMND26		; Set DMA address
+ 424:     -	0118' E404    		DEFW	CMND27		; Get address allocation vector
+ 425:     -	011A' 0307    		DEFW	CMND28		; Write protect disk
+ 426:     -	011C' DC04    		DEFW	CMND29		; Get R/O vector
+ 427:     -	011E' C704    		DEFW	CMND30		; Set file attributes
+ 428:     -	0120' EC04    		DEFW	CMND31		; Get address disk parameter header (DPH)
+ 429:     -	0122' FB04    		DEFW	CMND32		; Get/set user code
+ 430:     -	0124' B40B    		DEFW	CMND33		; Read random
+ 431:     -	0126' F40B    		DEFW	CMND34		; Write random
+ 432:     -	0128' 0705    		DEFW	CMND35		; Compute file size
+ 433:     -	012A' 0F05    		DEFW	CMND36		; Set random record
+ 434:     -	012C' 1A04    		DEFW	CMND37		; Reset multiple drive
+ 435:     -	012E' BE04    		DEFW	DUMMY		; Function 38 (unused)
+ 436:     -	0130' E004    		DEFW	CMND39		; Return fixed disk login vector
+ 437:     -	0132' F40B    		DEFW	CMND40		; Write random with zero fill
+ 438:     -	0134' BE04    		DEFW	DUMMY		; Function 41 (unused)
+ 439:     -	0136' BE04    		DEFW	DUMMY		; Function 42 (unused)
+ 440:     -	0138' BE04    		DEFW	DUMMY		; Function 43 (unused)
+ 441:     -	013A' BE04    		DEFW	DUMMY		; Function 44 (unused)
+ 442:     -	013C' F704    		DEFW	CMND45		; Set Error Mode
+ 443:     -	013E' BE04    		DEFW	DUMMY		; Function 46 (unused)
+ 444:     -	0140' F004    		DEFW	CMND47		; Return DMA
+ 445:     -	0142' D804    		DEFW	CMND48		; Return DOS version
+ 446:				
+ 447:     -	0031'         	MAXCMD	EQU	($-CTABLE)/2	; Jww
+ 448:				
+ 449:     -	0144' D70D    		DEFW	CMD98		; Get Time	; 49
+ 450:     -	0146' D40D    		DEFW	CMD99		; Set Time	; 50
+ 451:     -	0148' C204    		DEFW	CMD100		; Get Flags	; 51
+ 452:     -	014A' BF04    		DEFW	CMD101		; Set Flags	; 52
+ 453:     -	014C' A40D    		DEFW	CMD102		; Get Stamp	; 53
+ 454:     -	014E' A40D    		DEFW	CMD103		; Put Stamp	; 54
+ 455:				
+ 457:				;******************************************************
+ 458:				;*	 N o n - D i s k     F u n c t i o n s	      *
+ 459:				;******************************************************
+ 460:				
+ 461:     -	0000'         		  IF  ROM
+ 486:					  ENDIF		; Rom
+ 487:				
+ 488:				;.....
+ 489:				; I/O Routines
+ 490:				
+ 491:				; ZSDOS Console Input.	Read character from Console and Echo
+ 492:				;  If Char=CR,LF,TAB,CONTH or >=Space
+ 493:				
+ 494:  358+17	0150' CD7501  	CMND01:	CALL	GETCH		; Get character (and test it  jww)
+ 495:  375+5+6	0153' D8      		RET	C		; Less than space, exit
+ 496:  380+11	0154' E5      	PUTCH:	PUSH	HL		; Save regs for other calls
+ 497:  391+17	0155' CD6402  		CALL	WRCON		; Echo character
+ 498:  408+10	0158' E1      		POP	HL
+ 499:  418+10	0159' C9      		RET
+ 500:				
+ 501:				; Direct Console Input/Output
+ 502:				;  Call with Char in C and E - Enhanced to CP/M-3 Spec
+ 503:				;  Checks ZSDOS typeahead for reliable console I/O under all conditions
+ 504:				;  as per a suggestion by Bridger Mitchell.
+ 505:				
+ 506:  428+4	015A' 1C      	CMND06:	INC	E		; Test if get char if avail
+ 507:  432+7+5	015B' 2814    		JR	Z,DCIO1		; Yes do input
+ 508:  439+4	015D' 1C      		INC	E		; Test for 0FEH
+ 509:  443+7+5	015E' 2806    		JR	Z,DCIO2		; Yes, get status
+ 510:  450+4	0160' 1C      		INC	E		; Test for 0FDH
+ 511:  454+7+5	0161' 2812    		JR	Z,GETCH		; Yes, wait for input char
+ 512:  461+10	0163' C30C00  		JP	CONOUT		; Else print char
+ 513:				
+ 514:  471+13	0166' 3A2900  	DCIO2:	LD	A,(LASTCH)	; Check for buffered char
+ 515:  484+4	0169' B7      		OR	A
+ 516:  488+7	016A' 3E01    		LD	A,0001B		; ..preset ready
+ 517:  495+10+7	016C' CC0600  		CALL	Z,CONST		; Get console status
+ 518:  505+4	016F' A7      		AND	A		; Test it
+ 519:  509+10	0170' C9      		RET			; And return it to caller
+ 520:				
+ 521:  519+17	0171' CD6601  	DCIO1:	CALL	DCIO2		; Get console status
+ 522:  536+5+6	0174' C8      		RET	Z		; Exit if no character present
+ 523:								; Else fall thru
+ 524:				; Get Character from Console
+ 525:				
+ 526:  541+10	0175' 212900  	GETCH:	LD	HL,LASTCH	; Check ZSDOS type ahead for char
+ 527:  551+7	0178' 7E      		LD	A,(HL)
+ 528:  558+10	0179' 3600    		LD	(HL),0		; Reset last character
+ 529:  568+4	017B' B7      		OR	A		; ..set flags
+ 530:  572+10+7	017C' CC0900  		CALL	Z,CONIN		; Get character (and test it  jww)
+ 531:				
+ 532:				; Test Character
+ 533:				;  Exit Carry=0: CR,LF,TAB,CONTH or >= Space
+ 534:				;	Carry=1: All other Characters
+ 535:				
+ 536:  582+7	017F' FE0D    		CP	CR		; Is it a carriage return?
+ 537:  589+5+6	0181' C8      		RET	Z		; ..return if so
+ 538:  594+7	0182' FE0A    		CP	LF		; Is it a line feed?
+ 539:  601+5+6	0184' C8      		RET	Z		; ..return if so
+ 540:  606+7	0185' FE09    		CP	TAB		; Is it a tab?
+ 541:  613+5+6	0187' C8      		RET	Z		; ..return if so
+ 542:  618+7	0188' FE08    		CP	CONTH		; Is it a backspace?
+ 543:  625+5+6	018A' C8      		RET	Z		; ..return if so
+ 544:  630+7	018B' FE20    		CP	' '		; Test >=space
+ 545:  637+10	018D' C9      		RET			; ..and return to caller
+ 546:				
+ 547:				; Set I/O Status Byte
+ 548:				
+ 549:  647+13	018E' 320300  	CMND08:	LD	(RAMLOW+0003H),A ; And save it in RAM and fall through
+ 550:				
+ 551:				; Get I/O Status Byte
+ 552:				
+ 553:  660+13	0191' 3A0300  	CMND07:	LD	A,(RAMLOW+0003H) ; Get I/O byte from RAM
+ 554:  673+10	0194' C9      		RET
+ 555:				
+ 556:				; Buffered Console Read
+ 557:				
+ 558:  683+13	0195' 3A2600  	CMND10:	LD	A,(TABCNT)
+ 559:  696+13	0198' 322700  		LD	(TABCX1),A	; Save start tab position
+ 560:  709+6	019B' 13      		INC	DE
+ 561:  715+4	019C' AF      		XOR	A
+ 562:  719+7	019D' 12      		LD	(DE),A		; Set char count to zero
+ 563:  726+6	019E' 13      		INC	DE		; Point to actual buffer start
+ 564:				
+ 565:  732+11	019F' D5      	RDBUF1:	PUSH	DE		; Save buffer pointer
+ 566:  743+17	01A0' CD7501  		CALL	GETCH		; Get next byte from user
+ 567:  760+10	01A3' D1      		POP	DE
+ 568:  770+10	01A4' 219F01  		LD	HL,RDBUF1
+ 569:  780+11	01A7' E5      		PUSH	HL		; Return address to stack
+ 570:  791+16	01A8' 2A5D00  		LD	HL,(ARWORD)
+ 571:  807+7	01AB' 4E      		LD	C,(HL)		; Put buffer length in C
+ 572:  814+6	01AC' 23      		INC	HL		; And point to current length
+ 573:				
+ 574:  820+7	01AD' FE0D    		CP	CR
+ 575:     -	FFFF'         		  IF  CTLREN
+ 576:  827+7+5	01AF' 2802    		JR	Z,JZRBX		; Exit if CR
+ 577:					  ELSE
+ 579:					  ENDIF		;Ctlren
+ 580:				
+ 581:  834+7	01B1' FE0A    		CP	LF
+ 582:     -	FFFF'         		  IF  CTLREN
+ 583:  841+10	01B3' CA4E02  	JZRBX:	JP	Z,RDBUFX	; ..or LF
+ 584:					  ELSE
+ 586:					  ENDIF		;Ctlren
+ 587:							;..Not CR or LF, so fall thru to next test
+ 588:				
+ 589:				; Delete Character from Buffer
+ 590:				;  RUB, Backspace, CR, LF are NEVER in the Buffer
+ 591:				
+ 592:  851+7	01B6' FE7F    	RDBUF2:	CP	RUBOUT		; Delete char?
+ 593:  858+7+5	01B8' 2804    		JR	Z,DOBACK	; ..jump if so
+ 594:  865+7	01BA' FE08    		CP	CONTH		; Control-H also deletes
+ 595:  872+7+5	01BC' 2036    		JR	NZ,RDBUF3	; Skip to next test if no delete
+ 596:				
+ 597:  879+7	01BE' 7E      	DOBACK:	LD	A,(HL)
+ 598:  886+4	01BF' A7      		AND	A		; Test if attempting del from empty line
+ 599:  890+5+6	01C0' C8      		RET	Z		; ..Exit if so
+ 600:  895+6	01C1' 1B      	DOBAK0:	DEC	DE		; Back up to last character
+ 601:  901+11	01C2' 35      		DEC	(HL)		; Erase from buffer
+ 602:  912+11	01C3' D5      		PUSH	DE		; Save buffer pointer
+ 603:  923+7	01C4' 46      		LD	B,(HL)		; Get new char count
+ 604:  930+6	01C5' 23      		INC	HL		; Point to first char
+ 605:  936+4	01C6' EB      		EX	DE,HL
+ 606:  940+10	01C7' 212600  		LD	HL,TABCNT
+ 607:  950+7	01CA' 4E      		LD	C,(HL)		; Save current Tab count
+ 608:  957+6	01CB' 23      		INC	HL
+ 609:  963+7	01CC' 7E      		LD	A,(HL)		; Get starting Tab position
+ 610:  970+6	01CD' 2B      		DEC	HL
+ 611:  976+7	01CE' 77      		LD	(HL),A		; Init the counter
+ 612:  983+4	01CF' 04      		INC	B		; Insure non-zero
+ 613:  987+12	01D0' 1805    		JR	DOBAK2		; Jump to done test
+ 614:				
+ 615:  999+7	01D2' 1A      	DOBAK1:	LD	A,(DE)		; Get char from buffer
+ 616: 1006+17	01D3' CD9302  		CALL	WRCON2		; Counts chars
+ 617: 1023+6	01D6' 13      		INC	DE
+ 618: 1029+8+5	01D7' 10F9    	DOBAK2:	DJNZ	DOBAK1		; Continue count until done
+ 619: 1037+4	01D9' 79      		LD	A,C		; Get prior tab count
+ 620: 1041+7	01DA' 96      		SUB	(HL)		; Get diff between new and old
+ 621: 1048+4	01DB' 47      		LD	B,A		; Set up as count
+ 622: 1052+7	01DC' 71      		LD	(HL),C		; Restore prior count
+ 623: 1059+10	01DD' D1      		POP	DE		; Restore buffer pointer
+ 624:				
+ 625:				; Delete B Characters from Console
+ 626:				
+ 627: 1069+11	01DE' D5      		PUSH	DE		; Save pointer
+ 628: 1080+7	01DF' 0E08    	DOBAK5:	LD	C,CONTH
+ 629: 1087+11	01E1' C5      		PUSH	BC		; Save counter from destruction
+ 630: 1098+17	01E2' CD0C00  		CALL	CONOUT
+ 631: 1115+7	01E5' 0E20    		LD	C,' '
+ 632: 1122+17	01E7' CD0C00  		CALL	CONOUT		; Output backspace,space to CON: only
+ 633: 1139+7	01EA' 3E08    		LD	A,CONTH
+ 634: 1146+17	01EC' CD6402  		CALL	WRCON		; Now backspace CON:, counter, and printer
+ 635: 1163+10	01EF' C1      		POP	BC		; Restore counter
+ 636: 1173+8+5	01F0' 10ED    		DJNZ	DOBAK5		; Loop until all done
+ 637: 1181+10	01F2' D1      		POP	DE		; Restore pointer
+ 638: 1191+10	01F3' C9      		RET
+ 639:				
+ 640:				; Erase Buffer
+ 641:				
+ 642: 1201+7	01F4' FE15    	RDBUF3:	CP	CONTU		; Test erase line
+ 643: 1208+7+5	01F6' 2804    		JR	Z,ERALIN	; Do it if so
+ 644: 1215+7	01F8' FE18    		CP	CONTX
+ 645: 1222+7+5	01FA' 200A    		JR	NZ,RDBUF4	; Skip to next test if no erase line
+ 646:				
+ 647: 1229+4	01FC' AF      	ERALIN:	XOR	A
+ 648: 1233+7	01FD' B6      		OR	(HL)		; Line empty?
+ 649: 1240+5+6	01FE' C8      		RET	Z		; Exit if so
+ 650: 1245+11	01FF' E5      		PUSH	HL
+ 651: 1256+17	0200' CDC101  		CALL	DOBAK0		; Else delete another (skip empty check)
+ 652: 1273+10	0203' E1      		POP	HL
+ 653: 1283+12	0204' 18F6    		JR	ERALIN
+ 654:				
+ 655:     -	0206'         	RDBUF4:			; If CTL-R=True, do following code, else bypass
+ 656:     -	FFFF'         		  IF  CTLREN
+ 657: 1295+7	0206' FE12    		CP	CONTR		; If ^R, type clean buffer version on console
+ 658: 1302+7+5	0208' 2024    		JR	NZ,RDBUF5
+ 659: 1309+11	020A' E5      		PUSH	HL		; Save pointer to buffer length
+ 660: 1320+17	020B' CDD202  		CALL	CROUT		; Do CR/LF
+ 661: 1337+10	020E' 212600  		LD	HL,TABCNT
+ 662: 1347+10	0211' 3600    		LD	(HL),0		; Init Tab count
+ 663: 1357+6	0213' 23      		INC	HL
+ 664: 1363+7	0214' 46      		LD	B,(HL)		; And get Tab offset count
+ 665: 1370+7	0215' 3E20    		LD	A,' '
+ 666: 1377+4	0217' 04      		inc	b		; [1.1] insure nz value
+ 667: 1381+12	0218' 1803    		jr	rety1a		; [1.1] so case of lh side of screen ok
+ 668: 1393+17	021A' CD6402  	RETYP1:	CALL	WRCON		; Space off start of line
+ 669: 1410+8+5	021D' 10FB    	rety1a:	DJNZ	RETYP1
+ 670: 1418+10	021F' E1      		POP	HL		; Point to buffer length
+ 671: 1428+7	0220' 46      		LD	B,(HL)		; Get how many chars to print
+ 672: 1435+6	0221' 23      		INC	HL		; Restore buffer pointer
+ 673: 1441+4	0222' EB      		EX	DE,HL		; Put buffer pointer in DE
+ 674: 1445+4	0223' 04      		INC	B		; Comp for first DJNZ
+ 675: 1449+12	0224' 1805    		JR	RETYP3		; Skip to done test
+ 676: 1461+7	0226' 1A      	RETYP2:	LD	A,(DE)		; Get char from buffer
+ 677: 1468+17	0227' CD5302  		CALL	WRCTL		; Output it
+ 678: 1485+6	022A' 13      		INC	DE		; Bump pointer
+ 679: 1491+8+5	022B' 10F9    	RETYP3:	DJNZ	RETYP2		; Loop until done
+ 680: 1499+10	022D' C9      		RET
+ 681:					  ENDIF		; Ctlren
+ 682:				
+ 683:				; Toggle Line Printer Echo
+ 684:				
+ 685: 1509+7	022E' FE10    	RDBUF5:	CP	CONTP		; Toggle printer?
+ 686: 1516+7+5	0230' 2007    		JR	NZ,RDBUF6	; Next test if not
+ 687: 1523+10	0232' 212800  		LD	HL,FCONTP
+ 688: 1533+7	0235' 7E      		LD	A,(HL)		; Get printer echo flag
+ 689: 1540+4	0236' 2F      		CPL			; Toggle it
+ 690: 1544+7	0237' 77      		LD	(HL),A		; Put back
+ 691: 1551+10	0238' C9      		RET
+ 692:				
+ 693:				; Check if Control-C is First char in BUFF and Exit if so
+ 694:				
+ 695: 1561+7	0239' 12      	RDBUF6:	LD	(DE),A		; Put character in buffer
+ 696: 1568+11	023A' E5      		PUSH	HL
+ 697: 1579+17	023B' CD5302  		CALL	WRCTL		; Echo the character
+ 698: 1596+10	023E' E1      		POP	HL
+ 699: 1606+11	023F' 34      		INC	(HL)		; Increment the character count
+ 700:				
+ 701: 1617+7	0240' 7E      		LD	A,(HL)		; Get current length
+ 702: 1624+4	0241' B9      		CP	C		; Test against buffer size
+ 703: 1628+7+5	0242' 280A    		JR	Z,RDBUFX
+ 704: 1635+4	0244' 3D      		DEC	A		; Set Z flag for first character
+ 705: 1639+7	0245' 1A      		LD	A,(DE)		; Get the character back
+ 706: 1646+6	0246' 13      		INC	DE		; ..and bump the pointer
+ 707: 1652+5+6	0247' C0      		RET	NZ		; Return if not the first character
+ 708: 1657+7	0248' FE03    		CP	CONTC		; Possible user abort?
+ 709: 1664+5+6	024A' C0      		RET	NZ		; ..return if not
+ 710: 1669+10	024B' C3CA03  		JP	ERROR5		; Else jump to error reset exit
+ 711:				
+ 712:				; Done with Read Console Buffer Function
+ 713:				
+ 714: 1679+10	024E' E1      	RDBUFX:	POP	HL		; Clear RDBUF1 return address
+ 715: 1689+7	024F' 3E0D    		LD	A,CR
+ 716: 1696+12	0251' 1811    		JR	WRCON		; ..and echo a CR
+ 717:				
+ 718:				; Print Control Character as '^X'
+ 719:				
+ 720: 1708+7	0253' FE20    	WRCTL:	CP	' '		; Test if control char
+ 721: 1715+7+5	0255' 300D    		JR	NC,WRCON	; Not, send it out
+ 722: 1722+7	0257' FE09    		CP	TAB		; Test if Tab
+ 723: 1729+7+5	0259' 280D    		JR	Z,WRCON0	; It is, so expand with spaces
+ 724: 1736+11	025B' F5      		PUSH	AF		; Save char
+ 725: 1747+7	025C' 3E5E    		LD	A,'^'		; Output a karet
+ 726: 1754+17	025E' CD7702  		CALL	WRCON1		; No need for Tab test here
+ 727: 1771+10	0261' F1      		POP	AF
+ 728: 1781+7	0262' C640    		ADD	A,40H		; Convert to printable
+ 729:								; And fall thru to WRCON
+ 730:				
+ 731:				; Output char with List Echo, Tab Expansion (Function 2)
+ 732:				
+ 733: 1788+7	0264' FE09    	WRCON:	CP	TAB		; Is it a Tab?
+ 734: 1795+7+5	0266' 200F    		JR	NZ,WRCON1	; ..jump if not
+ 735: 1802+7	0268' 3E20    	WRCON0:	LD	A,' '		; Expand Tab with spaces
+ 736: 1809+17	026A' CD7702  		CALL	WRCON1		; Write space
+ 737: 1826+13	026D' 3A2600  		LD	A,(TABCNT)	; Get Tab count
+ 738: 1839+7	0270' E607    		AND	7		; Test if done
+ 739: 1846+7+5	0272' 20F4    		JR	NZ,WRCON0	; No then repeat
+ 740: 1853+7	0274' 3E09    		LD	A,TAB		; Return Tab
+ 741: 1860+10	0276' C9      		RET			; Return to caller
+ 742:				
+ 743: 1870+11	0277' C5      	WRCON1:	PUSH	BC
+ 744: 1881+11	0278' D5      		PUSH	DE		; Save pointers
+ 745: 1892+4	0279' 4F      		LD	C,A
+ 746: 1896+11	027A' C5      		PUSH	BC		; Save character
+ 747:				
+ 748:     -	027C'         	BGPTCH0	EQU	$+1		;<-- BGii patches this address
+ 749:				
+ 750: 1907+17	027B' CDB702  		CALL	CMND11		; Test status and CONTS/CONTC
+ 751: 1924+10	027E' C1      		POP	BC		; Get character back
+ 752: 1934+11	027F' C5      		PUSH	BC		; Save it again
+ 753: 1945+17	0280' CD0C00  		CALL	CONOUT		; Output it
+ 754: 1962+10	0283' C1      		POP	BC		; Get character back
+ 755: 1972+11	0284' C5      		PUSH	BC		; Save it again
+ 756: 1983+13	0285' 3A2800  		LD	A,(FCONTP)	; Get printer echo flag
+ 757: 1996+4	0288' B7      		OR	A		; Test it
+ 758: 2000+10+7	0289' C40F00  		CALL	NZ,LISTO		; Non zero => output char to printer
+ 759: 2010+10	028C' C1      		POP	BC		; Restore character
+ 760: 2020+4	028D' 79      		LD	A,C		; Fall through to count routine
+ 761: 2024+10	028E' D1      		POP	DE
+ 762: 2034+10	028F' C1      		POP	BC		; Restore pointers
+ 763:				
+ 764:				; Count Characters in line as shown by f10
+ 765:				
+ 766: 2044+10	0290' 212600  		LD	HL,TABCNT	; Get pointer to Tab counter
+ 767: 2054+11	0293' 34      	WRCON2:	INC	(HL)		; Increment Tab counter
+ 768: 2065+7	0294' FE7F    		CP	RUBOUT		; Test if character = Rubout
+ 769: 2072+7+5	0296' 2815    		JR	Z,WRCON3	; Treat like Backspace
+ 770: 2079+7	0298' FE20    		CP	' '
+ 771: 2086+5+6	029A' D0      		RET	NC		; Ok if not Control
+ 772: 2091+7	029B' FE09    		CP	TAB		; Only DOBACK ever gets Tabs through here
+ 773: 2098+7+5	029D' 2811    		JR	Z,WRCON4	; Handle differently if Tab
+ 774: 2105+7	029F' FE08    		CP	CONTH
+ 775: 2112+7+5	02A1' 280A    		JR	Z,WRCON3	; Or Backspace
+ 776: 2119+11	02A3' 34      		INC	(HL)		; Must have been echoed as two chars
+ 777: 2130+7	02A4' FE0A    		CP	LF
+ 778: 2137+7+5	02A6' 2805    		JR	Z,WRCON3	; ..unless it's LF
+ 779: 2144+7	02A8' FE0D    		CP	CR		; ..or CR
+ 780: 2151+5+6	02AA' C0      		RET	NZ
+ 781: 2156+10	02AB' 3602    		LD	(HL),2		; Reset Tab count
+ 782: 2166+11	02AD' 35      	WRCON3:	DEC	(HL)		; Decrement Tab counter
+ 783: 2177+11	02AE' 35      		DEC	(HL)
+ 784: 2188+10	02AF' C9      		RET			; And exit
+ 785:				
+ 786: 2198+7	02B0' 3E07    	WRCON4:	LD	A,7		; Bumped by one already
+ 787: 2205+7	02B2' 86      		ADD	A,(HL)		; Tabs are every 8 spaces
+ 788: 2212+7	02B3' E6F8    		AND	0F8H		; ...mod 8
+ 789: 2219+7	02B5' 77      		LD	(HL),A		; Save updated Tab count
+ 790: 2226+10	02B6' C9      		RET			; ..and continue
+ 791:				
+ 792:				; Get Console Status - BGII uses this routine
+ 793:				
+ 794:     -	02B7'         	BGCONST:
+ 795: 2236+17	02B7' CD6601  	CMND11:	CALL	DCIO2		; Get character present status
+ 796: 2253+5+6	02BA' C8      		RET	Z		; ..exit if none
+ 797: 2258+17	02BB' CD7501  		CALL	GETCH		; Get next console char
+ 798: 2275+7	02BE' FE13    		CP	CONTS		; Is it stop char?
+ 799: 2282+7+5	02C0' 200A    		JR	NZ,GCONS2	; ..jump if Not
+ 800: 2289+17	02C2' CD0900  		CALL	CONIN		; Get next character
+ 801: 2306+7	02C5' FE03    		CP	CONTC		; Does the user want to exit (^C)?
+ 802: 2313+7+5	02C7' 20EE    		JR	NZ,CMND11	; ..check for another character if not
+ 803: 2320+10	02C9' C3CA03  		JP	ERROR5		; Else jump to warm boot & clear ERMODE
+ 804:				
+ 805: 2330+13	02CC' 322900  	GCONS2:	LD	(LASTCH),A	; Save character
+ 806: 2343+7	02CF' 3E01    		LD	A,1		; Character present code
+ 807: 2350+10	02D1' C9      		RET			; Return to caller
+ 808:				
+ 809:				; Echo CR,LF
+ 810:				
+ 811: 2360+10	02D2' 114903  	CROUT:	LD	DE,MCRLF	; Fall through to output routine
+ 812:				
+ 813:				; Output Message
+ 814:				
+ 815: 2370+7	02D5' 1A      	CMND09:	LD	A,(DE)		; Get byte from buffer
+ 816: 2377+7	02D6' FE24    		CP	'$'		; Test last byte
+ 817: 2384+5+6	02D8' C8      		RET	Z		; Yes, then return to caller
+ 818: 2389+6	02D9' 13      		INC	DE		; Point to next byte
+ 819: 2395+17	02DA' CD6402  		CALL	WRCON		; Output character
+ 820: 2412+12	02DD' 18F6    		JR	CMND09		; And test again
+ 821:				
+ 823:				;**********************************************
+ 824:				;*	 E r r o r	R o u t i n e s       *
+ 825:				;**********************************************
+ 826:				
+ 827: 2424+10	02DF' 016400  	PRDEC:	LD	BC,100
+ 828: 2434+17	02E2' CDED02  		CALL	NUM
+ 829: 2451+7	02E5' 0E0A    		LD	C,10
+ 830: 2458+17	02E7' CDED02  		CALL	NUM
+ 831: 2475+10	02EA' 010101  		LD	BC,101H
+ 832:				
+ 833:				; Display Number
+ 834:				
+ 835: 2485+7	02ED' 16FF    	NUM:	LD	D,-1		; Load number -1
+ 836: 2492+4	02EF' 14      	NUM1:	INC	D		; Increment number
+ 837: 2496+4	02F0' 91      		SUB	C		; Divide by C
+ 838: 2500+7+5	02F1' 30FC    		JR	NC,NUM1		; Not finished then loop
+ 839: 2507+4	02F3' 81      		ADD	A,C		; Restore last value
+ 840: 2511+11	02F4' F5      		PUSH	AF		; Save it
+ 841: 2522+4	02F5' 7A      		LD	A,D		; Test if "0"
+ 842: 2526+4	02F6' B0      		OR	B		; And if leading zero
+ 843: 2530+7+5	02F7' 2807    		JR	Z,NUM2		; Yes, then exit
+ 844: 2537+4	02F9' 47      		LD	B,A		; Set no leading zero
+ 845: 2541+4	02FA' 7A      		LD	A,D		; Get number
+ 846: 2545+7	02FB' C630    		ADD	A,'0'		; Make ASCII
+ 847: 2552+17	02FD' CD5401  		CALL	PUTCH		; Echo number preserving BC
+ 848: 2569+10	0300' F1      	NUM2:	POP	AF		; Restore number
+ 849: 2579+10	0301' C9      		RET			; And exit
+ 850:				
+ 851:				; Error Messages
+ 852:				
+ 853:     -	0302' 4368616E	MDSKCH:	DEFB	'Changed$'
+	              67656424
+ 854:				
+ 855:     -	030A' 42616420	MBADSC:	DEFB	'Bad Sector$'
+	              53656374
+	              6F7224
+ 856:				
+ 857:     -	0315' 4E6F2044	MSEL:	DEFB	'No Drive$'
+	              72697665
+	              24
+ 858:				
+ 859:     -	031E' 46696C65	MFILRO:	DEFB	'File '
+	              20
+ 860:				
+ 861:     -	0323' 572F5024	MRO:	DEFB	'W/P$'
+ 862:     -	FFFF'         		 IF ZS
+ 863:     -	0327' 5A53444F	MBERR:	DEFB	'ZSDOS'
+	              53
+ 864:					 ELSE
+ 866:					 ENDIF
+ 867:     -	032C' 20657272		DEFB	' error on $'
+	              6F72206F
+	              6E2024
+ 868:					 
+ 869:     -	0337' 0D0A4361	MBFUNC:	DEFB	CR,LF,'Call'
+	              6C6C
+ 870:     -	033D' 3A2024  	MDRIVE:	DEFB	': $'
+ 871:				
+ 872:     -	0340' 20204669	MFILE:	DEFB	'  File: $'
+	              6C653A20
+	              24
+ 873:				
+ 874:     -	0349' 0D0A24  	MCRLF:	DEFB	CR,LF,'$'
+ 875:				
+ 876:				; New ZSDOS error handler - enter w/ error code in B and message pointer
+ 877:				; in DE
+ 878:				
+ 879: 2589+13	034C' 3A5C00  	ERROR:	LD	A,(ERMODE)
+ 880: 2602+4	034F' 4F      		LD	C,A		; Save error mode
+ 881: 2606+4	0350' 0F      		RRCA			; Test supress print
+ 882: 2610+7+5	0351' 385C    		JR	C,ERROR3	; Suppressed, so skip dsp
+ 883:				
+ 884:				; Print ZSDOS Error on X: Explanation
+ 885:				
+ 886: 2617+11	0353' C5      		PUSH	BC
+ 887: 2628+11	0354' D5      		PUSH	DE		; Save params
+ 888: 2639+17	0355' CDD202  		CALL	CROUT		; Output CR/LF
+ 889: 2656+10	0358' 112703  		LD	DE,MBERR
+ 890: 2666+17	035B' CDD502  		CALL	CMND09		; Output ZSDOS error on
+ 891: 2683+13	035E' 3A2B00  		LD	A,(DEFDRV)	; Get current default drive
+ 892: 2696+7	0361' C641    		ADD	A,'A'		; Convert to ascii
+ 893: 2703+17	0363' CD6402  		CALL	WRCON		; Output it to console
+ 894: 2720+10	0366' 113D03  		LD	DE,MDRIVE	; Point to drive tag
+ 895: 2730+17	0369' CDD502  		CALL	CMND09		; Put it also
+ 896: 2747+10	036C' D1      		POP	DE		; Restore error message pointer
+ 897: 2757+17	036D' CDD502  		CALL	CMND09		; Send message
+ 898:				
+ 899:				; Now print CALL: XXX [FILE: XXXXXXXX.XXX]
+ 900:				
+ 901: 2774+10	0370' 113703  		LD	DE,MBFUNC
+ 902: 2784+17	0373' CDD502  		CALL	CMND09		; Display 'call: '
+ 903: 2801+13	0376' 3A4B00  		LD	A,(FUNCT)	; Get function number
+ 904: 2814+17	0379' CDDF02  		CALL	PRDEC		; Output it
+ 905: 2831+13	037C' 3A4E00  		LD	A,(FLDRV)
+ 906: 2844+4	037F' A7      		AND	A		; Was FCB used?
+ 907: 2848+7+5	0380' 2829    		JR	Z,ERROR2	; ..Skip file name display if not
+ 908: 2855+10	0382' C1      		POP	BC
+ 909: 2865+11	0383' C5      		PUSH	BC		; Get error type
+ 910: 2876+15	0384' DDE5    		PUSH	IX		; Save FCB pointer
+ 911: 2891+13	0386' 3A4B00  		LD	A,(FUNCT)	; ARE WE ERASING A FILE?
+ 912: 2904+7	0389' FE13    		CP	19		; IF SO, GET NAME FROM DIRBUF AS
+ 913: 2911+7+5	038B' 2004    		JR	NZ,ERROR0	; AMBIG NAME MAY HAVE BEEN USED
+ 914: 2918+17	038D' CDF106  		CALL	CALDIR		; Get DIR buffer pointer
+ 915: 2935+19	0390' E3      		EX	(SP),HL		; To show what we really gagged on
+ 916: 2954+10	0391' 114003  	ERROR0:	LD	DE,MFILE
+ 917: 2964+17	0394' CDD502  		CALL	CMND09		; Output 'file: '
+ 918: 2981+10	0397' E1      		POP	HL		; Point to FCB
+ 919: 2991+7	0398' 060B    		LD	B,11		; Output this many chars
+ 920: 2998+6	039A' 23      	ERROR1:	INC	HL
+ 921: 3004+7	039B' 3E03    		LD	A,3
+ 922: 3011+4	039D' B8      		CP	B		; Time to send '.'?
+ 923: 3015+7	039E' 3E2E    		LD	A,'.'		; Get ready for it
+ 924: 3022+10+7	03A0' CC5401  		CALL	Z,PUTCH		; Send it if time
+ 925: 3032+7	03A3' 7E      		LD	A,(HL)		; Get char
+ 926: 3039+7	03A4' E67F    		AND	7FH		; Mask attributes
+ 927: 3046+17	03A6' CD5401  		CALL	PUTCH		; Output it
+ 928: 3063+8+5	03A9' 10EF    		DJNZ	ERROR1
+ 929: 3071+17	03AB' CDD202  	ERROR2:	CALL	CROUT		; Send CR,LF
+ 930: 3088+10	03AE' C1      		POP	BC		; Get error mode back
+ 931: 3098+7	03AF' 3E04    	ERROR3:	LD	A,4
+ 932: 3105+4	03B1' 90      		SUB	B		; Test if select error
+ 933: 3109+7+5	03B2' 200D    		JR	NZ,ERROR4	; Skip if not
+ 934: 3116+10	03B4' 212C00  		ld	hl,drive	; point to old default
+ 935: 3126+7	03B7' 7E      		ld	a,(hl)		; get it
+ 936: 3133+6	03B8' 2B      		dec	hl		; point to bad drive
+ 937: 3139+7	03B9' BE      		cp	(hl)		; same?
+ 938: 3146+7+5	03BA' 2805    		jr	z,error4	; if so, skip relog
+ 939: 3153+11	03BC' C5      		PUSH	BC
+ 940: 3164+17	03BD' CD8105  		CALL	SELDK		; Get BIOS back in step
+ 941: 3181+10	03C0' C1      		POP	BC
+ 942: 3191+8	03C1' CB49    	ERROR4:	BIT	1,C		; Test if return error mode
+ 943: 3199+7+5	03C3' 2018    		JR	NZ,ERROR7	; Go if return error
+ 944: 3206+7	03C5' 3E01    		LD	A,1
+ 945: 3213+4	03C7' 90      		SUB	B		; Test if fatal error
+ 946: 3217+7+5	03C8' 3005    		JR	NC,ERROR6	; If not a fatal error
+ 947: 3224+4	03CA' AF      	ERROR5:	XOR	A
+ 948: 3228+13	03CB' 325C00  		LD	(ERMODE),A	; Set DOS error mode to default CP/M
+ 949: 3241+11	03CE' C7      		RST	0		; ..and leave
+ 950:				
+ 951: 3252+17	03CF' CD7101  	ERROR6:	CALL	DCIO1		; Get console char if present
+ 952: 3269+4	03D2' A7      		AND	A		; Test if any
+ 953: 3273+7+5	03D3' 20FA    		JR	NZ,ERROR6	; Keep getting them until typeahead eaten
+ 954: 3280+17	03D5' CD7501  		CALL	GETCH		; Now get operator's response
+ 955: 3297+7	03D8' FE03    		CP	CONTC		; Test if abort
+ 956: 3304+5+6	03DA' C0      		RET	NZ		; If operator said ignore error
+ 957: 3309+12	03DB' 18ED    		JR	ERROR5		; Else boot
+ 958:				
+ 959: 3321+4	03DD' 78      	ERROR7:	LD	A,B		; Get error
+ 960: 3325+4	03DE' 67      		LD	H,A		; Save code in H reg for return
+ 961: 3329+4	03DF' A7      		AND	A		; Test if disk changed warning
+ 962: 3333+5+6	03E0' C8      		RET	Z		; Continue relog if so
+ 963: 3338+7	03E1' 2EFF    		LD	L,0FFH		; Set extended error code
+ 964: 3345+16	03E3' 224C00  		LD	(PEXIT),HL	; Save as return code
+ 965:							; ..and fall thru to DOS exit
+ 967:				;******************************************************
+ 968:				;*	 D O S	   E x i t    R o u t i n e	      *
+ 969:				;******************************************************
+ 970:				
+ 971: 3361+13	03E6' 3A4E00  	DOSEXIT: LD	A,(FLDRV)	; Test drive select used flag
+ 972: 3374+4	03E9' B7      		OR	A
+ 973: 3378+7+5	03EA' 280C    		JR	Z,DOSEXT0	; No then exit
+ 974: 3385+13	03EC' 3A2D00  		LD	A,(FCB0)	; Get FCB byte 0
+ 975: 3398+19	03EF' DD7700  		LD	(IX+0),A	; Save it
+ 976: 3417+13	03F2' 3A2C00  		LD	A,(DRIVE)	; Get old drive number
+ 977: 3430+17	03F5' CD8105  		CALL	SELDK		; Select disk
+ 978:     -	0000'         		  IF  PICKEY
+ 980:					  ENDIF
+ 981:				
+ 982:				; If the error handler was invoked, the stack is in an undefined
+ 983:				;  condition at this point.  We therefore have to restore the user's
+ 984:				;  IX register independent of stack position.  Thanks to Joe Wright's
+ 985:				;  eagle eye for catching this one!
+ 986:				
+ 987: 3447+20	03F8' ED7B6100	DOSEXT0: LD	SP,(SPSAVE)	; Restore user stack
+ 988: 3467+20	03FC' DD2A9900		LD	IX,(IXSAVE)	; Restore IX (stack is don't care)
+ 989: 3487+16	0400' 2A4C00  		LD	HL,(PEXIT)	; Get exit code
+ 990:     -	FFFF'         		  IF  NOT PICKEY
+ 991: 3503+20	0403' ED5B5F00		LD	DE,(DEVAL)	; And DE reg for DateStamper
+ 992:					  ENDIF
+ 993: 3523+4	0407' 7D      		LD	A,L		; Copy function code
+ 994: 3527+4	0408' 44      		LD	B,H
+ 995: 3531+10	0409' C9      		RET			; And return to caller
+ 997:				;******************************************************
+ 998:				;*	 D i s k     F u n c t i o n s		      *
+ 999:				;******************************************************
+1000:				
+1001:				; Reset Disk System
+1002:				
+1003: 3541+10	040A' 218000  	CMND13:	LD	HL,RAMLOW+0080H	; Set up DMA address
+1004: 3551+16	040D' 222E00  		LD	(DMA),HL	; And save it
+1005: 3567+17	0410' CD3708  		CALL	STDMA		; Do BIOS call
+1006: 3584+4	0413' AF      		XOR	A		; Set default drive = 'A'
+1007: 3588+13	0414' 322B00  		LD	(DEFDRV),A	; Save it
+1008: 3601+10	0417' 11FFFF  		LD	DE,0FFFFH	; Reset all drives
+1009:				
+1010:				; Reset Multiple Login Drive - DE = Reset mask
+1011:				; Fixed Disk Login vector is also altered by this call
+1012:				
+1013: 3611+17	041A' CD5D04  	CMND37:	CALL	UNLOG		; Clear selected drives in DE from login
+1014: 3628+13	041D' 3A1500  		LD	A,(FLAGS)
+1015: 3641+8	0420' CB57    		BIT	2,A		; Test hard R/O enabled
+1016: 3649+7+5	0422' 2006    		JR	NZ,UNWPT1	; If enabled
+1017: 3656+10	0424' 21FC0D  		LD	HL,DSKWP	; Get drive W/P vector
+1018: 3666+17	0427' CD6604  		CALL	ANDDEM		; Reset W/P stat only of requested drvs
+1019: 3683+13	042A' 3A4B00  	UNWPT1:	LD	A,(FUNCT)
+1020: 3696+7	042D' FE0D    		CP	13		; Skip hard disk login change?
+1021: 3703+10	042F' 21FE0D  		LD	HL,HDLOG
+1022: 3713+10+7	0432' C46604  		CALL	NZ,ANDDEM	; Clear HD Login Vector if Fcn 37
+1023:     -	0435'         	RELOG1:
+1024:     -	FFFF'         		  IF  ZS
+1025: 3723+16	0435' 2AFE0D  		LD	HL,(HDLOG)
+1026: 3739+17	0438' CD5806  		CALL	HLORDE		; Don't clear fixed disks from T/D
+1027: 3756+4	043B' EB      		EX	DE,HL		; Place modified logout in DE
+1028: 3760+10	043C' 21F80D  		LD	HL,TDFVCT
+1029: 3770+17	043F' CD6604  		CALL	ANDDEM		; Clear T/D vector as needed
+1030:					  ENDIF
+1031:				
+1032: 3787+13	0442' 3A2B00  		LD	A,(DEFDRV)	; Get default drive
+1033: 3800+11	0445' F5      		PUSH	AF
+1034:     -	0446'         	RELOG2:
+1035:     -	0000'         		  IF  RESDSK		; (bh)
+1037:					  ELSE
+1038:     -	0446' 000000  		DEFB	0,0,0		; Make 3 NOP's to keep constant code (hfb)
+1039:					  ENDIF			; (bh)
+1040: 3811+10	0449' F1      		POP	AF
+1041: 3821+17	044A' CD8105  		CALL	SELDK		; Select default drive
+1042:				
+1043:				; ZSDOS watches for any $*.* in any user on any drive during re-log,
+1044:				; make, and delete.  In this manner, SUBFLG will always be valid -
+1045:				; even under fast relog and NZCOM!  Thanks to Joe Wright for suggesting
+1046:				; the need for this, and suggesting ways to do it.
+1047:				
+1048: 3838+13	044D' 3A5700  	SUBEXT:	LD	A,(SUBFLG)	; Get submit flag
+1049: 3851+12	0450' 1869    		JR	SAVEA		; Exit
+1050:				
+1051:				; Check for possible existance of submit file by checking first
+1052:				; byte of dir entry or FCB for '$'.  Pointer to dir or FCB passed
+1053:				; to routine in HL.
+1054:				
+1055: 3863+6	0452' 23      	CKSUB:	INC	HL		; Point to file name
+1056: 3869+7	0453' 7E      		LD	A,(HL)		; Get first char filename
+1057: 3876+6	0454' 2B      		DEC	HL
+1058: 3882+7	0455' D624    		SUB	'$'		; Test if '$'
+1059: 3889+5+6	0457' C0      		RET	NZ		; Not then exit
+1060: 3894+4	0458' 3D      		DEC	A		; Load a with 0FFH
+1061: 3898+13	0459' 325700  		LD	(SUBFLG),A	; Save it in subflg
+1062: 3911+10	045C' C9      		RET
+1063:				
+1064:				; Unlog Drive mask in DE
+1065:				
+1066: 3921+4	045D' 7B      	UNLOG:	LD	A,E		; Get LSB
+1067: 3925+4	045E' 2F      		CPL			; Complement it
+1068: 3929+4	045F' 5F      		LD	E,A
+1069: 3933+4	0460' 7A      		LD	A,D		; Get MSB
+1070: 3937+4	0461' 2F      		CPL			; Complement it
+1071: 3941+4	0462' 57      		LD	D,A		; DE = not reset
+1072: 3945+10	0463' 21FA0D  		LD	HL,LOGIN	; Get addr of login vector
+1073: 3955+4	0466' 7B      	ANDDEM:	LD	A,E		; Clear login bits of reset drives
+1074: 3959+7	0467' A6      		AND	(HL)		; ..a byte at a time
+1075: 3966+7	0468' 77      		LD	(HL),A		; Put to memory
+1076: 3973+6	0469' 23      		INC	HL
+1077: 3979+4	046A' 7A      		LD	A,D
+1078: 3983+7	046B' A6      		AND	(HL)
+1079: 3990+7	046C' 77      		LD	(HL),A
+1080: 3997+10	046D' C9      		RET
+1081:				
+1082:				; Search for File
+1083:				
+1084: 4007+17	046E' CD1F05  	CMND17:	CALL	SELDRV		; Select drive from FCB
+1085: 4024+19	0471' DD7E00  		LD	A,(IX+0)
+1086: 4043+7	0474' D63F    		SUB	'?'		; Test if '?'
+1087: 4050+7+5	0476' 280D    		JR	Z,CMD17B	; If so all entries match
+1088: 4057+19	0478' DD7E0E  		LD	A,(IX+FCBMOD)	; Get system byte
+1089: 4076+7	047B' FE3F    		CP	'?'		; Test if '?'
+1090: 4083+7+5	047D' 2804    		JR	Z,CMD17A	; Yes, jump
+1091: 4090+19	047F' DD360E00		LD	(IX+FCBMOD),0	; Load system byte with Zero
+1092: 4109+7	0483' 3E0F    	CMD17A:	LD	A,15		; Test first 15 items in FCB
+1093: 4116+17	0485' CDF308  	CMD17B:	CALL	SEARCH		; Do search
+1094: 4133+16	0488' 2A3400  	CMD17C:	LD	HL,(DIRBUF)	; Copy directory buffer
+1095: 4149+10	048B' 018000  		LD	BC,128		; Directory=128 bytes
+1096: 4159+20	048E' ED5B2E00	MV2DMA:	LD	DE,(DMA)	; To DMA address
+1097: 4179+16+5	0492' EDB0    		LDIR
+1098: 4195+10	0494' C9      		RET			; Exit
+1099:				
+1100:				; Search for Next Occurence of File
+1101:				
+1102: 4205+20	0495' DD2A5800	CMND18:	LD	IX,(DCOPY)	; Get last FCB used by search
+1103: 4225+20	0499' DD225D00		LD	(ARWORD),IX	; Save FCB pointer for BGii
+1104: 4245+17	049D' CD1F05  		CALL	SELDRV		; Select drive from FCB
+1105: 4262+17	04A0' CD0A09  		CALL	SEARCN		; Search next file match
+1106: 4279+12	04A3' 18E3    		JR	CMD17C		; And copy directory to DMA address
+1107:				
+1108:				; Delete File
+1109:				
+1110: 4291+17	04A5' CD1F05  	CMND19:	CALL	SELDRV		; Select drive from FCB
+1111: 4308+17	04A8' CD6D08  		CALL	DELETE		; Delete file
+1112: 4325+13	04AB' 3A5A00  	CMD19A:	LD	A,(SEAREX)	; Get exit byte 00=file found, 0FFH=Not
+1113: 4338+12	04AE' 180B    		JR	SAVEA		; And exit
+1114:				
+1115:				; Rename File
+1116:				
+1117: 4350+17	04B0' CD1F05  	CMND23:	CALL	SELDRV		; Select drive from FCB
+1118: 4367+17	04B3' CDD709  		CALL	RENAM		; Rename file
+1119: 4384+12	04B6' 18F3    		JR	CMD19A		; And exit
+1120:				
+1121:				; Return Current Drive
+1122:				
+1123: 4396+13	04B8' 3A2B00  	CMND25:	LD	A,(DEFDRV)	; Get current drive
+1124: 4409+13	04BB' 324C00  	SAVEA:	LD	(PEXIT),A	; Return character
+1125: 4422+10	04BE' C9      	DUMMY:	RET			; ..and exit ZSDOS
+1126:				
+1127:				; Set flags
+1128:				
+1129: 4432+13	04BF' 321500  	CMD101:	LD	(FLAGS),A	; Set ZSDOS flags
+1130:								; ..and fall thru
+1131:				; Get flags
+1132:				
+1133: 4445+13	04C2' 3A1500  	CMD100:	LD	A,(FLAGS)	; Get ZSDOS flags
+1134: 4458+12	04C5' 18F4    		JR	SAVEA		; ..and exit
+1135:				
+1136:				; Change Status
+1137:				
+1138: 4470+17	04C7' CD1F05  	CMND30:	CALL	SELDRV		; Select drive from FCB
+1139: 4487+17	04CA' CD020A  		CALL	CSTAT		; Change status
+1140: 4504+12	04CD' 18DC    		JR	CMD19A		; And exit
+1141:				
+1142:				; Return CP/M Version Number
+1143:				
+1144:     -	04CF'         	ZDPCH1:
+1145: 4516+10	04CF' 212200  	CMND12:	LD	HL,22H		; Set CP/M compatable version number
+1146:     -	0000'         		  IF  NOT ZS		; (crw)
+1155:					  ENDIF
+1156:     -	FFFF'         		  IF  NOT PICKEY
+1157: 4526+20	04D2' ED535F00		LD	(DEVAL),DE	; In case DS gave us a clock addr
+1158:					  ENDIF
+1159: 4546+12	04D6' 181B    		JR	SAVHL		; For speed
+1160:				
+1161:				; Following commands return status in like manner and are consolidated here
+1162:				; in selected order with least-accessed commands taking longest to traverse
+1163:				; string, and frequently accessed/time critical exitting quickest.
+1164:				
+1165:				; The code in this section is a bit obscure, as it depends on burying
+1166:				; instructions within other instructions.  6502 users have long used the
+1167:				; 'BIT' trick to skip instructions - this inspired me to see if similar
+1168:				; things could be done with the Z80.  Indeed they can, as this demonstrates.
+1169:				; When the Z80 jumps in at a label, it executes the LD HL instruction.	The
+1170:				; DEFB 0DDH turns the LD HL instructions that follow into LD IX.  In effect,
+1171:				; this turns the DEFB 0DDH into a one byte relative jump to SAVHL.  As IX
+1172:				; is never used by these calls, its loss is of no consequence.
+1173:				; A similar trick is used in SEAR15, resulting in a useless LD HL but
+1174:				; saving a byte.
+1175:				
+1176:				; New Universal Return Version FUNCTION 48
+1177:				
+1178:     -	04D8'         	CMND48:
+1179:     -	FFFF'         		  IF  ZS
+1180: 4558+10	04D8' 211153  		LD	HL,('S' SHL 8) + VERS ;"S" indicates ZSDOS - ZRDOS returns 0
+1181:					  ELSE
+1183:					  ENDIF
+1184:     -	04DB' DD      		DEFB	0DDH		; Trash IX and fall through
+1185:				
+1186:				; Return Disk W/P Vector
+1187:				
+1188: 4568+16	04DC' 2AFC0D  	CMND29:	LD	HL,(DSKWP)	; Get disk W/P vector
+1189:     -	04DF' DD      		DEFB	0DDH		; Trash IX and fall through
+1190:				
+1191:				; Return Fixed Disk Login Vector
+1192:				
+1193: 4584+16	04E0' 2AFE0D  	CMND39:	LD	HL,(HDLOG)	; Return fixed disk login vector
+1194:     -	04E3' DD      		DEFB	0DDH		; Trash IX and fall through
+1195:				
+1196:				; Return ALV Vector
+1197:				
+1198: 4600+16	04E4' 2A3A00  	CMND27:	LD	HL,(ALV)	; Get allocation vector
+1199:     -	04E7' DD      		DEFB	0DDH		; Trash IX and fall through
+1200:				
+1201:				; Return Login Vector
+1202:				
+1203: 4616+16	04E8' 2AFA0D  	CMND24:	LD	HL,(LOGIN)	; Get login vector
+1204:     -	04EB' DD      		DEFB	0DDH		; Trash IX and fall through
+1205:				
+1206:				; Return Drive Table
+1207:				
+1208: 4632+16	04EC' 2A3600  	CMND31:	LD	HL,(IXP)	; Get drive table
+1209:     -	04EF' DD      		DEFB	0DDH		; Trash IX and fall through
+1210:				
+1211:				; Return Current DMA
+1212:				
+1213: 4648+16	04F0' 2A2E00  	CMND47:	LD	HL,(DMA)	; Return current DMA addr
+1214: 4664+16	04F3' 224C00  	SAVHL:	LD	(PEXIT),HL	; Save it
+1215: 4680+10	04F6' C9      		RET			; And exit
+1216:				
+1217:				; Set BDOS Error Mode
+1218:				
+1219: 4690+13	04F7' 325C00  	CMND45:	LD	(ERMODE),A	; Save error mode
+1220: 4703+10	04FA' C9      		RET			; And exit
+1221:				
+1222:				; Set/Get User Code
+1223:				
+1224: 4713+10	04FB' 212A00  	CMND32:	LD	HL,USER		; Point to user byte location
+1225: 4723+4	04FE' 3C      		INC	A		; Test if 0FFH
+1226: 4727+7	04FF' 7E      		LD	A,(HL)		; Get old user code
+1227: 4734+7+5	0500' 28B9    		JR	Z,SAVEA		; If 0FFH then exit
+1228: 4741+4	0502' 7B      		LD	A,E		; Get new user code
+1229: 4745+7	0503' E61F    		AND	01FH		; Mask it
+1230: 4752+7	0505' 77      		LD	(HL),A		; Save it
+1231: 4759+10	0506' C9      		RET			; And exit
+1232:				
+1233:				; Compute File Size Command
+1234:				
+1235: 4769+17	0507' CD2D05  	CMND35:	CALL	SELDR1		; Select drive from FCB
+1236: 4786+17	050A' CD2B0A  		CALL	FILSZ		; Compute file size
+1237: 4803+12	050D' 189C    		JR	CMD19A		; And exit
+1238:				
+1239:				; Set Random Record Count
+1240:				
+1241: 4815+10	050F' 212000  	CMND36:	LD	HL,32		; Set pointer to next record
+1242: 4825+17	0512' CD7F0D  		CALL	CALRRC		; Calculate random record count
+1243: 4842+19	0515' DD7221  	LDRRC:	LD	(IX+33),D	; And save random record count
+1244: 4861+19	0518' DD7122  		LD	(IX+34),C
+1245: 4880+19	051B' DD7023  		LD	(IX+35),B
+1246: 4899+10	051E' C9      		RET			; And exit
+1247:				
+1248:				; Select Disk From FCB
+1249:				
+1250:     -	051F'         	BGSELDRV:
+1251: 4909+13	051F' 3A5C00  	SELDRV:	LD	A,(ERMODE)	; Are we in modified user mode?
+1252: 4922+4	0522' A7      		AND	A
+1253: 4926+7+5	0523' 2008    		JR	NZ,SELDR1	; Jump if so, else..
+1254: 4933+16	0525' 2A5D00  		LD	HL,(ARWORD)	;
+1255: 4949+10	0528' 010D00  		LD	BC,FCBUSR	; Point to user number
+1256: 4959+11	052B' 09      		ADD	HL,BC		;
+1257: 4970+7	052C' 77      		LD	(HL),A		; Clear user flag
+1258: 4977+7	052D' 3EFF    	SELDR1:	LD	A,0FFH		; Set disk select done flag
+1259: 4984+13	052F' 324E00  		LD	(FLDRV),A
+1260: 4997+13	0532' 3A2B00  		LD	A,(DEFDRV)	; Get current drive
+1261: 5010+4	0535' 5F      		LD	E,A		; Save it in register E
+1262: 5014+16	0536' 2A5D00  		LD	HL,(ARWORD)
+1263: 5030+7	0539' 7E      		LD	A,(HL)		; Get drive from FCB
+1264: 5037+13	053A' 322D00  		LD	(FCB0),A	; Save it
+1265: 5050+7	053D' FE3F    		CP	'?'		; Test if '?'
+1266: 5057+7+5	053F' 2839    		JR	Z,CMND14	; Yes, then select drive from register E
+1267: 5064+15	0541' DDE5    		PUSH	IX		; Save BGii's IX register
+1268:								; IX won't be altered on cmnd14
+1269: 5079+20	0543' DD2A5D00		LD	IX,(ARWORD)	; Get FCB pointer
+1270:				;1.1a Changed to allow proper access to Drive P:
+1271:				;1.2a	AND	0FH		; Mask drive
+1272: 5099+7	0547' E61F    		AND	1FH		;1.2a Mask Drive
+1273: 5106+11	0549' E5      		PUSH	HL
+1274: 5117+7+5	054A' 2802    		JR	Z,SELDR0	; Select drive from register E
+1275: 5124+7	054C' 5E      		LD	E,(HL)		; Get drive from FCB
+1276: 5131+4	054D' 1D      		DEC	E		; Decrement drive number so A=0
+1277: 5135+17	054E' CD7A05  	SELDR0:	CALL	CMND14		; - do select of drive
+1278: 5152+10	0551' E1      		POP	HL		; Restore FCB pointer
+1279:				
+1280:				; Resolve User for FCB - FCBPTR in IX, Returns User in A
+1281:				
+1282: 5162+19	0552' DD7E0D  		LD	A,(IX+FCBUSR)	; ..get potential user in case
+1283: 5181+8	0555' CB7F    		BIT	7,A		; Is this a valid user?
+1284: 5189+7+5	0557' 2007    		JR	NZ,RESUS1	; Skip if there is
+1285: 5196+13	0559' 3A2A00  		LD	A,(USER)	; Get user number
+1286: 5209+12	055C' 1802    		JR	RESUS1		; ..and bypass push IX
+1287:				
+1288:				; Set User in FCB to Value passed in A
+1289:				
+1290: 5221+15	055E' DDE5    	RESUSR:	PUSH	IX		; Preserve IX
+1291: 5236+20	0560' DD2A5D00	RESUS1:	LD	IX,(ARWORD)
+1292: 5256+7	0564' E61F    		AND	1FH		; User number in A
+1293: 5263+19	0566' DD7700  		LD	(IX+0),A	; Save in FCB 0 byte
+1294: 5282+7	0569' F680    		OR	80H		; Set valid DOS user flag
+1295: 5289+19	056B' DD770D  		LD	(IX+FCBUSR),A	; ..and in FCB 13 byte
+1296: 5308+14	056E' DDE1    		POP	IX		; Restore caller's IX
+1297: 5322+10	0570' C9      		RET
+1298:				
+1299:				; Select Disk Error Exit - The stack is off by one level here, but
+1300:				;  this is a one way trip anyway.
+1301:				
+1302: 5332+16	0571' 2A0B00  	SELDK3:	LD	HL,(STSEL)	; Load error message address
+1303: 5348+7	0574' 0604    		LD	B,4		; Select error
+1304: 5355+10	0576' 111503  		LD	DE,MSEL		; Load select error message
+1305: 5365+4	0579' E9      		JP	(HL)		; And display error
+1306:				
+1307:				; Select Disk from E register
+1308:				
+1309: 5369+13	057A' 3A2B00  	CMND14:	LD	A,(DEFDRV)	; Get current drive
+1310: 5382+13	057D' 322C00  		LD	(DRIVE),A	; Save it in memory
+1311: 5395+4	0580' 7B      		LD	A,E		; Copy drive number
+1312:				
+1313:				; Select Disk
+1314:				;  Call w/ A = Drive Number (0..15 = A..P)
+1315:				
+1316: 5399+16	0581' 2AFA0D  	SELDK:	LD	HL,(LOGIN)	; Get login vector
+1317: 5415+7	0584' E60F    		AND	0FH		; Mask drive number
+1318: 5422+4	0586' 47      		LD	B,A		; Save counter
+1319: 5426+10+7	0587' C46106  		CALL	NZ,SHRHLB	; ..and rotate into position
+1320: 5436+4	058A' EB      	SELDK0:	EX	DE,HL		; Put drive bit mask in DE
+1321: 5440+10	058B' 212B00  		LD	HL,DEFDRV	; Get pointer last drive
+1322: 5450+8	058E' CB43    		BIT	0,E		; Test if drive logged in
+1323: 5458+7+5	0590' 2802    		JR	Z,SELDK2	; No, login drive
+1324: 5465+7	0592' BE      		CP	(HL)		; Test same drive
+1325: 5472+5+6	0593' C8      		RET	Z		; Yes then exit
+1326:				
+1327:				; NOTE: A long standing DOS bug concerns the SELECT function.  If a
+1328:				;  function 14 call is made and the drive doesn't exist, the default
+1329:				;  will still point to the bad drive unless we fix it in the error
+1330:				;  routine.  It is for this reason that drive is saved above.  We must
+1331:				;  allow default to assume the illegal drive value long enough for the
+1332:				;  error handler to print it, then re-select the old default.
+1333:				
+1334: 5477+7	0594' 77      	SELDK2:	LD	(HL),A		; Save new current drive
+1335: 5484+11	0595' D5      		PUSH	DE		; Save drive logged in flag
+1336: 5495+4	0596' 4F      		LD	C,A		; Copy drive number
+1337: 5499+17	0597' CD1B00  		CALL	SELDSK		; Do BIOS select
+1338: 5516+4	059A' 7C      		LD	A,H		; Test if error
+1339: 5520+4	059B' B5      		OR	L
+1340: 5524+7+5	059C' 28D3    		JR	Z,SELDK3	; Yes, illegal drive number
+1341: 5531+10	059E' 113000  		LD	DE,TRANS	; Point to local translation store
+1342: 5541+10	05A1' 010200  		LD	BC,2		; ..and move 2-byte ptr in
+1343: 5551+16+5	05A4' EDB0    		LDIR
+1344: 5567+16	05A6' 223200  		LD	(TEMP0),HL	; Save address temp0
+1345: 5583+7	05A9' 0E06    		LD	C,6		; Advance to dirbuf part of DPH
+1346: 5590+11	05AB' 09      		ADD	HL,BC		; As TEMP1 and TEMP2 unused in P?DOS
+1347: 5601+10	05AC' 113400  		LD	DE,DIRBUF	; Load DIRBUF pointer
+1348: 5611+7	05AF' 0E08    		LD	C,8		; Copy 8 bytes
+1349: 5618+16+5	05B1' EDB0    		LDIR
+1350: 5634+16	05B3' 2A3600  		LD	HL,(IXP)	; Get drive parameter address
+1351: 5650+7	05B6' 0E0F    		LD	C,15		; Copy 15 bytes
+1352: 5657+16+5	05B8' EDB0    		LDIR
+1353: 5673+10	05BA' D1      		POP	DE		; Get drive logged in flag
+1354: 5683+8	05BB' CB43    		BIT	0,E		; Test it
+1355: 5691+5+6	05BD' C0      		RET	NZ		; Drive logged in so return
+1356: 5696+17	05BE' CD4706  		CALL	GETCDM
+1357: 5713+4	05C1' EB      		EX	DE,HL		; Drive mask in DE
+1358: 5717+16	05C2' 2AFA0D  		LD	HL,(LOGIN)	; Get login vector
+1359: 5733+17	05C5' CD5806  		CALL	HLORDE		; Set drive bit in login vector
+1360: 5750+16	05C8' 22FA0D  		LD	(LOGIN),HL	; Save login vector
+1361: 5766+13	05CB' 3A1500  		LD	A,(FLAGS)	; Get flags
+1362: 5779+8	05CE' CB5F    		BIT	3,A		; Fast relog enabled?
+1363: 5787+7+5	05D0' 282A    		JR	Z,INITDR	; Skip if disabled
+1364:				
+1365:				; The following code checks the WACD size to determine if the drive
+1366:				;  being selected is a fixed disk.  If the WACD size is 0, the disk
+1367:				;  is Non-Removable.  However, several BIOSes support remapping of
+1368:				;  logical drives.  This complicates matters because BDOS must catch
+1369:				;  the swap and clear the Hard Disk Allocation Vector and allow the
+1370:				;  allocation bitmaps to be rebuilt.  Thus, every disk that is being
+1371:				;  selected for the first time traverses this code.  If a disk was
+1372:				;  logged as a fixed disk and all of the sudden has a WACD buffer,
+1373:				;  the Fixed Disk Login Vector is cleared.  Thus, for Bug-free
+1374:				;  operation of Fast Fixed Disk Logging, if drives are swapped
+1375:				;  NEVER SWAP TWO FIXED DRIVES!
+1376:				
+1377: 5794+16	05D2' 2A4700  		LD	HL,(NCHECK)	; Is this a fixed drive?
+1378: 5810+4	05D5' 7C      		LD	A,H
+1379: 5814+4	05D6' B5      		OR	L
+1380: 5818+4	05D7' 4F      		LD	C,A		; Save fixed disk flag (Z=true)
+1381: 5822+16	05D8' 2AFE0D  		LD	HL,(HDLOG)
+1382: 5838+4	05DB' 7B      		LD	A,E		; See if logged as fixed disk
+1383: 5842+4	05DC' A5      		AND	L
+1384: 5846+4	05DD' 6F      		LD	L,A
+1385: 5850+4	05DE' 7A      		LD	A,D
+1386: 5854+4	05DF' A4      		AND	H		; MSB
+1387: 5858+4	05E0' B5      		OR	L		; Z flag set if HL and DE = 0
+1388: 5862+7	05E1' 3EFF    		LD	A,0FFH		; Don't alter flags
+1389: 5869+7+5	05E3' 2801    		JR	Z,SELDK4	; If not logged as fixed disk
+1390: 5876+4	05E5' 3C      		INC	A		; Else flag as logged
+1391: 5880+4	05E6' 47      	SELDK4:	LD	B,A		; Save logged as fixed disk flag (Z=true)
+1392: 5884+4	05E7' B1      		OR	C		; Test if still fixed disk
+1393: 5888+5+6	05E8' C8      		RET	Z		; Skip re-map if logged and not swapped
+1394: 5893+4	05E9' AF      		XOR	A
+1395: 5897+4	05EA' 67      		LD	H,A
+1396: 5901+4	05EB' 6F      		LD	L,A		; Null vector
+1397: 5905+4	05EC' B0      		OR	B		; Was it logged as a fixed disk?
+1398: 5909+7+5	05ED' 280A    		JR	Z,SELDK5	; Invalidate HDLOG vector - drive no longer
+1399:								; Fixed disk
+1400: 5916+4	05EF' 79      		LD	A,C
+1401: 5920+4	05F0' B7      		OR	A		; Wasn't fixed disk before - is it now?
+1402: 5924+7+5	05F1' 2009    		JR	NZ,INITDR	; Skip vector update if it isn't
+1403: 5931+16	05F3' 2AFE0D  		LD	HL,(HDLOG)
+1404: 5947+17	05F6' CD5806  		CALL	HLORDE		; Else add this drive to fixed disk vector
+1405: 5964+16	05F9' 22FE0D  	SELDK5:	LD	(HDLOG),HL	; Update fixed disk vector
+1406:							;..fall thru to INITDR
+1407:				
+1408:				; Init Drive
+1409:				;  Clear ALV Bit Buffer after Drive reset
+1410:				
+1411: 5980+16	05FC' 2A4100  	INITDR:	LD	HL,(MAXLEN)	; Get length ALV buffer-1 (bits)
+1412: 5996+17	05FF' CD5F06  		CALL	SHRHL3		; Divide by 8 to get bytes
+1413: 6013+4	0602' 44      		LD	B,H
+1414: 6017+4	0603' 4D      		LD	C,L		; Counter to BC (will be count+1 cleared)
+1415: 6021+16	0604' 2A3A00  		LD	HL,(ALV)	; Get pointer ALV buffer
+1416: 6037+11	0607' E5      		PUSH	HL
+1417: 6048+4	0608' 54      		LD	D,H
+1418: 6052+4	0609' 5D      		LD	E,L
+1419: 6056+6	060A' 13      		INC	DE		; ALV buffer +1 in DE
+1420: 6062+4	060B' AF      		XOR	A
+1421: 6066+7	060C' 77      		LD	(HL),A		; Clear first 8 bits
+1422: 6073+16+5	060D' EDB0    		LDIR			; And remainder of buffer
+1423: 6089+10	060F' E1      		POP	HL		; Get ALV pointer
+1424: 6099+20	0610' ED5B4500		LD	DE,(NDIR0)	; Get first two bytes ALV buffer
+1425: 6119+7	0614' 73      		LD	(HL),E		; Save LSB
+1426: 6126+6	0615' 23      		INC	HL		; Increment pointer
+1427: 6132+7	0616' 72      		LD	(HL),D		; Save MSB
+1428: 6139+16	0617' 2A3200  		LD	HL,(TEMP0)	; Clear number of files on this drive
+1429: 6155+7	061A' 77      		LD	(HL),A		; Clear LSB (A still has 0)
+1430: 6162+6	061B' 23      		INC	HL		; Increment pointer
+1431: 6168+7	061C' 77      		LD	(HL),A		; Clear MSB
+1432:				
+1433:     -	061D'         	ZDPCH2	EQU	$		;<-- Intercept first scan (ZDS Patch)
+1434: 6175+17	061D' CDFC06  		CALL	SETFCT		; Set file count
+1435: 6192+7	0620' 3EFF    	INITD2:	LD	A,0FFH		; Update directory checksum
+1436: 6199+17	0622' CD3007  		CALL	RDDIR		; Read FCB's from directory
+1437: 6216+17	0625' CD1C07  		CALL	TSTFCT		; Test last FCB
+1438: 6233+10	0628' CA4D04  		JP	Z,SUBEXT	; Return subflg for strict CP/M compat (hfb)
+1439: 6243+17	062B' CDF106  		CALL	CALDIR		; Calculate entry point FCB
+1440: 6260+7	062E' 7E      		LD	A,(HL)		; Get first byte FCB
+1441: 6267+7	062F' FEE5    		CP	0E5H		; Test empty directory entry
+1442: 6274+7+5	0631' 28ED    		JR	Z,INITD2	; Yes then get next FCB
+1443: 6281+7	0633' FE21    		CP	021H		; Test time stamp
+1444: 6288+7+5	0635' 28E9    		JR	Z,INITD2	; Yes then get next FCB
+1445:				
+1446:     -	0637'         	ZDPCH3	EQU	$		;<-- Test for T&D if first time (ZDS Patch)
+1447: 6295+17	0637' CD5204  		CALL	CKSUB		; Test for submit file
+1448: 6312+7	063A' 0E01    		LD	C,1		; Set bit in ALV buffer
+1449: 6319+17	063C' CD8308  		CALL	FILLBB		; Set bits from FCB in ALV buffer
+1450: 6336+17	063F' CD2307  		CALL	TSTLF		; Test for last file
+1451: 6353+10+7	0642' D41407  		CALL	NC,SETLF0	; ..and update the last file count if so
+1452: 6363+12	0645' 18D9    		JR	INITD2		; And get next FCB
+1453:				
+1454:				; Return Mask for Current Drive in HL
+1455:				
+1456: 6375+10	0647' 210000  	GETCDM:	LD	HL,0		; No drives to Or
+1457:				
+1458:				; Set Drive bit in HL
+1459:				
+1460: 6385+4	064A' EB      	SDRVB:	EX	DE,HL		; Copy HL=>DE
+1461: 6389+10	064B' 210100  		LD	HL,1		; Get mask drive "A"
+1462: 6399+13	064E' 3A2B00  		LD	A,(DEFDRV)	; Get current drive
+1463: 6412+4	0651' B7      		OR	A		; Test if drive "A"
+1464: 6416+7+5	0652' 2804    		JR	Z,HLORDE	; Yes then done
+1465: 6423+11	0654' 29      	SDRVB0:	ADD	HL,HL		; Get next mask
+1466: 6434+4	0655' 3D      		DEC	A		; Decrement drive counter
+1467: 6438+7+5	0656' 20FC    		JR	NZ,SDRVB0	; And test if done
+1468: 6445+4	0658' 7A      	HLORDE:	LD	A,D		; HL=HL or DE
+1469: 6449+4	0659' B4      		OR	H
+1470: 6453+4	065A' 67      		LD	H,A
+1471: 6457+4	065B' 7B      		LD	A,E
+1472: 6461+4	065C' B5      		OR	L
+1473: 6465+4	065D' 6F      		LD	L,A
+1474: 6469+10	065E' C9      		RET			; Exit
+1475:				
+1476: 6479+7	065F' 0603    	SHRHL3:	LD	B,3		; Used in a few places
+1477:				
+1478:				; Shift HL right logical B bits
+1479:				
+1480: 6486+8	0661' CB3C    	SHRHLB:	SRL	H
+1481: 6494+8	0663' CB1D    		RR	L		; Shift HL right one bit (divide by 2)
+1482: 6502+8+5	0665' 10FA    		DJNZ	SHRHLB
+1483: 6510+10	0667' C9      		RET
+1484:				
+1485:				; Calculate Sector/Track Directory
+1486:				
+1487: 6520+16	0668' 2A5400  	STDIR:	LD	HL,(FILCNT)	; Get FCB counter directory
+1488:     -	FFFF'         		  IF  UNROLL
+1489: 6536+8	066B' CB3C    		SRL	H
+1490: 6544+8	066D' CB1D    		RR	L
+1491: 6552+8	066F' CB3C    		SRL	H		; (net cost: 3)
+1492: 6560+8	0671' CB1D    		RR	L		; Divide by 4 (inline for speed)
+1493:					  ELSE
+1496:					  ENDIF
+1497: 6568+16	0673' 225200  		LD	(RECDIR),HL	; Save value (used by checksum)
+1498: 6584+4	0676' EB      	STDIR2:	EX	DE,HL		; Copy it to DE
+1499: 6588+10	0677' 210000  	STDIR1:	LD	HL,0		; Clear HL
+1500:				
+1501:				; Calculate Sector/Track
+1502:				;  Entry: HL,DE=Sector Number (128 byte sector)
+1503:				;  Result Set Track  =HL,DE  /	MAXSEC
+1504:				;	  Set Sector =HL,DE MOD MAXSEC
+1505:				
+1506: 6598+20	067A' ED4B3C00	CALST:	LD	BC,(MAXSEC)	; Get sectors/track
+1507: 6618+7	067E' 3E11    		LD	A,17		; Set up loop counter
+1508: 6625+4	0680' B7      	CALST0:	OR	A
+1509: 6629+15	0681' ED42    		SBC	HL,BC		; HL > BC?
+1510: 6644+4	0683' 3F      		CCF
+1511: 6648+7+5	0684' 3802    		JR	C,CALST1	; Yes then jump
+1512: 6655+11	0686' 09      		ADD	HL,BC		; No then restore HL
+1513: 6666+4	0687' B7      		OR	A		; Clear Carry
+1514: 6670+8	0688' CB13    	CALST1:	RL	E		; Shift result in DE
+1515: 6678+8	068A' CB12    		RL	D
+1516: 6686+4	068C' 3D      		DEC	A		; Test last bit done
+1517: 6690+7+5	068D' 2804    		JR	Z,CALST2	; Yes then exit
+1518: 6697+15	068F' ED6A    		ADC	HL,HL		; Shift next bit in HL
+1519: 6712+12	0691' 18ED    		JR	CALST0		; Continue
+1520:				
+1521: 6724+11	0693' E5      	CALST2:	PUSH	HL		; Save sector number
+1522: 6735+16	0694' 2A4900  		LD	HL,(NFTRK)	; Get first track
+1523: 6751+11	0697' 19      		ADD	HL,DE		; Add track number
+1524: 6762+4	0698' 44      		LD	B,H		; Copy it to BC
+1525: 6766+4	0699' 4D      		LD	C,L
+1526: 6770+17	069A' CD1E00  		CALL	SETTRK		; CBIOS call Set Track
+1527: 6787+10	069D' C1      		POP	BC		; Restore sector number
+1528: 6797+20	069E' ED5B3000		LD	DE,(TRANS)	; Get translation table address
+1529: 6817+17	06A2' CD3000  		CALL	SECTRN		; CBIOS call sector translation
+1530: 6834+4	06A5' 44      		LD	B,H		; Copy result to BC
+1531: 6838+4	06A6' 4D      		LD	C,L
+1532: 6842+10	06A7' C32100  		JP	SETSEC		; BIOS call Set Sector
+1533:				
+1534:				; Get Disk Map Block Number from FCB   (Squeezed by Joe Wright)
+1535:				;  Exit HL=Address FCB
+1536:				;	DE=DM
+1537:				;	BC=Offset in DM
+1538:				;	Zero Flag Set (Z) if DM=0, Else reset (NZ)
+1539:				
+1540: 6852+19	06AA' DD6E20  	GETDM:	LD	L,(IX+NXTREC)	; Get record number in L
+1541: 6871+8	06AD' CB15    		RL	L		; Shift it left once
+1542: 6879+13	06AF' 3A4000  		LD	A,(NEXTND)	; Get EXM
+1543: 6892+19	06B2' DDA60C  		AND	(IX+FCBEXT)	; And the extent number
+1544: 6911+4	06B5' 67      		LD	H,A		; To H
+1545: 6915+13	06B6' 3A3E00  		LD	A,(NBLOCK)	; Get BSH
+1546: 6928+4	06B9' 47      		LD	B,A		; To B
+1547: 6932+4	06BA' 04      		INC	B		; +1
+1548: 6936+17	06BB' CD6106  		CALL	SHRHLB		; Shift HL right B times
+1549: 6953+4	06BE' 50      		LD	D,B		; Zero to D
+1550: 6957+4	06BF' 7D      		LD	A,L		; Result to A
+1551:				
+1552: 6961+16	06C0' 2A5D00  	GETDM4:	LD	HL,(ARWORD)
+1553: 6977+7	06C3' 0E10    		LD	C,16		; Add offset 16 to point to DM
+1554: 6984+11	06C5' 09      		ADD	HL,BC
+1555: 6995+4	06C6' 4F      		LD	C,A		; Add entry FCB
+1556: 6999+11	06C7' 09      		ADD	HL,BC
+1557: 7010+13	06C8' 3A4200  		LD	A,(MAXLEN+1)	; Test 8 bits/16 bits FCB entry
+1558: 7023+4	06CB' B7      		OR	A
+1559: 7027+7	06CC' 5E      		LD	E,(HL)		; Get 8 bit value
+1560: 7034+7+5	06CD' 2805    		JR	Z,GETDMX	; ..and exit if 8-bit entries
+1561:				
+1562: 7041+11	06CF' 09      		ADD	HL,BC		; Add twice (16 bit values)
+1563: 7052+7	06D0' 5E      		LD	E,(HL)		; Get LSB
+1564: 7059+6	06D1' 23      		INC	HL		; Increment pointer
+1565: 7065+7	06D2' 56      		LD	D,(HL)		; Get MSB
+1566: 7072+6	06D3' 2B      		DEC	HL		; Decrement pointer
+1567: 7078+4	06D4' 7A      	GETDMX:	LD	A,D		; Check for zero DM value
+1568: 7082+4	06D5' B3      		OR	E
+1569: 7086+10	06D6' C9      		RET			; And exit
+1570:				
+1571:				; Calculate Sector Number
+1572:				;  Entry: DE=Block Number from FCB
+1573:				
+1574: 7096+10	06D7' 210000  	CALSEC:	LD	HL,0		; Clear MSB sector number
+1575: 7106+13	06DA' 3A3E00  		LD	A,(NBLOCK)	; Get loop counter
+1576: 7119+4	06DD' 47      		LD	B,A		; Save it in B
+1577: 7123+4	06DE' EB      		EX	DE,HL
+1578: 7127+11	06DF' 29      	CALSC0:	ADD	HL,HL		; Shift L,D,E
+1579: 7138+8	06E0' CB13    		RL	E
+1580: 7146+8+5	06E2' 10FB    		DJNZ	CALSC0		; B times
+1581: 7154+4	06E4' EB      		EX	DE,HL
+1582: 7158+13	06E5' 3A3F00  		LD	A,(NMASK)	; Get sector mask
+1583: 7171+19	06E8' DDA620  		AND	(IX+NXTREC)	; And with next record
+1584: 7190+4	06EB' B3      		OR	E		; Set up LSB sector number
+1585: 7194+4	06EC' 5F      		LD	E,A
+1586: 7198+10	06ED' C9      		RET			; And exit
+1587:				
+1588:				; Check for File Read-Only status, then fall thru to CALDIR
+1589:				
+1590: 7208+17	06EE' CDAC08  	CKRODI:	CALL	CHKFRO		; Abort if the file is R/O
+1591:								; ..fall thru..
+1592:				
+1593:				; Calculate DIRBUF Entry Point
+1594:				
+1595: 7225+13	06F1' 3A5600  	CALDIR:	LD	A,(SECPNT)	; Get sector pointer
+1596:     -	06F4'         	CALDIR1:			; New label for DS (crw)
+1597: 7238+16	06F4' 2A3400  		LD	HL,(DIRBUF)	; Get start address dirbuf
+1598: 7254+4	06F7' 85      	CALDI0:	ADD	A,L		; Add L=L+A
+1599: 7258+4	06F8' 6F      		LD	L,A
+1600: 7262+5+6	06F9' D0      		RET	NC		; No carry exit
+1601: 7267+4	06FA' 24      		INC	H		; Increment H
+1602: 7271+10	06FB' C9      		RET			; And exit
+1603:				
+1604:				; Init File Count
+1605:				
+1606: 7281+10	06FC' 21FFFF  	SETFCT:	LD	HL,-1		; Set up file count
+1607: 7291+16	06FF' 225400  		LD	(FILCNT),HL	; Save it
+1608: 7307+10	0702' C9      		RET			; And exit
+1609:				
+1610:				; Set Write Protect Disk Command  (relocated & compressed hfb)
+1611:				
+1612:     -	0703'         	CMND28:				; Set read only disk
+1613: 7317+16	0703' 2AFC0D  		LD	HL,(DSKWP)	; Get disk W/P vector
+1614: 7333+17	0706' CD4A06  		CALL	SDRVB		; Include drive bit
+1615: 7350+16	0709' 22FC0D  		LD	(DSKWP),HL	; Save disk W/P vector
+1616: 7366+20	070C' ED5B4300		LD	DE,(NFILES)	; Get max number of files-1 (bumped below)
+1617: 7386+16	0710' 2A3200  		LD	HL,(TEMP0)	; Get pointer to disk parameter block
+1618: 7402+6	0713' 23      		INC	HL		; Correct pointer..
+1619:								; Setlf0 relocated in-line here (hfb)
+1620: 7408+6	0714' 13      	SETLF0:	INC	DE		; Increment last file
+1621: 7414+7	0715' 72      		LD	(HL),D		; Save it in TEMP0
+1622: 7421+6	0716' 2B      		DEC	HL
+1623: 7427+7	0717' 73      		LD	(HL),E
+1624: 7434+10	0718' C9      		RET			; And exit
+1625:				
+1626:				; Search using first 15 bytes of FCB, test if found
+1627:				
+1628: 7444+17	0719' CDF108  	SRCT15:	CALL	SEAR15		; Search on 15-bytes..(consolidated-hfb)
+1629:								; ..fall thru to test presence..
+1630:				; Test File Count
+1631:				
+1632: 7461+16	071C' 2A5400  	TSTFCT:	LD	HL,(FILCNT)	; Test file count=0FFFFH
+1633: 7477+4	071F' 7C      		LD	A,H		; Get MSB
+1634: 7481+4	0720' A5      		AND	L		; And LSB
+1635: 7485+4	0721' 3C      		INC	A		; Test if result=0FFH
+1636: 7489+10	0722' C9      		RET			; And exit
+1637:				
+1638:				; Test Last File
+1639:				
+1640: 7499+16	0723' 2A3200  	TSTLF:	LD	HL,(TEMP0)	; Get pointer to last file
+1641: 7515+20	0726' ED5B5400		LD	DE,(FILCNT)	; Get file counter
+1642: 7535+4	072A' 7B      		LD	A,E		; Subtract DE-(HL)
+1643: 7539+7	072B' 96      		SUB	(HL)
+1644: 7546+6	072C' 23      		INC	HL
+1645: 7552+4	072D' 7A      		LD	A,D
+1646: 7556+7	072E' 9E      		SBC	A,(HL)
+1647: 7563+10	072F' C9      		RET			; Exit
+1648:				
+1649:				; Get Next FCB from Drive
+1650:				; Entry A=0 Check Checksum, A=0FFH Update Checksum
+1651:				
+1652: 7573+4	0730' 4F      	RDDIR:	LD	C,A		; Save checksum flag
+1653: 7577+16	0731' 2A5400  		LD	HL,(FILCNT)	; Get file counter
+1654: 7593+6	0734' 23      		INC	HL		; Increment it
+1655: 7599+16	0735' 225400  		LD	(FILCNT),HL	; And save it
+1656: 7615+20	0738' ED5B4300		LD	DE,(NFILES)	; Get maximum number of files
+1657: 7635+4	073C' 7B      		LD	A,E		; Is this the last file?
+1658: 7639+4	073D' 95      		SUB	L
+1659: 7643+4	073E' 7A      		LD	A,D
+1660: 7647+4	073F' 9C      		SBC	A,H
+1661: 7651+7+5	0740' 38BA    		JR	C,SETFCT	; ..set file count to 0FFFFH if so
+1662: 7658+4	0742' 7D      		LD	A,L		; Get file count LSB
+1663: 7662+4	0743' 0F      		RRCA			; *32 (bm/hfb-to save a byte)
+1664: 7666+4	0744' 0F      		RRCA
+1665: 7670+4	0745' 0F      		RRCA
+1666: 7674+7	0746' E660    		AND	060H		; Mask it
+1667: 7681+13	0748' 325600  		LD	(SECPNT),A	; Save it for later use
+1668: 7694+5+6	074B' C0      		RET	NZ		; Return if not first FCB sector
+1669: 7699+11	074C' C5      		PUSH	BC		; Save checksum flag
+1670:     -	0000'         		  IF  NOT ZSDOS11	;  (* This was NOT in released package *)
+1682:					  ENDIF		;~Zsdos11
+1683: 7710+17	074D' CD6806  	RdDir0:	CALL	STDIR		; Calculate sector/track directory
+1684:     -	0000'         		  IF  NOT ZS
+1703:					  ELSE
+1704:								; READDR subroutine moved in-line here
+1705: 7727+17	0750' CD3D08  		CALL	DMADIR		; Set up DMA directory
+1706: 7744+17	0753' CD9507  		CALL	READR		; Read a record
+1707: 7761+17	0756' CD3708  		CALL	STDMA		; ..and set up user's DMA
+1708:					  ENDIF
+1709: 7778+10	0759' C1      		POP	BC		; Restore checksum flag
+1710:				
+1711:				; Update/Check Checksum Directory
+1712:				; Entry C=0 Check Checksum, C=0FFH update Checksum
+1713:				
+1714: 7788+16	075A' 2A4700  	CHKDIR:	LD	HL,(NCHECK)	; Get number of checked records
+1715: 7804+20	075D' ED5B5200		LD	DE,(RECDIR)	; Get current record
+1716: 7824+4	0761' AF      		XOR	A		; Clear carry (bm)
+1717: 7828+15	0762' ED52    		SBC	HL,DE		; Test current record
+1718: 7843+5+6	0764' C8      		RET	Z		; Exit if zero
+1719: 7848+5+6	0765' D8      		RET	C		; Exit if greater than ncheck
+1720: 7853+16	0766' 2A3400  		LD	HL,(DIRBUF)	; Get dirbuf
+1721: 7869+17	0769' CDE00D  		CALL	CKS127		; ..and checksum first 127 bytes..
+1722: 7886+7	076C' 86      		ADD	A,(HL)		; ...then 128th byte (hfb)
+1723: 7893+16	076D' 2A3800  		LD	HL,(CSV)	; Get pointer checksum directory
+1724: 7909+11	0770' 19      		ADD	HL,DE		; Add current record
+1725: 7920+4	0771' 0C      		INC	C		; Test checksum flag
+1726: 7924+7+5	0772' 2002    		JR	NZ,CHKDR1	; 0FFH=> update checksum
+1727: 7931+7	0774' 77      		LD	(HL),A		; Update checksum
+1728: 7938+10	0775' C9      		RET			; And exit
+1729:				
+1730: 7948+7	0776' BE      	CHKDR1:	CP	(HL)		; Test checksum
+1731: 7955+5+6	0777' C8      		RET	Z		; Exit if ok
+1732:				
+1733:				; Checksum differs, So Disk has changed.  Relog it and continue
+1734:				
+1735: 7960+13	0778' 3A1500  		LD	A,(FLAGS)
+1736: 7973+8	077B' CB67    		BIT	4,A		; Inform user?
+1737: 7981+7	077D' 0600    		LD	B,0		; Disk change error code
+1738: 7988+10	077F' 110203  		LD	DE,MDSKCH	; Disk changed message
+1739: 7998+10+7	0782' C44C03  		CALL	NZ,ERROR	; Inform user
+1740:				
+1741:				; Relog Current Drive after media change detected
+1742:				
+1743: 8008+17	0785' CD4706  		CALL	GETCDM		; Get current drive mask in HL
+1744: 8025+4	0788' EB      		EX	DE,HL		; Xfer mask to DE
+1745: 8029+17	0789' CD5D04  		CALL	UNLOG		; Reset login vector for logged drive
+1746: 8046+17	078C' CD3504  		CALL	RELOG1		; Do the meat of relogging
+1747:								; Caveat emptor: this call is recursive...
+1748: 8063+17	078F' CDFC06  		CALL	SETFCT		; Re-initialize search file count
+1749: 8080+4	0792' AF      		XOR	A		; We only get here by checking.. (bm)
+1750: 8084+12	0793' 189B    		JR	RDDIR		; And all checking is done from rddir
+1751:				
+1752:				; Read Sector from Drive
+1753:				
+1754: 8096+17	0795' CD2700  	READR:	CALL	READ		; CBIOS call read sector
+1755: 8113+12	0798' 1803    		JR	WRITE0
+1756:				
+1757:				; Write Sector on Drive
+1758:				
+1759: 8125+17	079A' CD2A00  	WRITER:	CALL	WRITE		; CBIOS call write sector
+1760: 8142+4	079D' B7      	WRITE0:	OR	A		; Test exit code
+1761: 8146+5+6	079E' C8      		RET	Z		; Exit if ok
+1762: 8151+7	079F' 0601    		LD	B,1		; Disk I/O error code
+1763: 8158+10	07A1' 110A03  		LD	DE,MBADSC	; Load bad sector message
+1764: 8168+16	07A4' 2A0900  		LD	HL,(STBDSC)	; Load bad sector vector
+1765: 8184+4	07A7' E9      		JP	(HL)		; ZSDOS error on D: Bad Sector
+1766:				
+1767:				; Close File Command (relocated hfb)
+1768:				
+1769:     -	07A9'         	BGPTCH2	EQU	$+1		;<-- BGii patch point
+1770:				
+1771: 8188+17	07A8' CD2D05  	CMND16:	CALL	SELDR1		; Select drive from FCB
+1772:				
+1773:				; Close File
+1774:				
+1775: 8205+20	07AB' DDCB0E7E	CLOSE:	BIT	7,(IX+FCBMOD)	; Test FCB/file modified
+1776: 8225+5+6	07AF' C0      		RET	NZ		; Not then no close required
+1777: 8230+17	07B0' CDD808  		CALL	CHKRO		; Test disk W/P
+1778: 8247+17	07B3' CD1907  		CALL	SRCT15		; Search file and test present
+1779: 8264+5+6	07B6' C8      		RET	Z		; No then exit with error
+1780: 8269+17	07B7' CDEE06  		CALL	CKRODI		; Check file W/P, get directory entry
+1781: 8286+10	07BA' 011000  		LD	BC,16		; Offset to DM block
+1782: 8296+11	07BD' 09      		ADD	HL,BC		; Add offset
+1783: 8307+4	07BE' EB      		EX	DE,HL		; Save DIR PTR in DE
+1784: 8311+16	07BF' 2A5D00  		LD	HL,(ARWORD)	; Get FCB ptr
+1785: 8327+11	07C2' 09      		ADD	HL,BC		; Add offset
+1786: 8338+4	07C3' EB      		EX	DE,HL
+1787: 8342+4	07C4' 41      		LD	B,C		; Xfer counter
+1788:				
+1789:				; Copy FCB (DE) to DIR (HL) if and only if DIR=0 or DIR=FCB
+1790:				
+1791: 8346+11	07C5' 34      	CLOSE0:	INC	(HL)
+1792: 8357+11	07C6' 35      		DEC	(HL)		; Test DIR for 0
+1793: 8368+7	07C7' 1A      		LD	A,(DE)		; Get byte from FCB
+1794: 8375+7+5	07C8' 2804    		JR	Z,CLOSE1	; OK to Copy if 0
+1795: 8382+7	07CA' BE      		CP	(HL)		; Test if same as DIR
+1796: 8389+10	07CB' C27A0B  		JP	NZ,RETCFF	; ..if Not, abort Close and return error
+1797: 8399+7	07CE' 77      	CLOSE1:	LD	(HL),A		; Else save in DIR
+1798: 8406+6	07CF' 13      		INC	DE
+1799: 8412+6	07D0' 23      		INC	HL
+1800: 8418+8+5	07D1' 10F2    		DJNZ	CLOSE0		; Bump pointers and loop until done
+1801: 8426+10	07D3' 11ECFF  		LD	DE,-20		; Add -20 to get Extent Number from DIR
+1802: 8436+11	07D6' 19      		ADD	HL,DE		; HL contains pointer to extent number
+1803: 8447+19	07D7' DD7E0C  		LD	A,(IX+FCBEXT)	; Get extent number FCB
+1804: 8466+7	07DA' BE      		CP	(HL)		; Compare with extent number directory
+1805: 8473+7+5	07DB' 3808    		JR	C,CLOSE3	; FCB < directory then jump
+1806: 8480+7	07DD' 77      		LD	(HL),A		; Save extent number in directory
+1807: 8487+6	07DE' 23      		INC	HL		; Get pointer to next record
+1808: 8493+6	07DF' 23      		INC	HL
+1809: 8499+6	07E0' 23      		INC	HL
+1810: 8505+19	07E1' DD7E0F  		LD	A,(IX+FCBREC)	; Get next record FCB
+1811: 8524+7	07E4' 77      		LD	(HL),A		; Save next record in directory
+1812: 8531+17	07E5' CD0808  	CLOSE3:	CALL	CLOSE6		; Clear Archive Bit and Write FCB
+1813: 8548+17	07E8' CDA60B  		CALL	GETDME		; Get Data Module and Extent
+1814:     -	0000'         		  IF  NOT ZSDOS11	;  (* NOT in Release version *)
+1817:					  ELSE		;Zsdos11   (* This was Release version *)
+1818: 8565+7+5	07EB' 280D    		JR	Z,CLOSE4	; ..jump to Stamp if they are both 0
+1819: 8572+11	07ED' C5      		PUSH	BC		; Save prior module and Extent
+1820:					  ENDIF		;~Zsdos11
+1821: 8583+10	07EE' 010000  		LD	BC,0
+1822: 8593+17	07F1' CD9E0B  		CALL	SETDME		; Set FCB Data Module and Extent to 0
+1823: 8610+17	07F4' CD1907  		CALL	SRCT15		; Find proper DIR Entry
+1824:     -	0000'         		  IF  NOT ZSDOS11
+1827:					  ELSE		;Zsdos11
+1828: 8627+10	07F7' C1      		POP	BC
+1829: 8637+7+5	07F8' 280B    		JR	Z,JSETDME	; ..Exit if Extent 0 Not Found
+1830: 8644+11	07FA' C5      	CLOSE4:	PUSH	BC
+1831:					  ENDIF		;~Zsdos11
+1832: 8655+17	07FB' CD0808  		CALL	CLOSE6		; Clear Archive Bit and Write FCB
+1833: 8672+16	07FE' 2A1C00  		LD	HL,(STUPDV)	; Get the update routine address
+1834:     -	FFFF'         		  IF  ZS
+1835: 8688+17	0801' CDB90D  		CALL	STAMPT		; ..and stamp it
+1836:					  ELSE		;If not Zs (crw)
+1839:					  ENDIF		;ZS
+1840:     -	0000'         		  IF  NOT  ZSDOS11
+1843:					  ELSE		;Zsdos11
+1844: 8705+10	0804' C1      		POP	BC		; Get Original Module and Extent Back
+1845:     -	0805'         	JSETDME:
+1846:					  ENDIF		;~Zsdos11
+1847: 8715+10	0805' C39E0B  		JP	SETDME		; Restore to FCB and Exit
+1848:				
+1849: 8725+17	0808' CDF106  	CLOSE6:	CALL	CALDIR		; Get directory entry
+1850: 8742+10	080B' 010B00  		LD	BC,11		; Point to archive byte
+1851: 8752+11	080E' 09      		ADD	HL,BC
+1852: 8763+15	080F' CBBE    		RES	7,(HL)		; Reset archive bit
+1853: 8778+23	0811' DDCB0BBE		RES	7,(IX+ARCATT)	; Reset bit in FCB
+1854:     -	FFFF'         		  IF  ZSDOS11
+1855: 8801+12	0815' 1800    		JR	WRFCB		; Write FCB to Disk
+1856:				
+1857:     -	0000'         		   IF  NOT ZS
+1861:					   ENDIF	;NOT Zs
+1862:					  ENDIF		;Zsdos11
+1863:				
+1864: 8813+17	0817' CDF106  	WRFCB:	CALL	CALDIR		; Point to dir entry to write
+1865: 8830+7	081A' 3E0D    		LD	A,FCBUSR	; Offset to user byte in FCB
+1866: 8837+17	081C' CDF706  		CALL	CALDI0		; ..do the add here
+1867: 8854+10	081F' 3600    		LD	(HL),0		; Prevent writing it to disk
+1868: 8864+17	0821' CD6806  		CALL	STDIR		; Calculate sector/track directory
+1869: 8881+7	0824' 0EFF    		LD	C,0FFH		; Update checksum directory
+1870: 8888+17	0826' CD5A07  		CALL	CHKDIR
+1871: 8905+17	0829' CD3D08  	WRITD1:	CALL	DMADIR		; Set up dma directory (label for DS - crw)
+1872: 8922+7	082C' 0E01    		LD	C,1		; Write directory flag
+1873: 8929+17	082E' CD9A07  		CALL	WRITER		; Write record
+1874: 8946+12	0831' 1804    		JR	STDMA		; Set up DMA user
+1875:				
+1876:     -	0000'         		  IF  NOT ZSDOS11
+1882:					  ENDIF		;~Zsdos11
+1883:				
+1884:				; Set DMA Address Command
+1885:				
+1886: 8958+20	0833' ED532E00	CMND26:	LD	(DMA),DE	; Save DMA address
+1887:				
+1888:				; Set DMA Address
+1889:				
+1890: 8978+20	0837' ED4B2E00	STDMA:	LD	BC,(DMA)	; Get DMA address
+1891: 8998+12	083B' 1804    		JR	DMADR0		; And do BIOS call
+1892:				
+1893:				; Set DMA Address Directory
+1894:				
+1895: 9010+20	083D' ED4B3400	DMADIR:	LD	BC,(DIRBUF)	; Get DMA address directory
+1896: 9030+10	0841' C32400  	DMADR0:	JP	SETDMA		; Cbios call set DMA
+1897:				
+1898:				; Get Bit from ALV Buffer
+1899:				;  Entry DE=Block Number
+1900:				;  Exit  A =Bit in LSB
+1901:				;	 B =Bit Number in A
+1902:				;	 HL=Pointer in ALV Buffer
+1903:				
+1904: 9040+4	0844' 7B      	GETBIT:	LD	A,E		; Get bit number
+1905: 9044+7	0845' E607    		AND	7		; Mask it
+1906: 9051+4	0847' 3C      		INC	A		; Add 1
+1907: 9055+4	0848' 4F      		LD	C,A		; Save it
+1908:     -	FFFF'         		  IF  UNROLL
+1909: 9059+8	0849' CB3A    		SRL	D		; Get byte number
+1910: 9067+8	084B' CB1B    		RR	E		; DE=DE/8
+1911: 9075+8	084D' CB3A    		SRL	D
+1912: 9083+8	084F' CB1B    		RR	E
+1913: 9091+8	0851' CB3A    		SRL	D
+1914: 9099+8	0853' CB1B    		RR	E		; ..inline for speed (net cost: 4)
+1915: 9107+4	0855' 47      		LD	B,A		; Re-save bit number for next shift
+1916: 9111+16	0856' 2A3A00  		LD	HL,(ALV)	; Get start address ALV buffer
+1917:					  ELSE
+1922:					  ENDIF		;Unroll
+1923: 9127+11	0859' 19      		ADD	HL,DE		; Add byte number
+1924: 9138+7	085A' 7E      		LD	A,(HL)		; Get 8 bits
+1925: 9145+4	085B' 07      	GETBT0:	RLCA			; Get correct bit
+1926: 9149+8+5	085C' 10FD    		DJNZ	GETBT0
+1927: 9157+4	085E' 41      		LD	B,C		; Restore bit number
+1928: 9161+10	085F' C9      		RET			; And return to caller
+1929:				
+1930:				; Set/Reset bit in ALV Buffer
+1931:				;  Entry DE=Block Number
+1932:				;	 C =0 Reset Bit, C=1 Set Bit
+1933:				
+1934: 9171+11	0860' C5      	SETBIT:	PUSH	BC		; Save set/reset bit
+1935: 9182+17	0861' CD4408  		CALL	GETBIT		; Get bit
+1936: 9199+7	0864' E6FE    		AND	0FEH		; Mask it
+1937: 9206+10	0866' D1      		POP	DE		; Get set/reset bit
+1938: 9216+4	0867' B3      		OR	E		; Set/reset bit
+1939: 9220+4	0868' 0F      	SETBT0:	RRCA			; Rotate bit in correct position
+1940: 9224+8+5	0869' 10FD    		DJNZ	SETBT0
+1941: 9232+7	086B' 77      		LD	(HL),A		; Save 8 bits
+1942: 9239+10	086C' C9      		RET			; And return to caller
+1943:				
+1944:				; Delete File
+1945:				
+1946: 9249+17	086D' CDBD09  	DELETE:	CALL	COMCOD		; Call common code w/VDEL on stack
+1947:				
+1948:				; Delete Routine Core (relocated to save space) (hfb)
+1949:				
+1950: 9266+17	0870' CDEE06  	VDEL:	CALL	CKRODI		; Check file W/P, get directory entry
+1951: 9283+10	0873' 36E5    		LD	(HL),0E5H	; Remove file
+1952: 9293+6	0875' 23      		INC	HL
+1953: 9299+7	0876' 7E      		LD	A,(HL)		; Get first char
+1954: 9306+7	0877' D624    		SUB	'$'		; See if submit file
+1955: 9313+7+5	0879' 2003    		JR	NZ,VDEL1	; If not
+1956: 9320+13	087B' 325700  		LD	(SUBFLG),A	; Clear subflg if $*.* erased
+1957: 9333+6	087E' 23      	VDEL1:	INC	HL
+1958: 9339+15	087F' CBBE    		RES	7,(HL)		; Insure erased files are not public
+1959: 9354+7	0881' 0E00    		LD	C,0		; Remove bits ALV buffer
+1960:								; ..fall thru and return to caller..
+1961:				
+1962:				; Fill bit buffer from FCB in DIRBUF
+1963:				;  Entry C=0 Reset Bit, C=1 Set Bit
+1964:				
+1965: 9361+17	0883' CDF106  	FILLBB:	CALL	CALDIR		; Get directory entry
+1966: 9378+10	0886' 111000  		LD	DE,16		; Get offset DM block
+1967: 9388+11	0889' 19      		ADD	HL,DE		; Add offset
+1968: 9399+4	088A' 43      		LD	B,E		; Get block counter
+1969: 9403+7	088B' 5E      	FILLB0:	LD	E,(HL)		; Get LSB block number
+1970: 9410+6	088C' 23      		INC	HL		; Increment pointer
+1971: 9416+7	088D' 1600    		LD	D,0		; Reset MSB block number
+1972: 9423+13	088F' 3A4200  		LD	A,(MAXLEN+1)	; Test >256 blocks present
+1973: 9436+4	0892' B7      		OR	A
+1974: 9440+7+5	0893' 2803    		JR	Z,FILLB1	; No then jump
+1975: 9447+4	0895' 05      		DEC	B		; Decrement block counter
+1976: 9451+7	0896' 56      		LD	D,(HL)		; Get correct MSB
+1977: 9458+6	0897' 23      		INC	HL		; Increment pointer
+1978: 9464+4	0898' 7A      	FILLB1:	LD	A,D		; Test block number
+1979: 9468+4	0899' B3      		OR	E
+1980: 9472+7+5	089A' 280D    		JR	Z,FILLB2	; Zero then get next block
+1981: 9479+11	089C' E5      		PUSH	HL		; Save pointer
+1982: 9490+11	089D' C5      		PUSH	BC		; Save counter and set/reset bit
+1983: 9501+16	089E' 2A4100  		LD	HL,(MAXLEN)	; Get maximum length ALV buffer
+1984: 9517+4	08A1' B7      		OR	A		; Reset carry
+1985: 9521+15	08A2' ED52    		SBC	HL,DE		; Test DE<=maxlen ALV buffer
+1986: 9536+10+7	08A4' D46008  		CALL	NC,SETBIT	; Yes then insert bit
+1987: 9546+10	08A7' C1      		POP	BC		; Get counter and set/reset bit
+1988: 9556+10	08A8' E1      		POP	HL		; Get pointer
+1989: 9566+8+5	08A9' 10E0    	FILLB2:	DJNZ	FILLB0		; Repeat for all DM entries
+1990: 9574+10	08AB' C9      		RET			; And return to caller
+1991:				
+1992:				; Check File W/P Bit - SEARCH called first
+1993:				
+1994: 9584+17	08AC' CDF106  	CHKFRO:	CALL	CALDIR		; Get directory entry
+1995: 9601+10	08AF' 110800  		LD	DE,WHLATT	; Offset to R/O bit
+1996: 9611+11	08B2' 19      		ADD	HL,DE		; Add offset
+1997: 9622+20	08B3' ED5B1300		LD	DE,(WHEEL)	; Get wheel byte address from header
+1998: 9642+7	08B7' 1A      		LD	A,(DE)		; ..and retrieve the actual byte
+1999: 9649+4	08B8' A7      		AND	A		; ..and check the Wheel byte
+2000: 9653+7+5	08B9' 2004    		JR	NZ,CHKFR4	; We have wheel, so allow writes anyway
+2001: 9660+12	08BB' CB7E    		BIT	7,(HL)		; Else check Wheel attribute
+2002: 9672+7+5	08BD' 2010    		JR	NZ,CHKFR2	; Yes then error
+2003: 9679+6	08BF' 23      	CHKFR4:	INC	HL		; Check W/P bit (hfb)
+2004: 9685+12	08C0' CB7E    		BIT	7,(HL)		; Test file W/P
+2005: 9697+7+5	08C2' 200B    		JR	NZ,CHKFR2	; If W/P
+2006: 9704+20	08C4' DDCB077E	CHKFR3:	BIT	7,(IX+PSFATT)	; Was file accessed as Public or Path?
+2007: 9724+5+6	08C8' C8      		RET	Z		; If normal access
+2008: 9729+13	08C9' 3A1500  		LD	A,(FLAGS)	; Else test for writes allowed
+2009: 9742+7	08CC' E602    		AND	0010B
+2010: 9749+5+6	08CE' C0      		RET	NZ		; Go ahead, writes are allowed
+2011: 9754+16	08CF' 2A0F00  	CHKFR2:	LD	HL,(SFILRO)	; Get pointer to file W/P message
+2012: 9770+7	08D2' 0603    		LD	B,3		; File W/P error code
+2013: 9777+10	08D4' 111E03  		LD	DE,MFILRO	; Load file W/P message
+2014: 9787+4	08D7' E9      		JP	(HL)		; Display message
+2015:				
+2016:				
+2017:				; Check Drive Write Protect
+2018:				
+2019:     -	08D8'         	BGCKDRO:
+2020: 9791+17	08D8' CDE508  	CHKRO:	CALL	CHKRO1		; Is the disk W/P?
+2021: 9808+5+6	08DB' C0      		RET	NZ		; ..return if disk R/W
+2022: 9813+7	08DC' 0602    		LD	B,2		; Else set disk W/P error code
+2023: 9820+10	08DE' 112303  		LD	DE,MRO		; Load drive W/P message
+2024: 9830+16	08E1' 2A0D00  		LD	HL,(STRO)	; Get pointer to drive W/P message
+2025: 9846+4	08E4' E9      		JP	(HL)		; Display message
+2026:				
+2027: 9850+16	08E5' 2AFC0D  	CHKRO1:	LD	HL,(DSKWP)	; Get the W/P drive vector
+2028: 9866+17	08E8' CD4A06  		CALL	SDRVB		; Set the bit for this drive
+2029: 9883+15	08EB' ED52    		SBC	HL,DE		; See if extra bit added (Cy is clear)
+2030: 9898+10	08ED' C9      		RET
+2031:				
+2032:				; Search using first 12 bytes of FCB (hfb)
+2033:				
+2034: 9908+7	08EE' 3E0C    	SEAR12:	LD	A,12
+2035:     -	08F0' 21      		DEFB	21H		; Trash HL and fall through
+2036:				
+2037:				; Search using first 15 bytes of FCB
+2038:				
+2039: 9915+7	08F1' 3E0F    	SEAR15:	LD	A,15
+2040:				
+2041:				; Search for File Name
+2042:				;  Entry: A = Number of bytes for which to search
+2043:				
+2044: 9922+13	08F3' 325B00  	SEARCH:	LD	(SEARNB),A	; Save number of bytes
+2045: 9935+7	08F6' 3EFF    		LD	A,0FFH		; Set exit code to 0FFH (not found)
+2046: 9942+13	08F8' 325A00  		LD	(SEAREX),A
+2047: 9955+20	08FB' DD225800		LD	(DCOPY),IX	; Copy FCB pointer to RAM (search next)
+2048: 9975+17	08FF' CDFC06  		CALL	SETFCT		; Initiate file counter
+2049:				
+2050:				; Force directory read with a Call HOME (bh)   (Only if Floppys-hfb)
+2051:     -	FFFF'         		  IF  ZSDOS11		; (* Logic moved to RDDIR if NOT Zsdos11 *)
+2052: 9992+16	0902' 2A4700  		LD	HL,(NCHECK)	; Is this a fixed media?
+2053:10008+4	0905' 7C      		LD	A,H
+2054:10012+4	0906' B5      		OR	L
+2055:10016+10+7	0907' C41800  		CALL	NZ,HOME		; Invoke CBIOS Home routine if removeable
+2056:					  ENDIF		;~Zsdos11
+2057:				
+2058:				; Search Next File Name
+2059:				
+2060:10026+4	090A' AF      	SEARCN:	XOR	A		; Check checksum directory
+2061:10030+4	090B' 67      		LD	H,A
+2062:10034+4	090C' 6F      		LD	L,A
+2063:10038+16	090D' 225000  		LD	(SEARQU),HL	; Clear question mark & public detected flags
+2064:10054+23	0910' DDCB07BE		RES	7,(IX+PSFATT)	; Reset public/system file flag
+2065:10077+17	0914' CD3007  		CALL	RDDIR		; Get FCB from directory
+2066:10094+17	0917' CD1C07  		CALL	TSTFCT		; Test if past last entry
+2067:10111+7+5	091A' 280E    		JR	Z,JSEAR8	; Yes then jump (note carry always clear)
+2068:10118+20	091C' ED5B5800		LD	DE,(DCOPY)	; Get FCB pointer
+2069:10138+7	0920' 1A      		LD	A,(DE)		; Get first byte
+2070:10145+7	0921' FEE5    		CP	0E5H		; Test if searching empty directory
+2071:10152+7+5	0923' 2807    		JR	Z,SEARC1	; Yes then jump
+2072:10159+11	0925' D5      		PUSH	DE		; Save FCB pointer
+2073:10170+17	0926' CD2307  		CALL	TSTLF		; Test last file on this drive
+2074:10187+10	0929' D1      		POP	DE		; Restore FCB pointer
+2075:10197+7+5	092A' 306B    	JSEAR8:	JR	NC,SEARC8	; Yes then jump
+2076:10204+17	092C' CDF106  	SEARC1:	CALL	CALDIR		; Get entry in directory
+2077:10221+7	092F' 7E      		LD	A,(HL)		; Get first byte directory entry
+2078:10228+7	0930' FE21    		CP	21H		; Test time stamp
+2079:10235+7+5	0932' 28D6    		JR	Z,SEARCN	; Yes then get next directory entry
+2080:10242+7	0934' 0E00    		LD	C,0		; Clear counter
+2081:10249+13	0936' 3A5B00  		LD	A,(SEARNB)	; Get number of bytes to search for
+2082:10262+4	0939' 47      		LD	B,A		; Save it in counter
+2083:10266+4	093A' 78      	SEARC2:	LD	A,B		; Test if counter is zero
+2084:10270+4	093B' B7      		OR	A
+2085:10274+7+5	093C' 285F    		JR	Z,SEARC9	; Yes then jump
+2086:10281+7	093E' 1A      		LD	A,(DE)		; Get byte from FCB
+2087:10288+7	093F' EE3F    		XOR	'?'		; Test if question mark
+2088:10295+7	0941' E67F    		AND	7FH		; Mask it
+2089:10302+7+5	0943' 283B    		JR	Z,SEARC6	; Yes then jump
+2090:10309+4	0945' 79      		LD	A,C		; Get FCB counter
+2091:10313+4	0946' B7      		OR	A		; Test first byte
+2092:10317+7+5	0947' 2022    		JR	NZ,SEARC3	; No then jump
+2093:10324+13	0949' 3A1500  		LD	A,(FLAGS)	; Get flag byte
+2094:10337+4	094C' 1F      		RRA			; Test public file enable
+2095:10341+7+5	094D' 301C    		JR	NC,SEARC3	; ..jump if not
+2096:10348+6	094F' 23      		INC	HL		; Get pointer to Public Bit
+2097:10354+6	0950' 23      		INC	HL
+2098:10360+12	0951' CB7E    		BIT	7,(HL)		; Test Public Bit directory
+2099:10372+6	0953' 2B      		DEC	HL		; Restore pointer
+2100:10378+6	0954' 2B      		DEC	HL
+2101:10384+7+5	0955' 2814    		JR	Z,SEARC3	; No public file then jump
+2102:10391+7	0957' 1A      		LD	A,(DE)		; Get first byte FCB
+2103:10398+7	0958' FEE5    		CP	0E5H		; Test if searching empty directory
+2104:10405+7+5	095A' 280F    		JR	Z,SEARC3	; Yes then jump
+2105:				
+2106:				; The following 3 lines of code represent a deviation from the description of
+2107:				; PUBLIC Files as given in DDJ Article by Bridger Mitchell and Derek McKay of
+2108:				; Plu*Perfect Systems.	The PUBLIC Specification states that Public Files will
+2109:				; NOT be found by any wildcard reference except when a "?" is in the FCB+0
+2110:				; byte.  The code here relaxes that requirement as follows:  If we are in the
+2111:				; same user area as the public file, then don't report the file as PUBLIC, but
+2112:				; find it.  This has a nasty side effect - it allows erasing of PUBLIC files
+2113:				; if we are in the same area.  However, these files also show up on the direc-
+2114:				; tory (they wouldn't otherwise), so at least we should know we're blasting
+2115:				; them.
+2116:				
+2117:10412+7	095C' AE      		XOR	(HL)		; Test FCB = Directory Entry
+2118:10419+7	095D' E67F    		AND	7FH		; Mask it (setting Zero Flag)
+2119:10426+7+5	095F' 2819    		JR	Z,SEARC5	; Jump if user is same
+2120:10433+7	0961' 3EFF    		LD	A,0FFH
+2121:10440+13	0963' 325100  		LD	(SEARPU),A	; Set Public file found
+2122:     -	FFFF'         		  IF  UPATH
+2123:10453+17	0966' CDAF0A  		CALL	SETPSF		; Set Public/System file flag
+2124:					  ELSE
+2126:					  ENDIF
+2127:10470+12	0969' 180F    		JR	SEARC5		; Jump found
+2128:				
+2129:10482+4	096B' 79      	SEARC3:	LD	A,C		; Get FCB counter
+2130:10486+7	096C' FE0D    		CP	13		; Is it User Code?
+2131:10493+7+5	096E' 280A    		JR	Z,SEARC5	; ..jump if so..don't test
+2132:10500+7	0970' FE0C    		CP	12		; Is it an Extent Number?
+2133:10507+7	0972' 1A      		LD	A,(DE)		; ..Get byte from FCB
+2134:10514+7+5	0973' 2811    		JR	Z,SEARC7	; ..Jump if Extent Number
+2135:10521+7	0975' AE      		XOR	(HL)		; Is FCB byte = Directory Entry byte?
+2136:10528+7	0976' E67F    		AND	07FH		; ..Mask it
+2137:10535+7+5	0978' 2090    	SEARC4:	JR	NZ,SEARCN	; ..jump if not same and get next entry
+2138:10542+6	097A' 13      	SEARC5:	INC	DE		; Increment FCB pointer
+2139:10548+6	097B' 23      		INC	HL		; Increment Directory Entry pointer
+2140:10554+4	097C' 0C      		INC	C		; Increment counter
+2141:10558+4	097D' 05      		DEC	B		; Decrement counter
+2142:10562+12	097E' 18BA    		JR	SEARC2		; Test next byte
+2143:				
+2144:10574+4	0980' 3D      	SEARC6:	DEC	A		; Set question mark found flag
+2145:10578+13	0981' 325000  		LD	(SEARQU),A
+2146:10591+12	0984' 18F4    		JR	SEARC5		; Jump found
+2147:				
+2148:     -	0986'         	SEARC7:
+2149:10603+7	0986' AE      		XOR	(HL)		; Test extent
+2150:10610+17	0987' CD8C09  		CALL	SEARC7A		; Mask Extent
+2151:10627+12	098A' 18EC    		JR	SEARC4		; ..and test Result
+2152:				
+2153:				
+2154:10639+11	098C' C5      	SEARC7A: PUSH	BC
+2155:10650+4	098D' 47      		LD	B,A		; Save Extent
+2156:10654+13	098E' 3A4000  		LD	A,(NEXTND)	; Get extent mask
+2157:10667+4	0991' 2F      		CPL			; Complement it
+2158:10671+7	0992' E61F    		AND	MAXEXT		; Mask it
+2159:10678+4	0994' A0      		AND	B		; Mask extent
+2160:10682+10	0995' C1      		POP	BC		; Restore counters
+2161:10692+10	0996' C9      		RET
+2162:				
+2163:10702+17	0997' CDFC06  	SEARC8:	CALL	SETFCT		; Error set file counter
+2164:10719+10	099A' C37A0B  		JP	RETCFF		; Set return code to FF and exit
+2165:				
+2166:10729+16	099D' 2A5000  	SEARC9:	LD	HL,(SEARQU)	; Get question mark and public found flags
+2167:10745+4	09A0' 7C      		LD	A,H
+2168:10749+4	09A1' A5      		AND	L
+2169:10753+7+5	09A2' 20D4    		JR	NZ,SEARC4	; Yes then search for next entry
+2170:10760+17	09A4' CD2307  		CALL	TSTLF		; Test for last file
+2171:10777+10+7	09A7' D41407  		CALL	NC,SETLF0	; And update if so
+2172:10787+16	09AA' 2A5200  		LD	HL,(RECDIR)	; Set DE return to directory record
+2173:10803+16	09AD' 225F00  		LD	(DEVAL),HL	; .. for DateStamper simulation
+2174:10819+13	09B0' 3A5400  		LD	A,(FILCNT)	; Get file counter
+2175:10832+7	09B3' E603    		AND	3		; Mask it
+2176:10839+13	09B5' 324C00  		LD	(PEXIT),A	; And set exit code
+2177:10852+4	09B8' AF      		XOR	A		; Clear exit code search
+2178:10856+13	09B9' 325A00  		LD	(SEAREX),A
+2179:10869+10	09BC' C9      		RET			; And return to caller
+2180:				
+2181:				; The following code is common to DELETE, RENAME, and CSTAT.
+2182:				; It is coded in a manner that is compatable with the Z280
+2183:				; in protected Mode.
+2184:				
+2185:10879+17	09BD' CDD808  	COMCOD:	CALL	CHKRO		; Check disk W/P
+2186:10896+17	09C0' CDEE08  		CALL	SEAR12		; Search file
+2187:10913+17	09C3' CD1C07  	COMCO1:	CALL	TSTFCT		; Test if file found
+2188:10930+10	09C6' E1      		POP	HL		; Routine addr to HL (in case not found)
+2189:10940+5+6	09C7' C8      		RET	Z		; Not then exit
+2190:10945+11	09C8' E5      		PUSH	HL		; ..found, so routine back to stack
+2191:10956+11	09C9' E5      		PUSH	HL		; Twice, as RET pops first push
+2192:10967+10	09CA' 21CF09  		LD	HL,COMCO2
+2193:10977+19	09CD' E3      		EX	(SP),HL		; COMCO2 to stack, routine addr to HL
+2194:10996+4	09CE' E9      		JP	(HL)		; ..branch to routine
+2195:				
+2196:11000+17	09CF' CD1708  	COMCO2:	CALL	WRFCB		; Write directory buffer on disk
+2197:11017+17	09D2' CD0A09  		CALL	SEARCN		; Search next entry
+2198:11034+12	09D5' 18EC    		JR	COMCO1		; And test it
+2199:				
+2200:				
+2201:				; Rename File - Note Wildcard Support
+2202:				
+2203:11046+17	09D7' CDBD09  	RENAM:	CALL	COMCOD		; Go to common code w/VRENAM on stack
+2204:				
+2205:11063+17	09DA' CDAC08  	VRENAM:	CALL	CHKFRO		; Check file W/P
+2206:11080+16	09DD' 2A5D00  		LD	HL,(ARWORD)
+2207:11096+10	09E0' 111000  		LD	DE,16		; Offset to new name
+2208:11106+11	09E3' 19      		ADD	HL,DE		; Add offset
+2209:11117+4	09E4' EB      		EX	DE,HL		; Copy HL=>DE
+2210:11121+17	09E5' CDF106  		CALL	CALDIR		; Get directory entry
+2211:11138+6	09E8' 23      		INC	HL
+2212:11144+6	09E9' 23      		INC	HL
+2213:11150+15	09EA' CBBE    		RES	7,(HL)		; Make any renamed file private
+2214:11165+6	09EC' 2B      		DEC	HL
+2215:11171+6	09ED' 2B      		DEC	HL
+2216:11177+7	09EE' 060B    		LD	B,11		; Set up loop counter
+2217:11184+6	09F0' 23      	RENAM1:	INC	HL		; Increment directory pointer
+2218:11190+6	09F1' 13      		INC	DE		; Increment FCB pointer
+2219:11196+7	09F2' 1A      		LD	A,(DE)		; Get character from FCB
+2220:11203+7	09F3' E67F    		AND	7FH		; Mask it
+2221:11210+7	09F5' FE3F    		CP	'?'		; Test if question mark
+2222:11217+7+5	09F7' 2001    		JR	NZ,RENAM2	; no, then change character on disk
+2223:11224+7	09F9' 7E      		LD	A,(HL)		; Else get what's there as there is no change
+2224:11231+4	09FA' 17      	RENAM2:	RLA			; Clear MSB
+2225:11235+15	09FB' CB16    		RL	(HL)		; Get MSB from directory
+2226:11250+4	09FD' 1F      		RRA			; And move to FCB
+2227:11254+7	09FE' 77      		LD	(HL),A		; Save in directory
+2228:11261+8+5	09FF' 10EF    		DJNZ	RENAM1		; Loop until done
+2229:11269+10	0A01' C9      		RET
+2230:				
+2231:				; Change Status Bits for File
+2232:				
+2233:11279+17	0A02' CDBD09  	CSTAT:	CALL	COMCOD		; Go to common code w/VCSTAT on stack
+2234:				
+2235:11296+15	0A05' DDE5    	VCSTAT:	PUSH	IX
+2236:11311+10	0A07' D1      		POP	DE		; FCB pointer in DE
+2237:11321+17	0A08' CDF106  		CALL	CALDIR		; Get directory entry
+2238:11338+7	0A0B' 060B    		LD	B,11		; Set up loop counter
+2239:11345+6	0A0D' 23      	CSTAT1:	INC	HL		; Increment directory pointer
+2240:11351+6	0A0E' 13      		INC	DE		; Increment FCB pointer
+2241:11357+7	0A0F' 3E04    		LD	A,4		; Are we pointing to Wheel Attribute?
+2242:11364+4	0A11' B8      		CP	B
+2243:11368+7+5	0A12' 200E    		JR	NZ,CSTAT2	; ..jump if not
+2244:11375+11	0A14' E5      		PUSH	HL
+2245:11386+16	0A15' 2A1300  		LD	HL,(WHEEL)	; Else do we have Wheel privileges?
+2246:11402+7	0A18' 7E      		LD	A,(HL)
+2247:11409+10	0A19' E1      		POP	HL
+2248:11419+4	0A1A' A7      		AND	A		; ..set flags to show
+2249:11423+7+5	0A1B' 2005    		JR	NZ,CSTAT2	; Jump if we have Wheel
+2250:11430+12	0A1D' CB7E    		BIT	7,(HL)		; Is file Wheel protected?
+2251:11442+10	0A1F' C2CF08  		JP	NZ,CHKFR2	; ..jump if so
+2252:11452+7	0A22' 1A      	CSTAT2:	LD	A,(DE)		; Get status bit from FCB
+2253:11459+15	0A23' CB16    		RL	(HL)		; Remove MSB of directory
+2254:11474+4	0A25' 17      		RLA			; Get msb from FCB
+2255:11478+15	0A26' CB1E    		RR	(HL)		; And move into directory char
+2256:11493+8+5	0A28' 10E3    		DJNZ	CSTAT1		; Loop until done
+2257:11501+10	0A2A' C9      		RET
+2258:				
+2259:				; Compute File Size
+2260:				
+2261:11511+10	0A2B' 010000  	FILSZ:	LD	BC,0		; Reset file size length
+2262:11521+4	0A2E' 51      		LD	D,C
+2263:11525+17	0A2F' CD1505  		CALL	LDRRC		; Save it in FCB+33,34,35
+2264:11542+17	0A32' CDEE08  		CALL	SEAR12		; Search file (hfb)
+2265:11559+17	0A35' CD1C07  	FILSZ0:	CALL	TSTFCT		; Test if file found
+2266:11576+5+6	0A38' C8      		RET	Z		; Not then exit
+2267:11581+17	0A39' CDF106  		CALL	CALDIR		; Get directory entry
+2268:11598+4	0A3C' EB      		EX	DE,HL		; Copy to DE
+2269:11602+10	0A3D' 210F00  		LD	HL,15		; Offset to next record
+2270:11612+17	0A40' CD7F0D  		CALL	CALRRC		; Calculate random record count
+2271:11629+4	0A43' 7A      		LD	A,D		; Test LSB < (ix+33)
+2272:11633+19	0A44' DD9621  		SUB	(IX+33)
+2273:11652+4	0A47' 79      		LD	A,C		; Test ISB < (ix+34)
+2274:11656+19	0A48' DD9E22  		SBC	A,(IX+34)
+2275:11675+4	0A4B' 78      		LD	A,B		; Test MSB < (ix+35)
+2276:11679+19	0A4C' DD9E23  		SBC	A,(IX+35)
+2277:11698+10+7	0A4F' D41505  		CALL	NC,LDRRC	; Write new maximum
+2278:11708+17	0A52' CD0A09  		CALL	SEARCN		; Search next file
+2279:11725+12	0A55' 18DE    		JR	FILSZ0		; And test it
+2280:				
+2281:				; Find File
+2282:     -	FFFF'         		  IF  UPATH
+2283:11737+17	0A57' CD1907  	FINDF:	CALL	SRCT15		; Search file
+2284:11754+5+6	0A5A' C0      		RET	NZ		; Yes then exit
+2285:11759+13	0A5B' 3A1500  		LD	A,(FLAGS)
+2286:11772+8	0A5E' CB6F    		BIT	5,A		; Test if Path enabled
+2287:11780+5+6	0A60' C8      		RET	Z		; Exit if not
+2288:11785+16	0A61' 2A1100  		LD	HL,(PATH)	; Get Path address
+2289:11801+4	0A64' 7C      		LD	A,H		; Test if zero (no path)
+2290:11805+4	0A65' B5      		OR	L
+2291:11809+5+6	0A66' C8      		RET	Z		; Yes then exit
+2292:11814+7	0A67' 7E      	FINDF0:	LD	A,(HL)		; Get first entry path name
+2293:11821+6	0A68' 23      		INC	HL		; Increment pointer
+2294:11827+4	0A69' B7      		OR	A		; Test if last entry
+2295:11831+10	0A6A' CA9709  		JP	Z,SEARC8	; Yes then error exit
+2296:11841+7	0A6D' E67F    		AND	7FH		; Mask drive number
+2297:11848+7	0A6F' FE24    		CP	'$'		; Test if current drive
+2298:11855+7+5	0A71' 2004    		JR	NZ,FINDF1	; No then jump
+2299:11862+13	0A73' 3A2C00  		LD	A,(DRIVE)	; Get current drive
+2300:11875+4	0A76' 3C      		INC	A		; Increment drive number
+2301:11879+4	0A77' 3D      	FINDF1:	DEC	A		; Decrement drive number
+2302:11883+11	0A78' E5      		PUSH	HL		; Save path pointer
+2303:11894+17	0A79' CD8105  		CALL	SELDK		; Select drive
+2304:11911+10	0A7C' E1      		POP	HL		; Restore path pointer
+2305:11921+7	0A7D' 7E      		LD	A,(HL)		; Get user number
+2306:11928+6	0A7E' 23      		INC	HL		; Advance pointer
+2307:11934+7	0A7F' E67F    		AND	7FH		; Mask user number
+2308:11941+7	0A81' FE24    		CP	'$'		; Test if current user
+2309:11948+7+5	0A83' 2003    		JR	NZ,FINDF2	; No then jump
+2310:11955+13	0A85' 3A2A00  		LD	A,(USER)	; Get current user
+2311:11968+7	0A88' E61F    	FINDF2:	AND	1FH		; Mask user number
+2312:11975+11	0A8A' E5      		PUSH	HL		; Save path pointer
+2313:11986+17	0A8B' CD5E05  		CALL	RESUSR		; Add new user number in FCB+0 and FCB+13
+2314:12003+17	0A8E' CD1907  		CALL	SRCT15		; Search file and test if present
+2315:12020+10	0A91' E1      		POP	HL		; Restore path pointer
+2316:12030+7+5	0A92' 28D3    		JR	Z,FINDF0	; No then test next path entry
+2317:12037+11	0A94' E5      		PUSH	HL		; Save path pointer
+2318:12048+17	0A95' CDF106  		CALL	CALDIR		; Get directory entry
+2319:12065+10	0A98' 110A00  		LD	DE,10		; Add offset system bit
+2320:12075+11	0A9B' 19      		ADD	HL,DE
+2321:12086+12	0A9C' CB7E    		BIT	7,(HL)		; Test system file
+2322:12098+13	0A9E' 3A1500  		LD	A,(FLAGS)	; Test for relaxed path definition
+2323:12111+4	0AA1' 17      		RLA			; ..by rotating bit..
+2324:12115+4	0AA2' 17      		RLA			; ..into carry flag
+2325:12119+10	0AA3' E1      		POP	HL		; Restore path pointer
+2326:12129+7+5	0AA4' 3802    		JR	C,FINDF3	; If carry, system attrib not required
+2327:12136+7+5	0AA6' 28BF    		JR	Z,FINDF0	; No system file then test next path entry
+2328:12143+13	0AA8' 3A2B00  	FINDF3:	LD	A,(DEFDRV)	; Get current drive
+2329:12156+4	0AAB' 3C      		INC	A		; Increment drive number
+2330:12160+13	0AAC' 322D00  		LD	(FCB0),A	; Save it in exit FCB0
+2331:12173+23	0AAF' DDCB07FE	SETPSF:	SET	7,(IX+PSFATT)	; set Public/System file flag
+2332:12196+10	0AB3' C9      		RET			; And return to caller
+2333:					  ENDIF		;Upath
+2334:				
+2335:				; Open File Command
+2336:				
+2337:12206+17	0AB4' CD1F05  	CMND15:	CALL	SELDRV		; Select drive from FCB
+2338:12223+19	0AB7' DD360E00		LD	(IX+FCBMOD),0	; Clear data module number
+2339:				
+2340:				; Open File
+2341:     -	FFFF'         		  IF  UPATH
+2342:12242+17	0ABB' CD570A  		CALL	FINDF		; Find file (use path name)
+2343:12259+17	0ABE' CD1C07  		CALL	TSTFCT		; Test file found
+2344:					  ELSE
+2346:					  ENDIF		;Upath
+2347:12276+5+6	0AC1' C8      		RET	Z		; No then exit
+2348:12281+19	0AC2' DD7E07  	OPENF0:	LD	A,(IX+PSFATT)	; Get Public/System file bit
+2349:12300+11	0AC5' F5      		PUSH	AF		; Save it
+2350:12311+19	0AC6' DD7E0C  		LD	A,(IX+FCBEXT)	; Get extent number from FCB
+2351:12330+11	0AC9' F5      		PUSH	AF		; Save it
+2352:12341+17	0ACA' CDF106  		CALL	CALDIR		; Get directory entry
+2353:12358+7	0ACD' 7E      		LD	A,(HL)		; Find real user number file is in
+2354:12365+7	0ACE' F680    		OR	80H		; Set user valid flag
+2355:12372+15	0AD0' DDE5    		PUSH	IX		; Save FCB entry
+2356:12387+10	0AD2' D1      		POP	DE		; Get in in DE
+2357:12397+10	0AD3' 012000  		LD	BC,32		; Number of bytes to move
+2358:12407+16+5	0AD6' EDB0    		LDIR			; Move directory to FCB
+2359:12423+19	0AD8' DD770D  		LD	(IX+FCBUSR),A	; And put user byte back
+2360:12442+17	0ADB' CD7A0D  		CALL	SETB14		; Set FCB/File Not Modified
+2361:12459+19	0ADE' DD460C  		LD	B,(IX+FCBEXT)	; Get extent number
+2362:12478+19	0AE1' DD4E0F  		LD	C,(IX+FCBREC)	; Get next record number
+2363:12497+10	0AE4' F1      		POP	AF		; Get old extent number
+2364:12507+19	0AE5' DD770C  		LD	(IX+FCBEXT),A	; Save it
+2365:12526+4	0AE8' B8      		CP	B		; Compare old and new extent number
+2366:12530+7+5	0AE9' 2804    		JR	Z,OPENF1	; Same then jump
+2367:12537+7	0AEB' 0E00    		LD	C,0		; Set next record count to 0
+2368:12544+8	0AED' CB19    		RR	C		; Record count to Max (80H) if need new extent
+2369:12552+19	0AEF' DD710F  	OPENF1:	LD	(IX+FCBREC),C	; Save next record count
+2370:12571+10	0AF2' F1      		POP	AF		; Get Public/System file bit
+2371:12581+23	0AF3' DDCB0716		RL	(IX+PSFATT)	; Remove MSB from IX+8
+2372:12604+4	0AF7' 17      		RLA			; Set new MSB in carry
+2373:12608+23	0AF8' DDCB071E		RR	(IX+PSFATT)	; Save Carry in IX+8
+2374:     -	FFFF'         		  IF  ZS
+2375:12631+16	0AFC' 2A1800  		LD	HL,(STLAV)	; Get address of last accessed routine
+2376:12647+10	0AFF' C3B90D  		JP	STAMPT
+2377:					  ELSE
+2381:					  ENDIF		;Zs
+2382:				
+2383:				; Make File Command
+2384:				
+2385:12657+17	0B02' CD1F05  	CMND22:	CALL	SELDRV		; Select drive from FCB
+2386:12674+19	0B05' DD360E00		LD	(IX+FCBMOD),0	; Clear data module number
+2387:				
+2388:				; Make File
+2389:				
+2390:12693+17	0B09' CDD808  	MAKES:	CALL	CHKRO		; Check drive W/P
+2391:12710+16	0B0C' 2A5D00  		LD	HL,(ARWORD)
+2392:12726+7	0B0F' 7E      		LD	A,(HL)		; Get first byte FCB
+2393:12733+11	0B10' F5      		PUSH	AF		; Save it
+2394:12744+10	0B11' 36E5    		LD	(HL),0E5H	; Set first byte to empty file
+2395:12754+7	0B13' 3E01    		LD	A,1		; Search for 1 byte
+2396:12761+17	0B15' CDF308  		CALL	SEARCH		; Search empty file
+2397:12778+10	0B18' F1      		POP	AF		; Get first byte FCB
+2398:12788+19	0B19' DD7700  		LD	(IX+0),A	; Restore it
+2399:12807+17	0B1C' CD1C07  		CALL	TSTFCT		; Test empty file found
+2400:12824+5+6	0B1F' C8      		RET	Z		; No then return error
+2401:12829+16	0B20' 2A5D00  		LD	HL,(ARWORD)	; Get FCB pointer
+2402:12845+17	0B23' CD5204  		CALL	CKSUB		; Check if this is a submit file
+2403:12862+10	0B26' 110F00  		LD	DE,15		; Prepare offset
+2404:12872+11	0B29' 19      		ADD	HL,DE		; Add it
+2405:12883+7	0B2A' 0611    		LD	B,17		; Set loop counter
+2406:12890+4	0B2C' AF      		XOR	A
+2407:12894+7	0B2D' 77      	MAKE0:	LD	(HL),A		; Clear FCB+15 up to FCB+31
+2408:12901+6	0B2E' 23      		INC	HL		; Increment pointer
+2409:12907+8+5	0B2F' 10FC    		DJNZ	MAKE0		; And clear all bytes
+2410:12915+23	0B31' DDCB07BE		RES	7,(IX+PSFATT)	; Reset Public/System file bit
+2411:12938+23	0B35' DDCB0BBE		RES	7,(IX+ARCATT)	; Reset archive bit if present
+2412:12961+17	0B39' CDF106  		CALL	CALDIR		; Get directory entry
+2413:12978+15	0B3C' DDE5    		PUSH	IX		; Save FCB entry
+2414:12993+10	0B3E' D1      		POP	DE		; Get it in DE
+2415:13003+4	0B3F' EB      		EX	DE,HL		; Exchange FCB and directory entry
+2416:13007+10	0B40' 012000  		LD	BC,32		; Number of bytes to move
+2417:13017+16+5	0B43' EDB0    		LDIR			; Move bytes
+2418:13033+17	0B45' CD1708  		CALL	WRFCB		; Write FCB on disk
+2419:13050+17	0B48' CD7A0D  		CALL	SETB14		; Set file not modified
+2420:     -	FFFF'         		  IF  ZS
+2421:13067+16	0B4B' 2A1A00  		LD	HL,(STCRV)	; Get address of Stamp Create routine
+2422:13083+10	0B4E' C3B90D  		JP	STAMPT		; ..and stamp it
+2423:					  ELSE
+2426:					  ENDIF		;Zs
+2427:				
+2428:				; Open Next Extent
+2429:				
+2430:13093+20	0B51' DDCB0E7E	OPENEX:	BIT	7,(IX+FCBMOD)	; Test if FCB/File Modified (write)
+2431:13113+7+5	0B55' 2008    		JR	NZ,OPENX2	; Not then jump
+2432:13120+17	0B57' CDAB07  		CALL	CLOSE		; Close current FCB
+2433:13137+13	0B5A' 3A4C00  		LD	A,(PEXIT)	; Get exit code
+2434:13150+4	0B5D' 3C      		INC	A		; Test if error
+2435:13154+5+6	0B5E' C8      		RET	Z		; Yes then exit
+2436:13159+17	0B5F' CD850B  	OPENX2:	CALL	CALNEX		; Calculate next extent (LABEL MOVED)
+2437:13176+7+5	0B62' 3813    		JR	C,OPENX3	; Error then jump
+2438:				
+2439:13183+17	0B64' CD1907  	OPENX0:	CALL	SRCT15		; Search for 15-char match & test presence
+2440:13200+7+5	0B67' 2016    		JR	NZ,OPENX5	; Yes then jump
+2441:13207+13	0B69' 3A4F00  		LD	A,(RDWR)	; Test Read/Write flag
+2442:13220+4	0B6C' B7      		OR	A		; Test if read
+2443:13224+7+5	0B6D' 2808    		JR	Z,OPENX3	; Yes then error
+2444:13231+17	0B6F' CD090B  		CALL	MAKES		; Make new extent if write
+2445:13248+17	0B72' CD1C07  		CALL	TSTFCT		; Test if succesfull
+2446:13265+7+5	0B75' 200B    		JR	NZ,OPENX6	; Yes then exit
+2447:13272+17	0B77' CD7A0D  	OPENX3:	CALL	SETB14		; Set FCB/File Not Modified
+2448:13289+7	0B7A' 3EFF    	RETCFF:	LD	A,0FFH		; (hfb/cwc) set exit code
+2449:13296+10	0B7C' C3BB04  	OPENX4:	JP	SAVEA		; And return to caller
+2450:				
+2451:13306+17	0B7F' CDC20A  	OPENX5:	CALL	OPENF0		; Open file
+2452:13323+4	0B82' AF      	OPENX6:	XOR	A		; And clear exit code
+2453:13327+12	0B83' 18F7    		JR	OPENX4		; Use same routine
+2454:				
+2455:				;==OPENX2:	CALL	CALNEX		; Calculate next extent
+2456:				;==	JR	C,OPENX3	; Error then jump
+2457:				;==	JR	OPENX0		; Open next extent, FCB contains DU:
+2458:				
+2459:				; Calculate Next Extent
+2460:				;  Exit: Carry=1 => Overflow Detected
+2461:				
+2462:13339+17	0B85' CDA60B  	CALNEX:	CALL	GETDME		; Get extent number, data module number
+2463:13356+8	0B88' CB70    		BIT	6,B		; Test error bit random record
+2464:13364+4	0B8A' 37      		SCF			; Set error flag
+2465:13368+5+6	0B8B' C0      		RET	NZ		; ..Error exit if Non-zero
+2466:13373+4	0B8C' 0C      		INC	C		; Increment extent number
+2467:13377+4	0B8D' 79      		LD	A,C		; Get extent number
+2468:13381+7	0B8E' E61F    		AND	MAXEXT		; Mask it for max extent
+2469:13388+4	0B90' 4F      		LD	C,A		; Save it in C
+2470:				;==	JR	NZ,SETDME	; If new data module not required
+2471:13392+7+5	0B91' 2007    		JR	NZ,CALNE1	;== IF NEW DATA MODULE NOT REQUIRED
+2472:13399+4	0B93' 04      		INC	B		; Set next data module
+2473:13403+4	0B94' 78      		LD	A,B		; Get it in A
+2474:13407+7	0B95' E63F    		AND	MAXMOD		; Mask it for max module
+2475:13414+4	0B97' 47      		LD	B,A		; Save it in B
+2476:13418+4	0B98' 37      		SCF			; Set error flag
+2477:13422+5+6	0B99' C8      		RET	Z		; And return if file overflow
+2478:13427+19	0B9A' DD362000	CALNE1:	LD	(IX+NXTREC),0	;== ZERO NEXT RECORD COUNT
+2479:13446+19	0B9E' DD710C  	SETDME:	LD	(IX+FCBEXT),C	; Save Extent number
+2480:13465+19	0BA1' DD700E  		LD	(IX+FCBMOD),B	; Save Data Module number
+2481:     -	FFFF'         		  IF  ZS
+2482:13484+4	0BA4' A7      		AND	A		; Clear flag here if ZS
+2483:13488+10	0BA5' C9      		RET
+2484:					  ENDIF			; ..else fall thru on ZD to do same thing
+2485:				
+2486:13498+19	0BA6' DD4E0C  	GETDME:	LD	C,(IX+FCBEXT)	; Get Extent number
+2487:13517+19	0BA9' DD460E  		LD	B,(IX+FCBMOD)	; Get Data Module number
+2488:13536+4	0BAC' 79      		LD	A,C
+2489:13540+17	0BAD' CD8C09  		CALL	SEARC7A		; Mask Extent
+2490:13557+8	0BB0' CBB8    		RES	7,B		; Clear Unmodified Flag
+2491:13565+4	0BB2' B0      		OR	B		; Test for Module and Extent = 0
+2492:13569+10	0BB3' C9      		RET			; ..and return to caller
+2493:				
+2494:				; Read Random Record Command
+2495:				
+2496:13579+17	0BB4' CD2D05  	CMND33:	CALL	SELDR1		; Select drive from FCB
+2497:				
+2498:				; Read Random Sector
+2499:				
+2500:13596+4	0BB7' AF      		XOR	A		; Set read/write flag
+2501:13600+17	0BB8' CDF60C  		CALL	LDFCB		; Load random record in FCB
+2502:13617+7+5	0BBB' 2804    		JR	Z,READS		; No error then read sector
+2503:13624+10	0BBD' C9      		RET			; Return error
+2504:				
+2505:				; Read Sequential
+2506:				
+2507:13634+17	0BBE' CD2D05  	CMND20:	CALL	SELDR1		; Select drive from FCB
+2508:				
+2509:				; Read Sector
+2510:				
+2511:13651+4	0BC1' AF      	READS:	XOR	A		; Set Read/Write flag
+2512:13655+13	0BC2' 324F00  		LD	(RDWR),A	; Save it
+2513:13668+19	0BC5' DD7E20  		LD	A,(IX+NXTREC)	; Get record counter
+2514:13687+7	0BC8' FE80    		CP	80H		; Test if last record this extent
+2515:				;=	JR	NC,READS1	; Yes then open next extent
+2516:13694+7+5	0BCA' 2809    		JR	Z,READS1	;= Yes then open next extent
+2517:13701+19	0BCC' DDBE0F  		CP	(IX+FCBREC)	; Test if greater then current record
+2518:13720+7+5	0BCF' 3807    		JR	C,READS2	; No then get record
+2519:13727+7	0BD1' 3E01    	READS0:	LD	A,1		; Set end of file flag
+2520:13734+12	0BD3' 18A7    		JR	OPENX4		; And exit
+2521:				
+2522:13746+17	0BD5' CDE90B  	READS1:	CALL	OPNXCK		; Open next extent
+2523:13763+17	0BD8' CDAA06  	READS2:	CALL	GETDM		; Get block number from DM in FCB
+2524:13780+7+5	0BDB' 28F4    		JR	Z,READS0	; Jump if block number=0 to end file
+2525:13787+17	0BDD' CDD706  		CALL	CALSEC		; Calculate Sector Number (128 bytes)
+2526:13804+17	0BE0' CD7A06  		CALL	CALST		; Calculate Sector/Track number
+2527:13821+17	0BE3' CD9507  		CALL	READR		; Read data
+2528:13838+10	0BE6' C3E40C  		JP	WRITS7		; Increment elsewhere if necessary
+2529:				
+2530:				; Consolidated Routine to Open Extent and check status
+2531:				
+2532:13848+17	0BE9' CD510B  	OPNXCK:	CALL	OPENEX		; Open next extent
+2533:13865+13	0BEC' 3A4C00  		LD	A,(PEXIT)	; Get exit code
+2534:13878+4	0BEF' B7      		OR	A
+2535:13882+5+6	0BF0' C8      		RET	Z		;== IF OPEN OK
+2536:13887+10	0BF1' E1      		POP	HL		;== ELSE POP RETURN ADDRESS TO ABORT R/W
+2537:13897+12	0BF2' 18DD    		JR	READS0		;== AND SET ERROR CODE TO EOF
+2538:				;==	JR	NZ,READS0	; Yes then end of file
+2539:				;==	LD	(IX+NXTREC),A	; Clear record counter (jww)
+2540:				;==	RET
+2541:				
+2542:				; Write Random Record Command (with and without Zero Fill)
+2543:				
+2544:     -	0BF4'         	CMND40:				; (hfb/cwc)
+2545:13909+17	0BF4' CD2D05  	CMND34:	CALL	SELDR1		; Select drive from FCB
+2546:				
+2547:				; Write Random Sector and Write Random with Zero Fill
+2548:				
+2549:13926+7	0BF7' 3EFF    		LD	A,0FFH		; Set Read/Write flag
+2550:13933+17	0BF9' CDF60C  		CALL	LDFCB		; Load FCB from random record
+2551:13950+7+5	0BFC' 2804    		JR	Z,WRITES	; No error then write record
+2552:13957+10	0BFE' C9      		RET			; Return error
+2553:				
+2554:				; Write Sequential
+2555:				
+2556:13967+17	0BFF' CD2D05  	CMND21:	CALL	SELDR1		; Select drive from FCB
+2557:				
+2558:				; Write Sector.  Permitted to PUBlic files and those found along Path
+2559:				
+2560:13984+7	0C02' 3EFF    	WRITES:	LD	A,0FFH		; Set read/write flag
+2561:13991+13	0C04' 324F00  		LD	(RDWR),A	; And save it
+2562:				
+2563:     -	0C08'         	BGPTCH1	EQU	$+1		;<-- Patched location for BGii
+2564:				
+2565:14004+17	0C07' CDD808  		CALL	CHKRO		; Check disk W/P
+2566:14021+20	0C0A' DDCB097E		BIT	7,(IX+ROATT)	; Test if file W/P
+2567:14041+7+5	0C0E' 200E    		JR	NZ,WRITSA	; Yes then file W/P message
+2568:14048+17	0C10' CDC408  		CALL	CHKFR3		; Test W/P if path or Public used
+2569:14065+16	0C13' 2A1300  		LD	HL,(WHEEL)	; Get address of Wheel byte
+2570:14081+7	0C16' 7E      		LD	A,(HL)		; Do we have it?
+2571:14088+4	0C17' A7      		AND	A
+2572:14092+7+5	0C18' 2007    		JR	NZ,WRITSB	; Yes - allow write
+2573:14099+20	0C1A' DDCB087E		BIT	7,(IX+WHLATT)	; Else test if Wheel Prot file
+2574:14119+10	0C1E' C2CF08  	WRITSA:	JP	NZ,CHKFR2	; Yes then file W/P message
+2575:14129+20	0C21' DDCB207E	WRITSB:	BIT	7,(IX+NXTREC)	; End of this extent?
+2576:14149+10+7	0C25' C4E90B  		CALL	NZ,OPNXCK	; Open next extent and check status (hfb)
+2577:14159+17	0C28' CDAA06  		CALL	GETDM		; Get block number from FCB
+2578:14176+10	0C2B' C2C30C  		JP	NZ,WRITS5	; Jump to write sector if Block Number <> 0
+2579:14186+11	0C2E' E5      		PUSH	HL		; Save pointer to Block Number
+2580:14197+4	0C2F' 79      		LD	A,C		; Test first Block Number in extent
+2581:14201+4	0C30' B7      		OR	A
+2582:14205+7+5	0C31' 2804    		JR	Z,WRITS1	; Yes then jump
+2583:14212+4	0C33' 3D      		DEC	A		; Decrement pointer to Block Number
+2584:14216+17	0C34' CDC006  		CALL	GETDM4		; Get previous Block Number
+2585:				
+2586:				; Get Free Block from ALV Buffer
+2587:				;  Entry DE=Old Block Number
+2588:				;  Exit  DE=New Block Number (0 if No Free Block)
+2589:				;   HL counts Up,DE counts Down
+2590:								; GETFRE routine relocated here inline
+2591:14233+4	0C37' 62      	WRITS1:	LD	H,D		; Copy old block to HL
+2592:14237+4	0C38' 6B      		LD	L,E
+2593:14241+4	0C39' 7A      	GETFR0:	LD	A,D		; Test down counter is zero
+2594:14245+4	0C3A' B3      		OR	E
+2595:14249+7+5	0C3B' 280B    		JR	Z,GETFR1	; Yes then jump
+2596:14256+6	0C3D' 1B      		DEC	DE		; Decrememt down counter
+2597:14262+11	0C3E' E5      		PUSH	HL		; Save up/down counter
+2598:14273+11	0C3F' D5      		PUSH	DE
+2599:14284+17	0C40' CD4408  		CALL	GETBIT		; Get bit from ALV buffer
+2600:14301+4	0C43' 1F      		RRA			; Test if zero
+2601:14305+7+5	0C44' 3020    		JR	NC,GETFR3	; Yes then found empty block
+2602:14312+10	0C46' D1      		POP	DE		; Get up/down counter
+2603:14322+10	0C47' E1      		POP	HL
+2604:14332+20	0C48' ED4B4100	GETFR1:	LD	BC,(MAXLEN)	; Get maximum ALV length-1 in BC
+2605:14352+4	0C4C' 7D      		LD	A,L		; Is HL >= length ALV-1?
+2606:14356+4	0C4D' 91      		SUB	C		; ..do while preserving HL
+2607:14360+4	0C4E' 7C      		LD	A,H
+2608:14364+4	0C4F' 98      		SBC	A,B
+2609:14368+7+5	0C50' 300E    		JR	NC,GETFR2	; End buffer then jump
+2610:14375+6	0C52' 23      		INC	HL		; Increment up counter
+2611:14381+11	0C53' D5      		PUSH	DE		; Save down/up counter
+2612:14392+11	0C54' E5      		PUSH	HL
+2613:14403+4	0C55' EB      		EX	DE,HL		; Save up counter in DE
+2614:14407+17	0C56' CD4408  		CALL	GETBIT		; Get bit from ALV buffer
+2615:14424+4	0C59' 1F      		RRA			; Test if zero
+2616:14428+7+5	0C5A' 300A    		JR	NC,GETFR3	; Yes then found empty block
+2617:14435+10	0C5C' E1      		POP	HL		; Get down/up counter
+2618:14445+10	0C5D' D1      		POP	DE
+2619:14455+12	0C5E' 18D9    		JR	GETFR0		; And test next block
+2620:				
+2621:14467+4	0C60' 7A      	GETFR2:	LD	A,D		; Test if last block tested
+2622:14471+4	0C61' B3      		OR	E
+2623:14475+7+5	0C62' 20D5    		JR	NZ,GETFR0	; No then test next block
+2624:14482+12	0C64' 1807    		JR	WRITSG		; Continue with DE=0
+2625:				
+2626:14494+4	0C66' 37      	GETFR3:	SCF			; Set block number used
+2627:14498+4	0C67' 17      		RLA			; Save bit
+2628:14502+17	0C68' CD6808  		CALL	SETBT0		; Put bit in ALV buffer
+2629:14519+10	0C6B' D1      		POP	DE		; Get correct counter
+2630:14529+10	0C6C' E1      		POP	HL		; Restore stack pointer
+2631:								; ..continue with (DE=block number)
+2632:				
+2633:14539+10	0C6D' E1      	WRITSG:	POP	HL		; Get pointer to Block Number
+2634:14549+4	0C6E' 7A      		LD	A,D		; Test if blocknumber = 0
+2635:14553+4	0C6F' B3      		OR	E
+2636:14557+7+5	0C70' 287F    		JR	Z,WRITS8	; Yes then disk full error
+2637:14564+23	0C72' DDCB0EBE		RES	7,(IX+FCBMOD)	; Reset FCB/File Modified
+2638:14587+7	0C76' 73      		LD	(HL),E		; Save blocknumber
+2639:14594+13	0C77' 3A4200  		LD	A,(MAXLEN+1)	; Get number of blocks
+2640:14607+4	0C7A' B7      		OR	A		; Is it < 256?
+2641:14611+7+5	0C7B' 2802    		JR	Z,WRITS2	; ..Jump if so
+2642:14618+6	0C7D' 23      		INC	HL		; Increment to MSB Block Number
+2643:14624+7	0C7E' 72      		LD	(HL),D		; ..and save MSB block number
+2644:14631+7	0C7F' 0E02    	WRITS2:	LD	C,2		; Set write new block flag
+2645:14638+13	0C81' 3A3F00  		LD	A,(NMASK)	; Get sector mask
+2646:14651+19	0C84' DDA620  		AND	(IX+NXTREC)	; Mask with record counter
+2647:14670+7+5	0C87' 2802    		JR	Z,WRITSX	; Zero then Ok (at start new record)
+2648:14677+7	0C89' 0E00    		LD	C,0		; Else clear new block flag
+2649:14684+13	0C8B' 3A4B00  	WRITSX:	LD	A,(FUNCT)	; Get function number
+2650:14697+7	0C8E' D628    		SUB	40		; Test if Write RR with zero fill
+2651:14704+7+5	0C90' 2033    		JR	NZ,WRITS6	; No then jump
+2652:14711+11	0C92' D5      		PUSH	DE		; Save blocknumber
+2653:14722+16	0C93' 2A3400  		LD	HL,(DIRBUF)	; Use directory buffer for zero fill
+2654:14738+7	0C96' 0680    		LD	B,128		; 128 bytes to clear
+2655:14745+7	0C98' 77      	WRITS3:	LD	(HL),A		; Clear directory buffer
+2656:14752+6	0C99' 23      		INC	HL		; Increment pointer
+2657:14758+8+5	0C9A' 10FC    		DJNZ	WRITS3		; Clear all bytes
+2658:14766+17	0C9C' CDD706  		CALL	CALSEC		; Calculate sector number (128 bytes)
+2659:14783+13	0C9F' 3A3F00  		LD	A,(NMASK)	; Get sector mask
+2660:14796+4	0CA2' 47      		LD	B,A		; Copy it
+2661:14800+4	0CA3' 04      		INC	B		; Increment it to get number of writes
+2662:14804+4	0CA4' 2F      		CPL			; Complement sector mask
+2663:14808+4	0CA5' A3      		AND	E		; Mask sector number
+2664:14812+4	0CA6' 5F      		LD	E,A		; And save it
+2665:14816+7	0CA7' 0E02    		LD	C,2		; Set write new block flag
+2666:14823+11	0CA9' E5      	WRITS4:	PUSH	HL		; Save registers
+2667:14834+11	0CAA' D5      		PUSH	DE
+2668:14845+11	0CAB' C5      		PUSH	BC
+2669:14856+17	0CAC' CD7A06  		CALL	CALST		; Calculate sector/track
+2670:14873+17	0CAF' CD3D08  		CALL	DMADIR		; Set DMA directory buffer
+2671:14890+10	0CB2' C1      		POP	BC		; Get write new block flag
+2672:14900+11	0CB3' C5      		PUSH	BC		; Save it again
+2673:14911+17	0CB4' CD9A07  		CALL	WRITER		; Write record on disk
+2674:14928+10	0CB7' C1      		POP	BC		; Restore registers
+2675:14938+10	0CB8' D1      		POP	DE
+2676:14948+10	0CB9' E1      		POP	HL
+2677:14958+7	0CBA' 0E00    		LD	C,0		; Clear write new block flag
+2678:14965+4	0CBC' 1C      		INC	E		; Increment sector number
+2679:14969+8+5	0CBD' 10EA    		DJNZ	WRITS4		; Write all blocks
+2680:14977+17	0CBF' CD3708  		CALL	STDMA		; Set user DMA address
+2681:14994+10	0CC2' D1      		POP	DE		; Get Block Number
+2682:15004+7	0CC3' 0E00    	WRITS5:	LD	C,0		; Clear write new block flag
+2683:15011+23	0CC5' DDCB0EBE	WRITS6:	RES	7,(IX+FCBMOD)	; Reset FCB/File Modified flag
+2684:15034+11	0CC9' C5      		PUSH	BC		; Save it
+2685:15045+17	0CCA' CDD706  		CALL	CALSEC		; Calculate sector number (128 bytes)
+2686:15062+17	0CCD' CD7A06  		CALL	CALST		; Calculate Sector/Track
+2687:15079+10	0CD0' C1      		POP	BC		; Get write new block flag
+2688:15089+17	0CD1' CD9A07  		CALL	WRITER		; Write record on disk
+2689:15106+19	0CD4' DD7E20  		LD	A,(IX+NXTREC)	; Get record counter
+2690:15125+19	0CD7' DDBE0F  		CP	(IX+FCBREC)	; Compare with next record
+2691:15144+7+5	0CDA' 3808    		JR	C,WRITS7	; If less then jump
+2692:15151+4	0CDC' 3C      		INC	A		; Increment record count
+2693:15155+19	0CDD' DD770F  		LD	(IX+FCBREC),A	; Save it on next record position
+2694:15174+23	0CE0' DDCB0EBE		RES	7,(IX+FCBMOD)	; Reset FCB/File Modified flag
+2695:15197+13	0CE4' 3A4B00  	WRITS7:	LD	A,(FUNCT)	; Get function number
+2696:15210+7	0CE7' FE14    		CP	20		; (hfb)
+2697:15217+5+6	0CE9' D8      		RET	C		; Return if < 20 (hfb)
+2698:15222+7	0CEA' FE16    		CP	21+1		; (hfb)
+2699:15229+5+6	0CEC' D0      		RET	NC		; Return if > 21 (hfb)
+2700:15234+23	0CED' DD3420  		INC	(IX+NXTREC)	; Increment record count
+2701:15257+10	0CF0' C9      		RET			; And return to caller
+2702:				
+2703:15267+7	0CF1' 3E02    	WRITS8:	LD	A,2		; Set disk full error
+2704:15274+10	0CF3' C3BB04  		JP	SAVEA		; And return to caller 
+2705:				
+2706:				
+2707:				; Load FCB for Random Read/Write
+2708:				;  Exit : Zero Flag = 1 No Error
+2709:				;		      0 Error Occured
+2710:				
+2711:15284+13	0CF6' 324F00  	LDFCB:	LD	(RDWR),A	; Save Read/Write flag
+2712:15297+19	0CF9' DD7E21  		LD	A,(IX+33)	; Get first byte random record
+2713:15316+4	0CFC' 57      		LD	D,A		; Save it in D
+2714:15320+8	0CFD' CBBA    		RES	7,D		; Reset MSB to get next record
+2715:15328+4	0CFF' 17      		RLA			; Shift MSB in carry
+2716:15332+19	0D00' DD7E22  		LD	A,(IX+34)	; Load next byte random record
+2717:15351+4	0D03' 17      		RLA			; Shift Carry
+2718:15355+11	0D04' F5      		PUSH	AF		; Save it
+2719:15366+7	0D05' E61F    		AND	MAXEXT		; Mask next extent
+2720:15373+4	0D07' 4F      		LD	C,A		; Save it in C
+2721:15377+10	0D08' F1      		POP	AF		; Get byte
+2722:15387+4	0D09' 17      		RLA			; Shift 4 times
+2723:15391+4	0D0A' 17      		RLA
+2724:15395+4	0D0B' 17      		RLA
+2725:15399+4	0D0C' 17      		RLA
+2726:15403+7	0D0D' E60F    		AND	0FH		; Mask it
+2727:15410+4	0D0F' 47      		LD	B,A		; Save data module number
+2728:15414+19	0D10' DD7E23  		LD	A,(IX+35)	; Get next byte random record
+2729:15433+7	0D13' 1E06    		LD	E,6		; Set random record to large flag
+2730:15440+7	0D15' FE04    		CP	4		; Test random record to large
+2731:15447+7+5	0D17' 305C    		JR	NC,LDFCB8	; Yes then error
+2732:15454+4	0D19' 07      		RLCA			; Shift 4 times
+2733:15458+4	0D1A' 07      		RLCA
+2734:15462+4	0D1B' 07      		RLCA
+2735:15466+4	0D1C' 07      		RLCA
+2736:15470+4	0D1D' 80      		ADD	A,B		; Add byte
+2737:15474+4	0D1E' 47      		LD	B,A		; Save data module number in B
+2738:15478+19	0D1F' DD7220  		LD	(IX+NXTREC),D	; Set next record count
+2739:15497+19	0D22' DD560E  		LD	D,(IX+FCBMOD)	; Get data module number
+2740:15516+8	0D25' CB72    		BIT	6,D		; Test error random record
+2741:15524+7+5	0D27' 200E    		JR	NZ,LDFCB0	; Yes then jump
+2742:15531+4	0D29' 79      		LD	A,C		; Get new extent number
+2743:15535+19	0D2A' DDBE0C  		CP	(IX+FCBEXT)	; Compare with FCB
+2744:15554+7+5	0D2D' 2008    		JR	NZ,LDFCB0	; Not equal then open next extent
+2745:15561+4	0D2F' 78      		LD	A,B		; Get new data module number
+2746:15565+19	0D30' DDAE0E  		XOR	(IX+FCBMOD)	; Compare with data module number
+2747:15584+7	0D33' E63F    		AND	MAXMOD		; Mask it
+2748:15591+7+5	0D35' 2837    		JR	Z,LDFCB6	; Equal then return
+2749:15598+8	0D37' CB7A    	LDFCB0:	BIT	7,D		; Test FCB modified (write)
+2750:15606+7+5	0D39' 200F    		JR	NZ,LDFCB1	; No then jump
+2751:15613+11	0D3B' D5      		PUSH	DE		; Save registers
+2752:15624+11	0D3C' C5      		PUSH	BC
+2753:15635+17	0D3D' CDAB07  		CALL	CLOSE		; Close extent
+2754:15652+10	0D40' C1      		POP	BC		; Restore registers
+2755:15662+10	0D41' D1      		POP	DE
+2756:15672+7	0D42' 1E03    		LD	E,3		; Set close error
+2757:15679+13	0D44' 3A4C00  		LD	A,(PEXIT)	; Get exit code
+2758:15692+4	0D47' 3C      		INC	A
+2759:15696+7+5	0D48' 2827    		JR	Z,LDFCB7	; Error then exit
+2760:15703+17	0D4A' CD9E0B  	LDFCB1:	CALL	SETDME		; Save Data Module and Extent
+2761:15720+17	0D4D' CDF108  		CALL	SEAR15		; Search next FCB
+2762:15737+13	0D50' 3A4C00  		LD	A,(PEXIT)	; Get error code
+2763:15750+4	0D53' 3C      		INC	A
+2764:15754+7+5	0D54' 2015    		JR	NZ,LDFCB5	; No error then exit
+2765:15761+13	0D56' 3A4F00  		LD	A,(RDWR)	; Get read/write flag
+2766:15774+7	0D59' 1E04    		LD	E,4		; Set read empty record
+2767:15781+4	0D5B' 3C      		INC	A
+2768:15785+7+5	0D5C' 2013    		JR	NZ,LDFCB7	; Read then error
+2769:15792+17	0D5E' CD090B  		CALL	MAKES		; Make new FCB
+2770:15809+7	0D61' 1E05    		LD	E,5		; Set make error
+2771:15816+13	0D63' 3A4C00  		LD	A,(PEXIT)	; Get error code
+2772:15829+4	0D66' 3C      		INC	A
+2773:15833+7+5	0D67' 2808    		JR	Z,LDFCB7	; Error then exit
+2774:15840+12	0D69' 1803    		JR	LDFCB6		; No error exit (zero set)
+2775:				
+2776:15852+17	0D6B' CDC20A  	LDFCB5:	CALL	OPENF0		; Open file
+2777:15869+10	0D6E' C3820B  	LDFCB6:	JP	OPENX6		; Set zero flag and clear error code 
+2778:				
+2779:15879+19	0D71' DD360EC0	LDFCB7:	LD	(IX+FCBMOD),0C0H ; Set random record error
+2780:15898+4	0D75' 7B      	LDFCB8:	LD	A,E		; Get error code
+2781:15902+13	0D76' 324C00  		LD	(PEXIT),A	; And save it
+2782:15915+4	0D79' B7      		OR	A		; Clear zero flag
+2783:15919+23	0D7A' DDCB0EFE	SETB14:	SET	7,(IX+FCBMOD)	; (hfb) get FCB/File Not Modified
+2784:15942+10	0D7E' C9      		RET			; And return to caller
+2785:				
+2786:				; Calculate Random Record
+2787:				;  Entry HL=Offset in FCB
+2788:				;	 DE=FCB Pointer
+2789:				;  Exit  D=LSB Random Record
+2790:				;	 C=ISB Random Record
+2791:				;	 B=MSB Random Record
+2792:				
+2793:15952+11	0D7F' 19      	CALRRC:	ADD	HL,DE		; Pointer to FCB+15 or FCB+32
+2794:15963+7	0D80' 7E      		LD	A,(HL)		; Get record number
+2795:15970+10	0D81' 210C00  		LD	HL,12		; Offset to extent number
+2796:15980+11	0D84' 19      		ADD	HL,DE		; Get pointer to extent byte
+2797:15991+4	0D85' 57      		LD	D,A		; Save record number
+2798:15995+7	0D86' 7E      		LD	A,(HL)		; Get extent byte
+2799:16002+7	0D87' E61F    		AND	MAXEXT		; Mask it 000eeeee
+2800:16009+8	0D89' CB12    		RL	D		; Shift MSB in Carry Cy=R, d=rrrrrrr0
+2801:16017+7	0D8B' CE00    		ADC	A,0		; Add Carry 00xeeeex
+2802:16024+4	0D8D' 1F      		RRA			; Shift 1 time (16 bits) 000xeeee
+2803:16028+8	0D8E' CB1A    		RR	D		; D=xrrrrrrr
+2804:16036+4	0D90' 4F      		LD	C,A		; Save ISB
+2805:16040+6	0D91' 23      		INC	HL		; Increment to data module number
+2806:16046+6	0D92' 23      		INC	HL
+2807:16052+7	0D93' 7E      		LD	A,(HL)		; Get data module number 00mmmmmm
+2808:16059+4	0D94' 0F      		RRCA			; Divide module by 16
+2809:16063+4	0D95' 0F      		RRCA
+2810:16067+4	0D96' 0F      		RRCA
+2811:16071+4	0D97' 0F      		RRCA
+2812:16075+11	0D98' F5      		PUSH	AF		; Save it mmmm00mm
+2813:16086+7	0D99' E603    		AND	03H		; Mask for maximum module
+2814:16093+4	0D9B' 47      		LD	B,A		; Save it 000000mm
+2815:16097+10	0D9C' F1      		POP	AF		; Get LSB
+2816:16107+7	0D9D' E6F0    		AND	0F0H		; Mask it mmmm0000
+2817:16114+4	0D9F' 81      		ADD	A,C		; Add with ISB mmmxeeee
+2818:16118+4	0DA0' 4F      		LD	C,A		; Save ISB
+2819:16122+5+6	0DA1' D0      		RET	NC		; No carry then return
+2820:16127+4	0DA2' 04      		INC	B		; Increment MSB 000000mm
+2821:16131+10	0DA3' C9      		RET			; And return to caller
+2822:								; 000000mm mmmxeeee xrrrrrrr
+2824:     -	FFFF'         		  IF  ZS
+2825:				;************************************************************************
+2826:				;*	  U n i v e r s a l   T i m e / D a t e   S u p p o r t 	*
+2827:				;************************************************************************
+2828:				
+2829:				; In order to provide time/date support for as many systems as possible,
+2830:				; a set of universal routines are used.  These routines do not do the
+2831:				; actual stamping, but provide all the data required to method specific
+2832:				; programs to perform the needed services.  To use the DOS services, the
+2833:				; external handler needs to tie itself into the Time/Date vector table
+2834:				; in the ZSDOS configuration area.  The Get Stamp, Put Stamp, Stamp Last
+2835:				; Access, Stamp Create, and Stamp Modify routines receive the following
+2836:				; parameters in the Z80 registers:
+2837:				;	A  = Offset to DIR entry [0,20H,40H,60H]
+2838:				;	BC = Address of ZSDOS WRFCB routine
+2839:				;	DE = Pointer to Directory Buffer
+2840:				;	HL = DMA address
+2841:				;	IX = Pointer to FCB passed to DOS
+2842:				; The directory buffer contains the dir entry for the FCB passed to DOS,
+2843:				; A contains the offset.  The disk has been tested for R/O on all calls
+2844:				; except get stamp and is R/W.	If a CP/M+ style stamping is used, a simple
+2845:				; call to the address passed in BC is used to update the disk after adding
+2846:				; the time as required.  This call is ALWAYS required.	The routines may
+2847:				; use AF,BC,DE, and HL without restoring them.	Four levels of stack are
+2848:				; available on the DOS stack for use by the functions.	All routines must
+2849:				; exit with a RET instruction, and A=1 if successful, A=0FFH if error.
+2850:				
+2851:				; Get/put Timestamps
+2852:				
+2853:     -	0DA4'         	CMD102:
+2854:16141+17	0DA4' CD1F05  	CMD103:	CALL	SELDRV		; Select DU: from FCB
+2855:16158+17	0DA7' CD1907  		CALL	SRCT15		; Find the FCB
+2856:16175+7+5	0DAA' 2831    		JR	Z,DOTDER	; If not found
+2857:16182+16	0DAC' 2A1E00  		LD	HL,(GETSTV)	; Get time stamp function address
+2858:16198+13	0DAF' 3A4B00  		LD	A,(FUNCT)
+2859:16211+7	0DB2' FE66    		CP	102		; Get stamp?
+2860:16218+7+5	0DB4' 280A    		JR	Z,DOTDR3	; Yes
+2861:16225+16	0DB6' 2A2000  		LD	HL,(PUTSTV)	; Get address of set stamp routine
+2862:								; ..fall thru to common code..
+2863:				; Enter here for Stamp Last Access, Stamp Create, Stamp Modify
+2864:				
+2865:16241+11	0DB9' E5      	STAMPT:	PUSH	HL
+2866:16252+17	0DBA' CDE508  		CALL	CHKRO1		; Test for disk W/P but avoid error trap
+2867:16269+10	0DBD' E1      		POP	HL
+2868:16279+7+5	0DBE' 281D    		JR	Z,DOTDER	; No stamp if disk is W/P
+2869:				
+2870:16286+17	0DC0' CDA60B  	DOTDR3:	CALL	GETDME		; Get Data Module and Extent Number
+2871:16303+7+5	0DC3' 2018    		JR	NZ,DOTDER	; ..Quit if Not Extent 0 of Module 0
+2872:16310+13	0DC5' 3A5600  		LD	A,(SECPNT)	; Offset to FCB in dirbuf
+2873:16323+20	0DC8' ED5B3400		LD	DE,(DIRBUF)	; Dir buffer pointer
+2874:16343+10	0DCC' 011708  		LD	BC,WRFCB	; Address of WRFCB routine
+2875:16353+11	0DCF' E5      		PUSH	HL		; Save function vector
+2876:16364+16	0DD0' 2A2E00  		LD	HL,(DMA)	; Put DMA in HL
+2877:16380+10	0DD3' C9      		RET			; Then vector to routine
+2878:				
+2879:				; Time and Date Routines.  Like the date stamping routines, the user must
+2880:				; supply the actual driver routines for time and date.	These routines are
+2881:				; attached to ZSDOS via the vector table in the configuration area.  The
+2882:				; routines are passed the address to Get/Put the Time and Date in the DE
+2883:				; and IX registers.  The routines may use AF,BC, and D without restor-
+2884:				; ing them.  Four levels of stack are available on the DOS stack for use
+2885:				; by the the functions.  All routines must exit with a RET instruction,
+2886:				; and A=1 if successful, A=0FFH if error.
+2887:				; In order to better provide for internal DateStamper, the clock routines
+2888:				; must save the value at DE+5 when called, and return this value to the
+2889:				; DOS in the E register.  In addition, the HL register must be returned
+2890:				; as the called DE value +5.
+2891:				; The Time/Date string consists of 6 packed BCD digits arrayed as:
+2892:				;	Byte	00 01 02 03 04 05
+2893:				;		YY MM DD HH MM SS
+2894:				
+2895:				; Set Time/Date from user-supplied buffer string
+2896:				
+2897:16390+7	0DD4' 0E01    	CMD99:	LD	C,1		; Set parameter to set time/date
+2898:     -	0DD6' 21      		DEFB	21H		; ..and fall thru to GSTD
+2899:				
+2900:				; Get Time/Date to string whose address is supplied by the user
+2901:				
+2902:16397+7	0DD7' 0E00    	CMD98:	LD	C,0		; Set parameter to get time/date
+2903:16404+16	0DD9' 2A1600  	GSTD:	LD	HL,(GSTIME)	; Get time/date get/set routine address
+2904:16420+11	0DDC' E5      		PUSH	HL		; ..to stack for pseudo "Jump"
+2905:16431+7	0DDD' F6FF    	DOTDER:	OR	0FFH		; Save 1 T state while setting flags
+2906:16438+10	0DDF' C9      		RET			; Vector to service routine
+2907:					  ENDIF		;Zs
+2909:     -	0000'         		  IF  NOT ZS
+3108:					  ENDIF
+3109:				
+3110:				; Calculate checksum of 127 bytes addressed by HL.  Return with HL
+3111:				; pointing to the 128th byte.
+3112:				
+3113:16448+7	0DE0' 067F    	CKS127:	LD	B,127		; Test 1st 127 bytes
+3114:16455+7	0DE2' 86      	CKSLP:	ADD	A,(HL)		; Sum all bytes to A
+3115:16462+6	0DE3' 23      		INC	HL
+3116:16468+8+5	0DE4' 10FC    		DJNZ	CKSLP
+3117:16476+10	0DE6' C9      		RET
+3118:				
+3120:				;**************************************************************
+3121:				;*	 Z S D O S     H i g h	   R A M     D a t a	      *
+3122:				;**************************************************************
+3123:				
+3124:				; High RAM area.  These locations are not stored by an IOP or
+3125:				; BackGrounder.
+3126:				
+3127:     -	0DE7'         	CODEND:
+3128:     -	0000'         		  IF  ROM
+3135:					  ELSE
+3136:     -	FFFF'         		    IF  ZS
+3137:     -	0000'         		      IF  $-ZSDOS GT 0DF1H
+3141:					      ENDIF		;$-zsdos
+3142:     -	0DF1'         		ORG	ZSDOS+0DF1H		; Set here for Internal Path
+3143:					    ELSE
+3150:					    ENDIF		;Zs
+3151:					  ENDIF			;Rom
+3152:     -	0DF1'         	HIRAM:
+3153:     -	FFFF'         		  IF  ZS
+3154:     -	0DF1' 0100    	IPATH:	DEFB	1,0		; Internal Path = Drive A, User 0
+3155:     -	0DF3' 00000000		DEFW	00,00		; ..two more blank entries
+3156:     -	0DF7' 00      		DEFB	0		; ...and ending Null
+3157:     -	0DF8' 0000    	TDFVCT:	DEFW	00		; Time and date file vector
+3158:					  ELSE
+3160:					  ENDIF		;Zs
+3161:     -	0DFA' 0000    	LOGIN:	DEFW	00		; Login vector
+3162:     -	0DFC' 0000    	DSKWP:	DEFW	00		; Disk write protect vector
+3163:     -	0DFE' 0000    	HDLOG:	DEFW	00		; Fixed disk login vector
+3164:				
+3165:     -	0000'         		  IF  ROM
+3167:					  ELSE
+3168:     -	000A'         	FREEMEM	EQU	HIRAM-CODEND
+3169:					  ENDIF		;Rom
+3170:				
+3171:				; Variables for use with BGii
+3172:				
+3173:     -	0008'         	BGLOWL	EQU	BGHIRAM-BGLORAM	   ; Size of Low RAM save
+3174:     -	006D'         	BGHIL	EQU	BGRAMTOP-BGHIRAM   ; Size of Hi RAM save
+3175:				
+3176:     -	0E00'         		END			; End program
+
+
+
+Statistics:
+
+     4	passes
+     0	jr promotions
+   431	symbols
+  3574	bytes
+
+
+
+Symbol Table:
+
+ALV             3A'       58
+ANDDEM           466'     1126
+ARCATT         =0B        11
+ARWORD          5D'       93
+BGCKDRO          8D8'     2264
+BGCONST          2B7'     695
+BGHIL          =6D        109
+BGHIRAM         2E'       46
+BGLORAM         26'       38
+BGLOWL         =08        8
+BGPTCH0        = 27C'     636
+BGPTCH1        = C08'     3080
+BGPTCH2        = 7A9'     1961
+BGRAMTOP       =9B'       155
+BGSELDRV         51F'     1311
+BIOS            00!       0
+BOOT           =00!       0
+CALDI0           6F7'     1783
+CALDIR           6F1'     1777
+CALDIR1          6F4'     1780
+CALNE1           B9A'     2970
+CALNEX           B85'     2949
+CALRRC           D7F'     3455
+CALSC0           6DF'     1759
+CALSEC           6D7'     1751
+CALST            67A'     1658
+CALST0           680'     1664
+CALST1           688'     1672
+CALST2           693'     1683
+CHKDIR           75A'     1882
+CHKDR1           776'     1910
+CHKFR2           8CF'     2255
+CHKFR3           8C4'     2244
+CHKFR4           8BF'     2239
+CHKFRO           8AC'     2220
+CHKRO            8D8'     2264
+CHKRO1           8E5'     2277
+CKRODI           6EE'     1774
+CKS127           DE0'     3552
+CKSLP            DE2'     3554
+CKSUB            452'     1106
+CLOSE            7AB'     1963
+CLOSE0           7C5'     1989
+CLOSE1           7CE'     1998
+CLOSE3           7E5'     2021
+CLOSE4           7FA'     2042
+CLOSE6           808'     2056
+CMD100           4C2'     1218
+CMD101           4BF'     1215
+CMD102           DA4'     3492
+CMD103           DA4'     3492
+CMD17A           483'     1155
+CMD17B           485'     1157
+CMD17C           488'     1160
+CMD19A           4AB'     1195
+CMD98            DD7'     3543
+CMD99            DD4'     3540
+CMND01           150'     336
+CMND06           15A'     346
+CMND07           191'     401
+CMND08           18E'     398
+CMND09           2D5'     725
+CMND10           195'     405
+CMND11           2B7'     695
+CMND12           4CF'     1231
+CMND13           40A'     1034
+CMND14           57A'     1402
+CMND15           AB4'     2740
+CMND16           7A8'     1960
+CMND17           46E'     1134
+CMND18           495'     1173
+CMND19           4A5'     1189
+CMND20           BBE'     3006
+CMND21           BFF'     3071
+CMND22           B02'     2818
+CMND23           4B0'     1200
+CMND24           4E8'     1256
+CMND25           4B8'     1208
+CMND26           833'     2099
+CMND27           4E4'     1252
+CMND28           703'     1795
+CMND29           4DC'     1244
+CMND30           4C7'     1223
+CMND31           4EC'     1260
+CMND32           4FB'     1275
+CMND33           BB4'     2996
+CMND34           BF4'     3060
+CMND35           507'     1287
+CMND36           50F'     1295
+CMND37           41A'     1050
+CMND39           4E0'     1248
+CMND40           BF4'     3060
+CMND45           4F7'     1271
+CMND47           4F0'     1264
+CMND48           4D8'     1240
+CODEND           DE7'     3559
+COMCO1           9C3'     2499
+COMCO2           9CF'     2511
+COMCOD           9BD'     2493
+CONIN          =09!       9
+CONOUT         =0C!       12
+CONST          =06!       6
+CONTC          =03        3
+CONTH          =08        8
+CONTP          =10        16
+CONTR          =12        18
+CONTS          =13        19
+CONTU          =15        21
+CONTX          =18        24
+CR             =0D        13
+CROUT            2D2'     722
+CSTAT            A02'     2562
+CSTAT1           A0D'     2573
+CSTAT2           A22'     2594
+CSV             38'       56
+CTABLE          E2'       226
+CTLREN         =FFFFFFFF  -1
+DCIO1            171'     369
+DCIO2            166'     358
+DCOPY           58'       88
+DEFDRV          2B'       43
+DELETE           86D'     2157
+DEVAL           5F'       95
+DIRBUF          34'       52
+DMA             2E'       46
+DMADIR           83D'     2109
+DMADR0           841'     2113
+DOBACK           1BE'     446
+DOBAK0           1C1'     449
+DOBAK1           1D2'     466
+DOBAK2           1D7'     471
+DOBAK5           1DF'     479
+DOSEXIT          3E6'     998
+DOSEXT0          3F8'     1016
+DOTDER           DDD'     3549
+DOTDR3           DC0'     3520
+DPBOF          =3C        60
+DRIVE           2C'       44
+DSKWP            DFC'     3580
+DUMMY            4BE'     1214
+ENTRY           9B'       155
+ENTRY0          D2'       210
+ENTRY1          D6'       214
+ERALIN           1FC'     508
+ERMODE          5C'       92
+ERROR            34C'     844
+ERROR0           391'     913
+ERROR1           39A'     922
+ERROR2           3AB'     939
+ERROR3           3AF'     943
+ERROR4           3C1'     961
+ERROR5           3CA'     970
+ERROR6           3CF'     975
+ERROR7           3DD'     989
+FALSE          =00        0
+FBASE           00'       0 (public)
+FCB0            2D'       45
+FCBEXT         =0C        12
+FCBMOD         =0E        14
+FCBREC         =0F        15
+FCBUSR         =0D        13
+FCONTP          28'       40
+FILCNT          54'       84
+FILLB0           88B'     2187
+FILLB1           898'     2200
+FILLB2           8A9'     2217
+FILLBB           883'     2179
+FILSZ            A2B'     2603
+FILSZ0           A35'     2613
+FINDF            A57'     2647
+FINDF0           A67'     2663
+FINDF1           A77'     2679
+FINDF2           A88'     2696
+FINDF3           AA8'     2728
+FLAGS           15'       21
+FLDRV           4E'       78
+FLGBITS        =6D        109
+FREEMEM        =0A        10
+FUNCT           4B'       75
+GCONS2           2CC'     716
+GETBIT           844'     2116
+GETBT0           85B'     2139
+GETCDM           647'     1607
+GETCH            175'     373
+GETDM            6AA'     1706
+GETDM4           6C0'     1728
+GETDME           BA6'     2982
+GETDMX           6D4'     1748
+GETFR0           C39'     3129
+GETFR1           C48'     3144
+GETFR2           C60'     3168
+GETFR3           C66'     3174
+GETSTV          1E'       30
+GSTD             DD9'     3545
+GSTIME          16'       22
+HDLOG            DFE'     3582
+HIRAM            DF1'     3569
+HLORDE           658'     1624
+HOME           =18!       24
+INITD2           620'     1568
+INITDR           5FC'     1532
+IPATH            DF1'     3569
+IXP             36'       54
+IXSAVE          99'       153
+JSEAR8           92A'     2346
+JSETDME          805'     2053
+JZRBX            1B3'     435
+LASTCH          29'       41
+LDFCB            CF6'     3318
+LDFCB0           D37'     3383
+LDFCB1           D4A'     3402
+LDFCB5           D6B'     3435
+LDFCB6           D6E'     3438
+LDFCB7           D71'     3441
+LDFCB8           D75'     3445
+LDRRC            515'     1301
+LF             =0A        10
+LISTO          =0F!       15
+LISTST         =2D!       45
+LOGIN            DFA'     3578
+MAKE0            B2D'     2861
+MAKES            B09'     2825
+MAXCMD         =31        49
+MAXEXT         =1F        31
+MAXLEN          41'       65
+MAXMOD         =3F        63
+MAXSEC          3C'       60
+MBADSC           30A'     778
+MBERR            327'     807
+MBFUNC           337'     823
+MCRLF            349'     841
+MDRIVE           33D'     829
+MDSKCH           302'     770
+MFILE            340'     832
+MFILRO           31E'     798
+MRO              323'     803
+MSEL             315'     789
+MV2DMA           48E'     1166
+NBLOCK          3E'       62
+NCHECK          47'       71
+NDIR0           45'       69
+NEXTND          40'       64
+NFILES          43'       67
+NFTRK           49'       73
+NMASK           3F'       63
+NUM              2ED'     749
+NUM1             2EF'     751
+NUM2             300'     768
+NXTREC         =20        32
+OPENEX           B51'     2897
+OPENF0           AC2'     2754
+OPENF1           AEF'     2799
+OPENX0           B64'     2916
+OPENX2           B5F'     2911
+OPENX3           B77'     2935
+OPENX4           B7C'     2940
+OPENX5           B7F'     2943
+OPENX6           B82'     2946
+OPNXCK           BE9'     3049
+PATH            11'       17
+PATHAD         = DF1'     3569
+PEXIT           4C'       76
+PICKEY         =00        0
+PRDEC            2DF'     735
+PSFATT         =07        7
+PUBATT         =02        2
+PUNCH          =12!       18
+PUTCH            154'     340
+PUTSTV          20'       32
+RAMLOW         =00        0
+RDBUF1           19F'     415
+RDBUF2           1B6'     438
+RDBUF3           1F4'     500
+RDBUF4           206'     518
+RDBUF5           22E'     558
+RDBUF6           239'     569
+RDBUFX           24E'     590
+RDDIR            730'     1840
+RDWR            4F'       79
+READ           =27!       39
+READER         =15!       21
+READR            795'     1941
+READS            BC1'     3009
+READS0           BD1'     3025
+READS1           BD5'     3029
+READS2           BD8'     3032
+RECDIR          52'       82
+RELOG1           435'     1077
+RELOG2           446'     1094
+RENAM            9D7'     2519
+RENAM1           9F0'     2544
+RENAM2           9FA'     2554
+RESDSK         =00        0
+RESUS1           560'     1376
+RESUSR           55E'     1374
+RETCFF           B7A'     2938
+RETYP1           21A'     538
+RETYP2           226'     550
+RETYP3           22B'     555
+ROATT          =09        9
+ROM            =00        0
+RUBOUT         =7F        127
+RdDir0           74D'     1869
+SAVEA            4BB'     1211
+SAVHL            4F3'     1267
+SDRVB            64A'     1610
+SDRVB0           654'     1620
+SEAR12           8EE'     2286
+SEAR15           8F1'     2289
+SEARC1           92C'     2348
+SEARC2           93A'     2362
+SEARC3           96B'     2411
+SEARC4           978'     2424
+SEARC5           97A'     2426
+SEARC6           980'     2432
+SEARC7           986'     2438
+SEARC7A          98C'     2444
+SEARC8           997'     2455
+SEARC9           99D'     2461
+SEARCH           8F3'     2291
+SEARCN           90A'     2314
+SEAREX          5A'       90
+SEARNB          5B'       91
+SEARPU          51'       81
+SEARQU          50'       80
+SECPNT          56'       86
+SECTRN         =30!       48
+SELDK            581'     1409
+SELDK0           58A'     1418
+SELDK2           594'     1428
+SELDK3           571'     1393
+SELDK4           5E6'     1510
+SELDK5           5F9'     1529
+SELDR0           54E'     1358
+SELDR1           52D'     1325
+SELDRV           51F'     1311
+SELDSK         =1B!       27
+SETB14           D7A'     3450
+SETBIT           860'     2144
+SETBT0           868'     2152
+SETDMA         =24!       36
+SETDME           B9E'     2974
+SETFCT           6FC'     1788
+SETLF0           714'     1812
+SETPSF           AAF'     2735
+SETSEC         =21!       33
+SETTRK         =1E!       30
+SFILRO          0F'       15
+SHRHL3           65F'     1631
+SHRHLB           661'     1633
+SLR            =FFFFFFFF  -1
+SPSAVE          61'       97
+SRCT15           719'     1817
+STAMPT           DB9'     3513
+START           06'       6
+STBDSC          09'       9
+STCRV           1A'       26
+STDIR            668'     1640
+STDIR1           677'     1655
+STDIR2           676'     1654
+STDMA            837'     2103
+STLAV           18'       24
+STRO            0D'       13
+STSEL           0B'       11
+STUPDV          1C'       28
+SUBEXT           44D'     1101
+SUBFLG          57'       87
+SYSATT         =0A        10
+TAB            =09        9
+TABCNT          26'       38
+TABCX1          27'       39
+TDCKSM         =91        145
+TDFVCT           DF8'     3576
+TEMP0           32'       50
+TRANS           30'       48
+TRUE           =FFFFFFFF  -1
+TSTFCT           71C'     1820
+TSTLF            723'     1827
+UNLOAD          24'       36
+UNLOG            45D'     1117
+UNROLL         =FFFFFFFF  -1
+UNWPT1           42A'     1066
+UPATH          =FFFFFFFF  -1
+USER            2A'       42
+VCSTAT           A05'     2565
+VDEL             870'     2160
+VDEL1            87E'     2174
+VERMAJ         =01        1
+VERMIN         =01        1
+VERS           =11        17
+VRENAM           9DA'     2522
+WBOOT          =03!       3
+WHEEL           13'       19
+WHLADR         =00        0
+WHLATT         =08        8
+WRCON            264'     612
+WRCON0           268'     616
+WRCON1           277'     631
+WRCON2           293'     659
+WRCON3           2AD'     685
+WRCON4           2B0'     688
+WRCTL            253'     595
+WRFCB            817'     2071
+WRITD1           829'     2089
+WRITE          =2A!       42
+WRITE0           79D'     1949
+WRITER           79A'     1946
+WRITES           C02'     3074
+WRITS1           C37'     3127
+WRITS2           C7F'     3199
+WRITS3           C98'     3224
+WRITS4           CA9'     3241
+WRITS5           CC3'     3267
+WRITS6           CC5'     3269
+WRITS7           CE4'     3300
+WRITS8           CF1'     3313
+WRITSA           C1E'     3102
+WRITSB           C21'     3105
+WRITSG           C6D'     3181
+WRITSX           C8B'     3211
+ZAS            =00        0
+ZDPCH1           4CF'     1231
+ZDPCH2         = 61D'     1565
+ZDPCH3         = 637'     1591
+ZRL            =FFFFFFFF  -1
+ZS             =FFFFFFFF  -1
+ZSDOS          =00'       0
+ZSDOS11        =FFFFFFFF  -1
+ZSDOSS          9B'       155
+_BIOS_         /00        0
+rety1a           21D'     541

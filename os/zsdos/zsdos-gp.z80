@@ -100,7 +100,7 @@ WBOOT	EQU	BIOS+0003H	; Warm Boot
 CONST	EQU	BIOS+0006H	; Console Status
 CONIN	EQU	BIOS+0009H	; Console Input
 CONOUT	EQU	BIOS+000CH	; Console Output
-LST		EQU	BIOS+000FH	; List Output
+LISTO	EQU	BIOS+000FH	; List Output
 PUNCH	EQU	BIOS+0012H	; Punch Output
 READER	EQU	BIOS+0015H	; Reader Input
 HOME	EQU	BIOS+0018H	; Home Disk
@@ -399,7 +399,7 @@ CTABLE:
 	DEFW	WRCON		; Console output
 	DEFW	READER		; Reader input (BIOS)
 	DEFW	PUNCH		; Punch output (BIOS)
-	DEFW	LST		; List output (BIOS)
+	DEFW	LISTO		; List output (BIOS)
 	DEFW	CMND06		; Direct console I/O
 	DEFW	CMND07		; Get I/O byte
 	DEFW	CMND08		; Set I/O byte
@@ -755,7 +755,7 @@ BGPTCH0	EQU	$+1		;<-- BGii patches this address
 	PUSH	BC		; Save it again
 	LD	A,(FCONTP)	; Get printer echo flag
 	OR	A		; Test it
-	CALL	NZ,LST		; Non zero => output char to printer
+	CALL	NZ,LISTO		; Non zero => output char to printer
 	POP	BC		; Restore character
 	LD	A,C		; Fall through to count routine
 	POP	DE
