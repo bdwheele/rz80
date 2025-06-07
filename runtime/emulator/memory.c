@@ -10,8 +10,15 @@ void load_memory_image(Z80EX_CONTEXT *cpu, struct emulator *emulator) {
     read(emulator->memory_fd, emulator->ram, 0x100);
     DEBUG("Initial ops: %02x %04x\n", ReadMem(0), ReadMemWord(1));
     
+    // load the bases
+    emulator->base.cbase = ReadMemWord(CBASE);
+    emulator->base.fbase = ReadMemWord(FBASE);
+    emulator->base.bbase = ReadMemWord(BBASE);
+    emulator->base.dph_base = ReadMemWord(DPBASE);
+
+
     // The CCP, BDOS, and BIOS start at the word stored at memory location at 0x40
-    int ccp_offset = ReadMemWord(CCPBASE);
+    int ccp_offset = emulator->base.cbase;
     DEBUG("CCP Base at %04x\n", ccp_offset);
     lseek(emulator->memory_fd, ccp_offset, SEEK_SET);
     read(emulator->memory_fd, emulator->ram + ccp_offset, 0x10000);

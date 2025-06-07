@@ -14,8 +14,11 @@
 #define IOBYTE 3
 #define CURDISK 4
 #define DPHSIZE 16
+#define CBASE 0x40
+#define FBASE 0x42
+#define BBASE 0x44
 #define DPBASE 0x46
-#define CCPBASE 0x40
+
 
 // macros to read/write memory
 #define ReadMem(addr) (emulator->ram[addr] & 0xff)
@@ -64,6 +67,15 @@ struct emulator {
     int memory_fd;
     int dph_base;
     int halt;
+
+    // bases
+    struct {
+        int cbase;
+        int fbase;
+        int bbase;
+        int dph_base;
+    } base;
+
 
     // bios state
     struct {

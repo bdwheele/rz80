@@ -3,9 +3,8 @@
 #include "memory.h"
 
 int lba_for_dts(struct emulator* emulator, int disk, int track, int sector) {
-    // compute the LBA for the requested sector
-    int lba = 0;                
-    int dpb_addr = ReadMemWord(emulator->dph_base + disk * DPHSIZE + 10);
+    // compute the LBA for the requested sector              
+    int dpb_addr = ReadMemWord(emulator->base.dph_base + disk * DPHSIZE + 10);
     int trklen = ReadMemWord(dpb_addr);
     int lba = trklen * track + sector;    
     return lba;
@@ -14,7 +13,10 @@ int lba_for_dts(struct emulator* emulator, int disk, int track, int sector) {
 void write_port(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *data) {
     struct emulator *emulator = (struct emulator *)data;
     /* These are calls for the bios to handle*/
-    DEBUG("Port call %d, pc: %04x bc: %04x, hl: %04x\n", port & 0xff, z80ex_get_reg(cpu, regPC), ReadBC(), ReadHL());
+    port &= 0xff;
+    if(port  > 8)
+        DEBUG("Entry: Port call %d, pc: %04x af: %04x, bc: %04x, hl: %04x\n", port & 0xff, 
+            z80ex_get_reg(cpu, regPC), z80ex_get_reg(cpu, regAF), ReadBC(), ReadHL());
     switch(port & 0xff) {
         case 1: // warm boot, memory refresh
             load_memory_image(cpu, emulator);
@@ -86,5 +88,10 @@ void write_port(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *dat
         default:
             printf("Unknown port %02x write.\n", port);
     }
+    if(port  > 8)
+        DEBUG("--> Exit: Port call %d, pc: %04x af: %04x, bc: %04x, hl: %04x\n", port & 0xff, 
+            z80ex_get_reg(cpu, regPC), z80ex_get_reg(cpu, regAF), ReadBC(), ReadHL());
 
+
+\
 }

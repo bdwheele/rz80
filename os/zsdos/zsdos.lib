@@ -173,5 +173,5 @@ PICKEY	EQU	FALSE
 ; the ZRL equate to TRUE.  With the ZRL equate set to FALSE, a standalone
 ; .REL file will be produced with no external requirements.
 
-ZRL	EQU	TRUE		; Set True .ZRL file with COMMON for NZCOM,
+ZRL	EQU	FALSE		; Set True .ZRL file with COMMON for NZCOM,
 				;     False to produce straight .REL file

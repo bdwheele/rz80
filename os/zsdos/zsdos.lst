@@ -233,7 +233,7 @@
  173:				; the ZRL equate to TRUE.  With the ZRL equate set to FALSE, a standalone
  174:				; .REL file will be produced with no external requirements.
  175:				
- 176:     -	FFFF'         	ZRL	EQU	TRUE		; Set True .ZRL file with COMMON for NZCOM,
+ 176:     -	0000'         	ZRL	EQU	FALSE		; Set True .ZRL file with COMMON for NZCOM,
  177:								;     False to produce straight .REL file
 **** zsdos-gp.z80 ****
   84:				
@@ -242,30 +242,28 @@
   87:					CSEG
   88:     -	0000'         	ZSDOS	EQU	$		; Start address ZSDOS
   89:				
-  90:     -	FFFF'         		  IF  	ZRL
-  91:					COMMON	/_BIOS_/
-  92:     -	0000!         	BIOS:
-  93:					CSEG
+  90:     -	0000'         		  IF  	ZRL
   94:					  ELSE
+  95:     -	0E00'         	BIOS	EQU	ZSDOS+0E00H
   96:					  ENDIF
   97:				
-  98:     -	0000'         	BOOT	EQU	BIOS+0000H	; Cold Boot
-  99:     -	0003'         	WBOOT	EQU	BIOS+0003H	; Warm Boot
- 100:     -	0006'         	CONST	EQU	BIOS+0006H	; Console Status
- 101:     -	0009'         	CONIN	EQU	BIOS+0009H	; Console Input
- 102:     -	000C'         	CONOUT	EQU	BIOS+000CH	; Console Output
- 103:     -	000F'         	LISTO	EQU	BIOS+000FH	; List Output
- 104:     -	0012'         	PUNCH	EQU	BIOS+0012H	; Punch Output
- 105:     -	0015'         	READER	EQU	BIOS+0015H	; Reader Input
- 106:     -	0018'         	HOME	EQU	BIOS+0018H	; Home Disk
- 107:     -	001B'         	SELDSK	EQU	BIOS+001BH	; Select Disk
- 108:     -	001E'         	SETTRK	EQU	BIOS+001EH	; Select Track
- 109:     -	0021'         	SETSEC	EQU	BIOS+0021H	; Select Sector
- 110:     -	0024'         	SETDMA	EQU	BIOS+0024H	; Set DMA Address
- 111:     -	0027'         	READ	EQU	BIOS+0027H	; Read 128 Bytes
- 112:     -	002A'         	WRITE	EQU	BIOS+002AH	; Write 128 Bytes
- 113:     -	002D'         	LISTST	EQU	BIOS+002DH	; List Status
- 114:     -	0030'         	SECTRN	EQU	BIOS+0030H	; Sector Translation
+  98:     -	0E00'         	BOOT	EQU	BIOS+0000H	; Cold Boot
+  99:     -	0E03'         	WBOOT	EQU	BIOS+0003H	; Warm Boot
+ 100:     -	0E06'         	CONST	EQU	BIOS+0006H	; Console Status
+ 101:     -	0E09'         	CONIN	EQU	BIOS+0009H	; Console Input
+ 102:     -	0E0C'         	CONOUT	EQU	BIOS+000CH	; Console Output
+ 103:     -	0E0F'         	LISTO	EQU	BIOS+000FH	; List Output
+ 104:     -	0E12'         	PUNCH	EQU	BIOS+0012H	; Punch Output
+ 105:     -	0E15'         	READER	EQU	BIOS+0015H	; Reader Input
+ 106:     -	0E18'         	HOME	EQU	BIOS+0018H	; Home Disk
+ 107:     -	0E1B'         	SELDSK	EQU	BIOS+001BH	; Select Disk
+ 108:     -	0E1E'         	SETTRK	EQU	BIOS+001EH	; Select Track
+ 109:     -	0E21'         	SETSEC	EQU	BIOS+0021H	; Select Sector
+ 110:     -	0E24'         	SETDMA	EQU	BIOS+0024H	; Set DMA Address
+ 111:     -	0E27'         	READ	EQU	BIOS+0027H	; Read 128 Bytes
+ 112:     -	0E2A'         	WRITE	EQU	BIOS+002AH	; Write 128 Bytes
+ 113:     -	0E2D'         	LISTST	EQU	BIOS+002DH	; List Status
+ 114:     -	0E30'         	SECTRN	EQU	BIOS+0030H	; Sector Translation
  115:				
  116:				; Internal Definitions
  117:     -	FFFF'         		  IF  ZSDOS11
@@ -549,9 +547,9 @@
  397:					  ENDIF
  398:     -	00E4' 5001    		DEFW	CMND01		; Console input
  399:     -	00E6' 6402    		DEFW	WRCON		; Console output
- 400:     -	00E8' 1500    		DEFW	READER		; Reader input (BIOS)
- 401:     -	00EA' 1200    		DEFW	PUNCH		; Punch output (BIOS)
- 402:     -	00EC' 0F00    		DEFW	LISTO		; List output (BIOS)
+ 400:     -	00E8' 150E    		DEFW	READER		; Reader input (BIOS)
+ 401:     -	00EA' 120E    		DEFW	PUNCH		; Punch output (BIOS)
+ 402:     -	00EC' 0F0E    		DEFW	LISTO		; List output (BIOS)
  403:     -	00EE' 5A01    		DEFW	CMND06		; Direct console I/O
  404:     -	00F0' 9101    		DEFW	CMND07		; Get I/O byte
  405:     -	00F2' 8E01    		DEFW	CMND08		; Set I/O byte
@@ -636,12 +634,12 @@
  509:  443+7+5	015E' 2806    		JR	Z,DCIO2		; Yes, get status
  510:  450+4	0160' 1C      		INC	E		; Test for 0FDH
  511:  454+7+5	0161' 2812    		JR	Z,GETCH		; Yes, wait for input char
- 512:  461+10	0163' C30C00  		JP	CONOUT		; Else print char
+ 512:  461+10	0163' C30C0E  		JP	CONOUT		; Else print char
  513:				
  514:  471+13	0166' 3A2900  	DCIO2:	LD	A,(LASTCH)	; Check for buffered char
  515:  484+4	0169' B7      		OR	A
  516:  488+7	016A' 3E01    		LD	A,0001B		; ..preset ready
- 517:  495+10+7	016C' CC0600  		CALL	Z,CONST		; Get console status
+ 517:  495+10+7	016C' CC060E  		CALL	Z,CONST		; Get console status
  518:  505+4	016F' A7      		AND	A		; Test it
  519:  509+10	0170' C9      		RET			; And return it to caller
  520:				
@@ -654,7 +652,7 @@
  527:  551+7	0178' 7E      		LD	A,(HL)
  528:  558+10	0179' 3600    		LD	(HL),0		; Reset last character
  529:  568+4	017B' B7      		OR	A		; ..set flags
- 530:  572+10+7	017C' CC0900  		CALL	Z,CONIN		; Get character (and test it  jww)
+ 530:  572+10+7	017C' CC090E  		CALL	Z,CONIN		; Get character (and test it  jww)
  531:				
  532:				; Test Character
  533:				;  Exit Carry=0: CR,LF,TAB,CONTH or >= Space
@@ -752,9 +750,9 @@
  627: 1069+11	01DE' D5      		PUSH	DE		; Save pointer
  628: 1080+7	01DF' 0E08    	DOBAK5:	LD	C,CONTH
  629: 1087+11	01E1' C5      		PUSH	BC		; Save counter from destruction
- 630: 1098+17	01E2' CD0C00  		CALL	CONOUT
+ 630: 1098+17	01E2' CD0C0E  		CALL	CONOUT
  631: 1115+7	01E5' 0E20    		LD	C,' '
- 632: 1122+17	01E7' CD0C00  		CALL	CONOUT		; Output backspace,space to CON: only
+ 632: 1122+17	01E7' CD0C0E  		CALL	CONOUT		; Output backspace,space to CON: only
  633: 1139+7	01EA' 3E08    		LD	A,CONTH
  634: 1146+17	01EC' CD6402  		CALL	WRCON		; Now backspace CON:, counter, and printer
  635: 1163+10	01EF' C1      		POP	BC		; Restore counter
@@ -875,12 +873,12 @@
  750: 1907+17	027B' CDB702  		CALL	CMND11		; Test status and CONTS/CONTC
  751: 1924+10	027E' C1      		POP	BC		; Get character back
  752: 1934+11	027F' C5      		PUSH	BC		; Save it again
- 753: 1945+17	0280' CD0C00  		CALL	CONOUT		; Output it
+ 753: 1945+17	0280' CD0C0E  		CALL	CONOUT		; Output it
  754: 1962+10	0283' C1      		POP	BC		; Get character back
  755: 1972+11	0284' C5      		PUSH	BC		; Save it again
  756: 1983+13	0285' 3A2800  		LD	A,(FCONTP)	; Get printer echo flag
  757: 1996+4	0288' B7      		OR	A		; Test it
- 758: 2000+10+7	0289' C40F00  		CALL	NZ,LISTO		; Non zero => output char to printer
+ 758: 2000+10+7	0289' C40F0E  		CALL	NZ,LISTO		; Non zero => output char to printer
  759: 2010+10	028C' C1      		POP	BC		; Restore character
  760: 2020+4	028D' 79      		LD	A,C		; Fall through to count routine
  761: 2024+10	028E' D1      		POP	DE
@@ -922,7 +920,7 @@
  797: 2258+17	02BB' CD7501  		CALL	GETCH		; Get next console char
  798: 2275+7	02BE' FE13    		CP	CONTS		; Is it stop char?
  799: 2282+7+5	02C0' 200A    		JR	NZ,GCONS2	; ..jump if Not
- 800: 2289+17	02C2' CD0900  		CALL	CONIN		; Get next character
+ 800: 2289+17	02C2' CD090E  		CALL	CONIN		; Get next character
  801: 2306+7	02C5' FE03    		CP	CONTC		; Does the user want to exit (^C)?
  802: 2313+7+5	02C7' 20EE    		JR	NZ,CMND11	; ..check for another character if not
  803: 2320+10	02C9' C3CA03  		JP	ERROR5		; Else jump to warm boot & clear ERMODE
@@ -1456,7 +1454,7 @@
 1334: 5477+7	0594' 77      	SELDK2:	LD	(HL),A		; Save new current drive
 1335: 5484+11	0595' D5      		PUSH	DE		; Save drive logged in flag
 1336: 5495+4	0596' 4F      		LD	C,A		; Copy drive number
-1337: 5499+17	0597' CD1B00  		CALL	SELDSK		; Do BIOS select
+1337: 5499+17	0597' CD1B0E  		CALL	SELDSK		; Do BIOS select
 1338: 5516+4	059A' 7C      		LD	A,H		; Test if error
 1339: 5520+4	059B' B5      		OR	L
 1340: 5524+7+5	059C' 28D3    		JR	Z,SELDK3	; Yes, illegal drive number
@@ -1643,13 +1641,13 @@
 1523: 6751+11	0697' 19      		ADD	HL,DE		; Add track number
 1524: 6762+4	0698' 44      		LD	B,H		; Copy it to BC
 1525: 6766+4	0699' 4D      		LD	C,L
-1526: 6770+17	069A' CD1E00  		CALL	SETTRK		; CBIOS call Set Track
+1526: 6770+17	069A' CD1E0E  		CALL	SETTRK		; CBIOS call Set Track
 1527: 6787+10	069D' C1      		POP	BC		; Restore sector number
 1528: 6797+20	069E' ED5B3000		LD	DE,(TRANS)	; Get translation table address
-1529: 6817+17	06A2' CD3000  		CALL	SECTRN		; CBIOS call sector translation
+1529: 6817+17	06A2' CD300E  		CALL	SECTRN		; CBIOS call sector translation
 1530: 6834+4	06A5' 44      		LD	B,H		; Copy result to BC
 1531: 6838+4	06A6' 4D      		LD	C,L
-1532: 6842+10	06A7' C32100  		JP	SETSEC		; BIOS call Set Sector
+1532: 6842+10	06A7' C3210E  		JP	SETSEC		; BIOS call Set Sector
 1533:				
 1534:				; Get Disk Map Block Number from FCB   (Squeezed by Joe Wright)
 1535:				;  Exit HL=Address FCB
@@ -1842,12 +1840,12 @@
 1751:				
 1752:				; Read Sector from Drive
 1753:				
-1754: 8096+17	0795' CD2700  	READR:	CALL	READ		; CBIOS call read sector
+1754: 8096+17	0795' CD270E  	READR:	CALL	READ		; CBIOS call read sector
 1755: 8113+12	0798' 1803    		JR	WRITE0
 1756:				
 1757:				; Write Sector on Drive
 1758:				
-1759: 8125+17	079A' CD2A00  	WRITER:	CALL	WRITE		; CBIOS call write sector
+1759: 8125+17	079A' CD2A0E  	WRITER:	CALL	WRITE		; CBIOS call write sector
 1760: 8142+4	079D' B7      	WRITE0:	OR	A		; Test exit code
 1761: 8146+5+6	079E' C8      		RET	Z		; Exit if ok
 1762: 8151+7	079F' 0601    		LD	B,1		; Disk I/O error code
@@ -1968,7 +1966,7 @@
 1893:				; Set DMA Address Directory
 1894:				
 1895: 9010+20	083D' ED4B3400	DMADIR:	LD	BC,(DIRBUF)	; Get DMA address directory
-1896: 9030+10	0841' C32400  	DMADR0:	JP	SETDMA		; Cbios call set DMA
+1896: 9030+10	0841' C3240E  	DMADR0:	JP	SETDMA		; Cbios call set DMA
 1897:				
 1898:				; Get Bit from ALV Buffer
 1899:				;  Entry DE=Block Number
@@ -2123,7 +2121,7 @@
 2052: 9992+16	0902' 2A4700  		LD	HL,(NCHECK)	; Is this a fixed media?
 2053:10008+4	0905' 7C      		LD	A,H
 2054:10012+4	0906' B5      		OR	L
-2055:10016+10+7	0907' C41800  		CALL	NZ,HOME		; Invoke CBIOS Home routine if removeable
+2055:10016+10+7	0907' C4180E  		CALL	NZ,HOME		; Invoke CBIOS Home routine if removeable
 2056:					  ENDIF		;~Zsdos11
 2057:				
 2058:				; Search Next File Name
@@ -3027,7 +3025,7 @@ Statistics:
 
      4	passes
      0	jr promotions
-   431	symbols
+   430	symbols
   3574	bytes
 
 
@@ -3049,8 +3047,8 @@ BGPTCH1        = C08'     3080
 BGPTCH2        = 7A9'     1961
 BGRAMTOP       =9B'       155
 BGSELDRV         51F'     1311
-BIOS            00!       0
-BOOT           =00!       0
+BIOS           = E00'     3584
+BOOT           = E00'     3584
 CALDI0           6F7'     1783
 CALDIR           6F1'     1777
 CALDIR1          6F4'     1780
@@ -3133,9 +3131,9 @@ CODEND           DE7'     3559
 COMCO1           9C3'     2499
 COMCO2           9CF'     2511
 COMCOD           9BD'     2493
-CONIN          =09!       9
-CONOUT         =0C!       12
-CONST          =06!       6
+CONIN          = E09'     3593
+CONOUT         = E0C'     3596
+CONST          = E06'     3590
 CONTC          =03        3
 CONTH          =08        8
 CONTP          =10        16
@@ -3232,7 +3230,7 @@ GSTIME          16'       22
 HDLOG            DFE'     3582
 HIRAM            DF1'     3569
 HLORDE           658'     1624
-HOME           =18!       24
+HOME           = E18'     3608
 INITD2           620'     1568
 INITDR           5FC'     1532
 IPATH            DF1'     3569
@@ -3251,8 +3249,8 @@ LDFCB7           D71'     3441
 LDFCB8           D75'     3445
 LDRRC            515'     1301
 LF             =0A        10
-LISTO          =0F!       15
-LISTST         =2D!       45
+LISTO          = E0F'     3599
+LISTST         = E2D'     3629
 LOGIN            DFA'     3578
 MAKE0            B2D'     2861
 MAKES            B09'     2825
@@ -3300,7 +3298,7 @@ PICKEY         =00        0
 PRDEC            2DF'     735
 PSFATT         =07        7
 PUBATT         =02        2
-PUNCH          =12!       18
+PUNCH          = E12'     3602
 PUTCH            154'     340
 PUTSTV          20'       32
 RAMLOW         =00        0
@@ -3313,8 +3311,8 @@ RDBUF6           239'     569
 RDBUFX           24E'     590
 RDDIR            730'     1840
 RDWR            4F'       79
-READ           =27!       39
-READER         =15!       21
+READ           = E27'     3623
+READER         = E15'     3605
 READR            795'     1941
 READS            BC1'     3009
 READS0           BD1'     3025
@@ -3360,7 +3358,7 @@ SEARNB          5B'       91
 SEARPU          51'       81
 SEARQU          50'       80
 SECPNT          56'       86
-SECTRN         =30!       48
+SECTRN         = E30'     3632
 SELDK            581'     1409
 SELDK0           58A'     1418
 SELDK2           594'     1428
@@ -3370,17 +3368,17 @@ SELDK5           5F9'     1529
 SELDR0           54E'     1358
 SELDR1           52D'     1325
 SELDRV           51F'     1311
-SELDSK         =1B!       27
+SELDSK         = E1B'     3611
 SETB14           D7A'     3450
 SETBIT           860'     2144
 SETBT0           868'     2152
-SETDMA         =24!       36
+SETDMA         = E24'     3620
 SETDME           B9E'     2974
 SETFCT           6FC'     1788
 SETLF0           714'     1812
 SETPSF           AAF'     2735
-SETSEC         =21!       33
-SETTRK         =1E!       30
+SETSEC         = E21'     3617
+SETTRK         = E1E'     3614
 SFILRO          0F'       15
 SHRHL3           65F'     1631
 SHRHLB           661'     1633
@@ -3425,7 +3423,7 @@ VERMAJ         =01        1
 VERMIN         =01        1
 VERS           =11        17
 VRENAM           9DA'     2522
-WBOOT          =03!       3
+WBOOT          = E03'     3587
 WHEEL           13'       19
 WHLADR         =00        0
 WHLATT         =08        8
@@ -3438,7 +3436,7 @@ WRCON4           2B0'     688
 WRCTL            253'     595
 WRFCB            817'     2071
 WRITD1           829'     2089
-WRITE          =2A!       42
+WRITE          = E2A'     3626
 WRITE0           79D'     1949
 WRITER           79A'     1946
 WRITES           C02'     3074
@@ -3458,10 +3456,9 @@ ZAS            =00        0
 ZDPCH1           4CF'     1231
 ZDPCH2         = 61D'     1565
 ZDPCH3         = 637'     1591
-ZRL            =FFFFFFFF  -1
+ZRL            =00        0
 ZS             =FFFFFFFF  -1
 ZSDOS          =00'       0
 ZSDOS11        =FFFFFFFF  -1
 ZSDOSS          9B'       155
-_BIOS_         /00        0
 rety1a           21D'     541
