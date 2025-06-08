@@ -3,6 +3,7 @@ bin/ld80
 bin/zmac
 *.rel
 *.cim
+disks/
 
 # Prerequisites
 *.d

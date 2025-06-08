@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <errno.h>
 #include "posix_hw.h"
 /*
     Hardware implementation for POSIX-based virtual devices
@@ -83,21 +84,35 @@ void posix_aux_write(struct emulator *emulator, char c) {
 
 int posix_home_disk(struct emulator *emulator, int disk) {
     // home the head
+    struct posix_state *state = (struct posix_state *)emulator->hwimpldata;
+    int e = lseek(state->drives[disk], 0, SEEK_SET);
+    fprintf(stderr, "LSEEK: %d\n", e);
 }
 
 
 int posix_read_block(struct emulator *emulator, int disk, int lba, void *buffer) {
     struct posix_state *state = (struct posix_state *)emulator->hwimpldata;    
-    lseek(state->drives[disk], lba * 128, SEEK_SET);
-    read(state->drives[disk], buffer, 128);
+    int e = lseek(state->drives[disk], lba * 128, SEEK_SET);
+    
+    if(e < 0) {
+        fprintf(stderr, "LSEEK: %d, errno: %d\n", e, errno);
+        return DISK_ERR;
+    }
+    e = read(state->drives[disk], buffer, 128);
+    if(e < 0) {
+        fprintf(stderr, "READ: %d, errno: %d\n", e, errno);
+        return DISK_ERR;
+    }
     return DISK_OK;
 }
 
 
 int posix_write_block(struct emulator *emulator, int disk, int lba, void *buffer) {
     struct posix_state *state = (struct posix_state *)emulator->hwimpldata;
-    lseek(state->drives[disk], lba * 128, SEEK_SET);
-    write(state->drives[disk], buffer, 128);
+    int e = lseek(state->drives[disk], lba * 128, SEEK_SET);
+    fprintf(stderr, "LSEEK: %d\n", e);
+    e = write(state->drives[disk], buffer, 128);
+    fprintf(stderr, "WRITE: %d\n", e);
     return DISK_OK;
 }
 
