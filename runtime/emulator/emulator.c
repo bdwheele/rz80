@@ -18,6 +18,14 @@
 #define MEMORY_IMAGE "emulator.mem"
 
 int main(int argc, char *argv[]) {
+    /*
+    if(argc != 1) {
+        fprintf(stderr, "Usage: %s <configfile>\n", argv[0]);
+        exit(1);
+    }
+        */
+
+
     /* Create the main emulator structure*/
     struct emulator *emulator = (struct emulator *)calloc(1, sizeof(struct emulator));
     emulator->cpu = z80ex_create(read_memory, emulator, 

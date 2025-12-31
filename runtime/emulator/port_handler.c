@@ -91,7 +91,5 @@ void write_port(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *dat
     if(port  > 8)
         DEBUG("--> Exit: Port call %d, pc: %04x af: %04x, bc: %04x, hl: %04x\n", port & 0xff, 
             z80ex_get_reg(cpu, regPC), z80ex_get_reg(cpu, regAF), ReadBC(), ReadHL());
-
-
-\
+        
 }
