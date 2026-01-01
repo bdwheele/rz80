@@ -122,14 +122,14 @@ ROM	EQU	FALSE		; Separate data and code?
 ; on your requirements.  The individual bit assignments in the FLAG byte are:
 ;
 ; Bit -	7 6 5 4 3 2 1 0
-;	 \ \ \ \ \ \ \ \__Public File Enable (1) / Disable (0)
-;	  \ \ \ \ \ \ \___Public/Path Write Enable (1) / Disable (0)
-;	   \ \ \ \ \ \____Read-Only Enable (1) / Disable (0)
-;	    \ \ \ \ \_____Fast Fixed Disk Relog Enable (1) / Disable (0)
-;	     \ \ \ \______Disk Change Warning Enable (1) / Disable (0)
-;	      \ \ \_______ZCPR2/3 Path Enable (1) / Disable (0)
-;	       \ \________Path without System Enable (1) / Disable (0)
-;		\_________(Reserved)
+;	    \ \ \ \ \ \ \ \__Public File Enable (1) / Disable (0)
+;	     \ \ \ \ \ \ \___Public/Path Write Enable (1) / Disable (0)
+;	      \ \ \ \ \ \____Read-Only Enable (1) / Disable (0)
+;	       \ \ \ \ \_____Fast Fixed Disk Relog Enable (1) / Disable (0)
+;	        \ \ \ \______Disk Change Warning Enable (1) / Disable (0)
+;	         \ \ \_______ZCPR2/3 Path Enable (1) / Disable (0)
+;	          \ \________Path without System Enable (1) / Disable (0)
+;		       \_________(Reserved)
 
 FLGBITS	EQU	01101101B	; PUBLIC On, P/P Write Off, R/O On, 
 				; Fast Relog On,Disk Change warning Off, 

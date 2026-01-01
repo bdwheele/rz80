@@ -145,9 +145,6 @@ LISTSTE:
 SECTRANE:
     call_em(16)
 
-    ; Data Segment
-    dseg
-
     ; DPBASE is the start of the Disk Parameter Header.  It's public because
     ; the emulator may need to touch it or some of the things it refers to.
 
@@ -212,4 +209,11 @@ dirbuf: ds 128  ; BDOS scratch directory
 
 welcome: db "RZ80 BIOS 1.0", 10, 13, 0
 
-end:    dw  0x55aa
+end:    
+        dw CBASE
+        dw FBASE
+        dw BBASE
+        dw DPBASE
+    public sig
+sig:    dw  0x55aa
+
