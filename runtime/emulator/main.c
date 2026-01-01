@@ -27,9 +27,17 @@ int main(int argc, char *argv[]) {
     mem_init(state);
 
     // disk systems
+    /*
     state->disk[0] = fopen("disk_a.img", "r+");
     state->disk[1] = fopen("disk_b.img", "r+");
     state->disk[2] = fopen("disk_c.img", "r+");
+        */
+    state->disk_names[0] = "disk_a.img";
+    state->disk_names[1] = "disk_b.img";
+    state->disk_names[2] = "disk_c.img";
+    for(int i=0; i < 3; i++) {
+        state->disk_fd[i] = -1;
+    }
 
     // terminal
     terminal_setup(state);

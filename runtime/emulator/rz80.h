@@ -26,7 +26,9 @@ struct state {
     uint16_t fbase;
     uint16_t bbase;
     uint16_t dpbase;
-    FILE *disk[3];
+    //FILE *disk[3];
+    char *disk_names[3];
+    int disk_fd[3];
     struct termios *old_settings;
     struct termios *new_settings;
 };
