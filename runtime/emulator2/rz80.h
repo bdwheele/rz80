@@ -1,0 +1,83 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <malloc.h>
+#include <termios.h>
+#include "../z80ex-1.1.21/include/z80ex.h"
+#include "../z80ex-1.1.21/include/z80ex_dasm.h"
+
+
+#ifndef __RZ80_H
+
+
+struct state {
+    int trace;
+    int halted;
+    FILE *log;
+    Z80EX_CONTEXT *cpu;
+    uint8_t *memory;
+    uint8_t *rom;
+    uint16_t romsize;
+    uint16_t dma;
+    uint8_t drive;
+    uint16_t track;
+    uint16_t sector;
+    uint16_t cbase;
+    uint16_t fbase;
+    uint16_t bbase;
+    uint16_t dpbase;
+    FILE *disk[3];
+    struct termios *old_settings;
+    struct termios *new_settings;
+};
+
+/* RAM and ROM*/
+uint8_t mem_read_byte(struct state *state, uint16_t addr);
+void mem_write_byte(struct state *state, uint16_t addr, uint8_t value);
+uint16_t mem_read_word(struct state *state, uint16_t addr);
+void mem_write_word(struct state *state, uint16_t addr, uint16_t value);
+void mem_init(struct state *state);
+void load_rom(struct state *state, char *filename);
+
+
+/* DEBUGGING */
+#define debug(fmt, ...) fprintf(state->log, fmt, ##__VA_ARGS__) 
+Z80EX_BYTE debug_mem_read(Z80EX_WORD addr, void *user_data);
+void trace(struct state *state, uint16_t addr);
+
+/* Disk */
+int lba_from_dts(struct state *state);
+int disk_read(struct state *state);
+int disk_write(struct state *state);
+
+
+/* CPU */
+#define _get(reg) z80ex_get_reg(state->cpu, reg)
+#define _set(reg, value) z80ex_set_reg(state->cpu, reg, value)
+#define _get_low(reg) (z80ex_get_reg(state->cpu, reg) & 0xff)
+#define _get_high(reg) (z80ex_get_reg(state->cpu, reg) >> 8)
+#define _set_low(reg, value) (z80ex_set_reg(state->cpu, reg, z80ex_get_reg(state->cpu, reg) & 0xff00 + value))
+#define _set_high(reg, value) (z80ex_set_reg(state->cpu, reg, \
+                               (z80ex_get_reg(state->cpu, reg) & 0xff) + (value << 8)))
+#define getA() _get_high(regAF)
+#define setA(value) _set_high(regAF, value)
+#define getC() _get_low(regBC)
+#define setC(value) _set_low(regBC, value)
+#define getBC() _get(regBC)
+#define setBC(value) _set(regBC, value)
+#define getHL() _get(regHL)
+#define setHL(value) _set(regHL, value)
+#define getPC() _get(regPC)
+Z80EX_BYTE cpu_mem_read(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *user_data);
+void cpu_mem_write(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *user_data);
+Z80EX_BYTE cpu_port_read(Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data);
+void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *user_data);
+
+/* Terminal */
+void terminal_setup(struct state *state);
+void terminal_restore(struct state *state);
+
+
+
+#define __RZ80_H
+#endif
