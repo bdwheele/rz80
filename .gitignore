@@ -4,6 +4,9 @@ bin/zmac
 *.rel
 *.cim
 disks/
+*.rom
+*.log
+
 
 # Prerequisites
 *.d

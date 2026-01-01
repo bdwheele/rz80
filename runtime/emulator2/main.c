@@ -17,6 +17,7 @@ struct state {
     Z80EX_CONTEXT *cpu;
     uint8_t *memory;
     uint8_t *rom;
+    uint16_t romsize;
     uint16_t dma;
     uint8_t drive;
     uint16_t track;
@@ -42,22 +43,19 @@ uint16_t mem_read_word(struct state *state, uint16_t addr) {
 
 void mem_write_word(struct state *state, uint16_t addr, uint16_t value) {
     state->memory[addr] = value & 0xff;
-    state->memory[addr + 1] = (value & 0xff) >> 8;
+    state->memory[addr + 1] = (value & 0xff00) >> 8;
 }
 
 void mem_init(struct state *state) {
-    for(int i = 0; i < 65536; i++) {
-        state->memory[i] = state->rom[i];
+    // reload the rom
+    for(int i = 0; i < state->romsize; i++) {
+        state->memory[i + state->cbase] = state->rom[i];
     }
-
-    /* load our pointers*/
-    state->cbase = mem_read_word(state, 0x40);
-    state->fbase = mem_read_word(state, 0x42);
-    state->bbase = mem_read_word(state, 0x44);
-    state->dpbase = mem_read_word(state, 0x46);
-    debug("Bases loaded: CBASE=%04x, FBASE=%04x, BBASE=%04x, DPBASE=%04x\n", 
-          state->cbase, state->fbase, state->bbase, state->dpbase);
-
+    // reset the jump vectors to make sure
+    mem_write_byte(state, 0, 0xc3);
+    mem_write_word(state, 1, state->bbase);
+    mem_write_byte(state, 5, 0xc3);
+    mem_write_word(state, 6, state->fbase);
 }
 
 int lba_from_dts(struct state *state) {
@@ -179,25 +177,19 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
             break;
         case 2:
             // console status
-                //readable, _, _ = select.select([sys.stdin], [], [], 0.0)                
-                //z80.set_reg("A", 0xff if readable else 0x00)  # always ready
             fd_set fds;
             FD_ZERO(&fds);
             int stdin_fileno = fileno(stdin);
             FD_SET(stdin_fileno, &fds);
             struct timeval tv;
             tv.tv_sec = 0;
-            tv.tv_usec = 1000; // 1/1000th second
+            tv.tv_usec = 100; // 100us wait time
             select(stdin_fileno + 1, &fds, NULL, NULL, &tv);
-            //printf("A reg is %02x\n", getA());
             if(FD_ISSET(stdin_fileno, &fds)) {
-                //printf("Character is ready\n");
                 setA(0xff);
             } else {
-                //printf("Character is not ready\n");
                 setA(0x00);
             }
-            //printf("Console status is: %02x\n", getA());
             break;        
         case 3:
             // console input
@@ -272,6 +264,27 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
     }
 }
 
+#define le_word(p) (*(p) + (*((p) + 1) * 256))
+void load_rom(struct state *state, char *filename) {
+    state->rom = calloc(8192, 1);
+    FILE *f = fopen(filename, "rb");
+    state->romsize = fread(state->rom, 1, 8192, f);
+    fclose(f);
+    int sig = le_word(state->rom + state->romsize - 2);
+    if(sig != 0x55aa) {
+        printf("ERROR: ROM Image has invalid signature: %04x\n", sig);
+        exit(1);
+    }
+    /* load our bases*/
+    state->dpbase = le_word(state->rom + state->romsize - 4);
+    state->bbase = le_word(state->rom + state->romsize - 6);
+    state->fbase = le_word(state->rom + state->romsize - 8);
+    state->cbase = le_word(state->rom + state->romsize - 10);
+    debug("Bases loaded: CBASE=%04x, FBASE=%04x, BBASE=%04x, DPBASE=%04x\n", 
+          state->cbase, state->fbase, state->bbase, state->dpbase);
+}
+
+
 int main(int argc, char *argv[]) {
     struct state *state = calloc(1, sizeof(struct state));
     for(int i = 0; i < argc; i++) {
@@ -293,10 +306,11 @@ int main(int argc, char *argv[]) {
                               NULL, NULL);
     // memory systems
     state->memory = calloc(65536, 1);
-    state->rom = calloc(65536, 1);
-    FILE *f = fopen("memory.img", "rb");
-    fread(state->rom, 65536, 1, f);
-    fclose(f);
+    load_rom(state, "system.rom");
+
+    
+
+
     mem_init(state);
 
     // disk systems
