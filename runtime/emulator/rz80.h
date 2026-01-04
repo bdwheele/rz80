@@ -11,6 +11,8 @@
 #define DISK_NONE 0
 #define DISK_FLOPPY 1
 #define DISK_FIXED 2
+#define DISK_IMAGE 0
+#define DISK_PHYSICAL 1
 
 struct state {
     int trace_instruction;
@@ -35,7 +37,15 @@ struct state {
         int track;
         int motor;
         int type;
+        int devtype;
     } disk[3];
+    struct {
+        char valid;
+        char dirty;
+        uint8_t drive;
+        int lbn;
+        uint8_t *buffer;
+    } deblock;
     //char *disk_names[3];
     //int disk_fd[3];
     struct termios *old_settings;
@@ -48,12 +58,12 @@ uint8_t mem_read_byte(struct state *state, uint16_t addr);
 void mem_write_byte(struct state *state, uint16_t addr, uint8_t value);
 uint16_t mem_read_word(struct state *state, uint16_t addr);
 void mem_write_word(struct state *state, uint16_t addr, uint16_t value);
-void mem_init(struct state *state);
+void mem_reset(struct state *state);
 void load_rom(struct state *state, char *filename);
 
 
 /* DEBUGGING */
-#define debug(fmt, ...) if(state->log) fprintf(state->log, fmt, ##__VA_ARGS__)
+#define debug(fmt, ...) if(state->log) fprintf(state->log, fmt, ##__VA_ARGS__) && fflush(state->log)
 #define error(fmt, ...) fprintf(stderr, "ERROR: " fmt, ##__VA_ARGS__) 
 #define info(fmt, ...) fprintf(stderr, "INFO: " fmt, ##__VA_ARGS__)
 #define warning(fmt, ...) fprintf(stderr, "WARNING: " fmt, ##__VA_ARGS__)
@@ -61,10 +71,9 @@ Z80EX_BYTE debug_mem_read(Z80EX_WORD addr, void *user_data);
 void trace(struct state *state, uint16_t addr);
 
 /* Disk */
-void disk_init(struct state *state);
-int lba_from_dts(struct state *state);
+void disk_reset(struct state *state);
 int disk_read(struct state *state);
-int disk_write(struct state *state);
+int disk_write(struct state *state, int type);
 
 
 /* CPU */

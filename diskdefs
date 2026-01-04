@@ -15,8 +15,8 @@ diskdef rz80_32mb
 	seclen 512
 	# tracks 64
 	# sectrk 1024
-	tracks 2048
-	sectrk 32
+	tracks 1024
+	sectrk 64
 	blocksize 16384
 	maxdir 1024
 	boottrk 0

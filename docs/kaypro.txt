@@ -1,0 +1,136 @@
+﻿
+
+
+The KayPro II (and the other models) emulate the Lear-Seigler ADM-3A
+terminal. In order to install some screen oriented software it is necessary
+to know the terminal attributes. The following may help.
+
+CURSOR CONTROL
+      cursor left  -    8 dec    08H
+      cursor right -    12 dec   0CH
+      cursor down  -    10 dec   0AH
+      cursor up    -    11 dec   0BH
+      home cursor  -    30 dec   1EH
+      clear scr & home  26 dec   1AH
+      carriage return   13 dec   0DH
+
+CURSOR POSITIONING
+      rows              = 0 - 23 dec
+      columns           = 0 - 79 dec
+      escape sequence  -  27, 61 dec     1BH, 3DH
+      constant offset   = 20 dec    14H
+
+      So in Mbasic to position the cursor at row 12, col 40
+      print chr$(27)chr$(61)chr$(20+12)chr$(20+40)
+                 ESC      =        row        col
+
+LINE INSERT / DELETE
+      insert line    - 27, 69 dec      1BH, 45H { scroll down }
+      delete line    - 27, 82 dec      1BH, 52H { scroll up   }
+
+CLEAR TO END OF LINE / SCREEN
+      clear to EOL - 24 dec   18H
+      clear to EOS - 23 dec   17H
+
+CHANGE CHARACTER SETS
+      set ASCII - 27,65 dec   1BH,41H
+      set greek - 27,71 dec   1BH,47H
+
+In order to use the RS-232 port for communications it must be initialized
+to the proper data word length, parity, and number of stop bits as well as
+the correct baud rate. Below is an I/O port map and an RS-232 initialization
+procedure in Sbasic.
+
+I/O PORTS
+      RS-232 status -   6 dec
+      RS-232 data   -   4 dec
+      keyboard status - 7 dec
+      keyboard data -   5 dec
+      parallel status - 9 dec
+      parallel data -   8 dec
+      system status -   29 dec   1DH
+      system data -     28 dec   1CH
+
+RS-232 INITIALIZATION
+
+procedure initmod(word1,word2,word3 = integer)
+var sio,resetchan,nointerrupt,reg1,reg3,reg4,reg5 = integer
+
+   sio = 6           rem { RS-232 status port }
+   resetchan = 24    rem { sio channel reset  }
+   nointerrupt = 0   rem { turn off interupts }
+   reg1 = 1          rem { next byte goes to register #1 }
+   reg3 = 3          rem { next byte goes to register #3 }
+   reg4 = 4          rem { next byte goes to register #4 }
+   reg5 = 5          rem { next byte goes to register #5 }
+
+begin
+rem { change 2 byte integer to 1 byte integer with chr function }
+   out(sio),chr(resetchan)
+   out(sio),chr(reg4) : out(sio),chr(word1)
+   out(sio),chr(reg1) : out(sio),chr(nointerrupt)
+   out(sio),chr(reg3) : out(sio),chr(word2)
+   out(sio),chr(reg5) : out(sio),chr(word3)
+end
+
+The values for 8 data bits, 1 stop bit, No Parity are:
+   word1 = 68 dec
+   word2 = 193 dec
+   word3 = 106 dec
+These are values to correctly tell the Z-80 sio chip what to do, each bit is
+significant. For other values see a Zilog data book. 
+
+To set the baud rate you just send an integer between 0 and 15 dec to port 0
+For 300 baud send 5, for 1200 baud send 7
+   out(0),5  ' 300 baud
+      OR
+   out(0),7  ' 1200 baud
+
+
+The status port for the RS-232 has 3 registers, only 2 are used for 
+asynchronus communication, 0 and 1. Nothing special needs to be done to
+read register #0,
+       i.e N=inp(6)
+works just fine, but in order to get to read register #1 you must write
+to the status port first,
+       i.e out(6),1
+to get register #1 then:
+       N=inp(6)
+to get the value in register #1.
+
+The bits in read register #0 are:
+      0 = Rx char ready
+      1 = Int pending
+      2 = Tx buffer empty
+      3 = DCD (data carrier detect)
+      4 = Sync/Hunt (synchronous only)
+      5 = CTS (Clear to send)
+      6 = Tx underrun/Eom (?)
+      7 = Break/Abort
+
+The bits in read register #1 are:
+      0 = All sent
+      1 = 
+      2 = Field bits in previous & 2nd previous bytes (?)
+      3 =
+      4 = Parity error
+      5 = Rx overrun error
+      6 = CRC/framing error
+      7 = End of frame
+
+KAYPRO RS-232 PINOUT
+
+Only pins 1 - 8 and 20 seem to be used and they go like this:
+   1  frame ground
+   2  Tx transmit data
+   3  Rx recieve data
+   4  RTS request to send
+   5  CTS clear to send
+   6  DSR data set ready
+   7  signal ground
+   8  DCD data carrier detect
+   20 DTR data terminal ready
+
+Well there you have it the hardeware-software interface for two of the most
+used communications peripherals on the KayPro the screen and the RS-232 port.
+############################################################################################################

@@ -34,7 +34,8 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
     switch(port) {
         case 1:
             // warm boot
-            mem_init(state);
+            mem_reset(state);
+            disk_reset(state);
             break;
         case 2:
             // console status
@@ -86,11 +87,11 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
             break;
         case 13:
             // read block
-            disk_read(state);
+            setA(disk_read(state));
             break;
         case 14:
             // write block
-            disk_write(state);
+            setA(disk_write(state, getC()));
             break;
         case 15:
             // list status

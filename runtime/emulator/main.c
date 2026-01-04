@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
     for(int i=0; i < 3; i++) {
         state->disk[i].fd = -1;
     }    
+    state->deblock.buffer = calloc(1, 512);
     
     // parse arguments
     int opt;
@@ -76,10 +77,10 @@ int main(int argc, char *argv[]) {
     // memory systems
     state->memory = calloc(65536, 1);
     load_rom(state, romname);
-    mem_init(state);
+    mem_reset(state);
 
     // disk systems
-    disk_init(state);
+    disk_reset(state);
 
     // terminal
     terminal_setup(state);

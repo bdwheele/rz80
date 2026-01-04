@@ -188,7 +188,7 @@ HD32M_SIZE = 32*1024             ; kB; this is the *maximum* size
 HD32M_BLOCKS = HD32M_SIZE / 16 ; 16kB blocks, no reserved tracks
 hd32m:
     ;dw 256*4        ; Number of CP/M sectors per track
-    dw 32           ; Number of CP/M sectors per track
+    dw 64           ; Number of CP/M sectors per track
     db 7, 127       ; BSH/BLM for 16384-byte blocks
     db 7            ; EXM for 16384-byte allocation units and >255 blocks
     dw HD32M_BLOCKS-1 ; DSM

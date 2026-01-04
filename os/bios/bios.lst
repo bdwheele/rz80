@@ -251,7 +251,7 @@
  188:     -	0800'         	HD32M_BLOCKS = HD32M_SIZE / 16 ; 16kB blocks, no reserved tracks
  189:     -	00E3'         	hd32m:
  190:				    ;dw 256*4        ; Number of CP/M sectors per track
- 191:     -	00E3' 2000    	    dw 32           ; Number of CP/M sectors per track
+ 191:     -	00E3' 4000    	    dw 64           ; Number of CP/M sectors per track
  192:     -	00E5' 077F    	    db 7, 127       ; BSH/BLM for 16384-byte blocks
  193:     -	00E7' 07      	    db 7            ; EXM for 16384-byte allocation units and >255 blocks
  194:     -	00E8' FF07    	    dw HD32M_BLOCKS-1 ; DSM

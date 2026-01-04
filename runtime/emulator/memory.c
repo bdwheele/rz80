@@ -17,7 +17,7 @@ void mem_write_word(struct state *state, uint16_t addr, uint16_t value) {
     state->memory[addr + 1] = (value & 0xff00) >> 8;
 }
 
-void mem_init(struct state *state) {
+void mem_reset(struct state *state) {
     // reload the rom
     for(int i = 0; i < state->romsize; i++) {
         state->memory[i + state->cbase] = state->rom[i];
