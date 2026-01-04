@@ -1,0 +1,1520 @@
+****
+301  Modem Programs
+301  -KAYFUN .301 - This disk originally MICRO CORNUCOPIA Disk K1.
+301  DISK-301.DOC - A description of the files on this disk.
+301  MODEMPAT.COM - Sets up the baud rate, bits per character, stop bits,
+301  MODEMPAT.ASM -   and parity for the serial port.
+301  MODEM7  .COM - MODEM 7 configured for the Kaypro.  You use MODEMPAT,
+301  MODEM7  .DOC -   above, before you enter this version of MODEM 7.
+301  MODEM7+ .COM - MODEM 7 with MODEMPAT grafted onto it.
+301  KMDM795 .COM - A superset of MODEM 7.  Lets you set the baud rate on
+301  KMDM795 .DOC -   the fly.  But does not perform any of MODEMPAT's
+301               -   functions.
+301  KMDM795 .LIB - A macro library.
+301  KMDM795 .AQM - Squeezed source of KMDM795.COM.
+301  SQ      .COM - Squeezes files for tight storage and fast transmission.
+301  USQ     .COM - Unsqueezes files.
+301  SQ/USQ  .DOC -
+301  FLS     .COM - Command line expander for SQ and USQ.
+301  TERM    .MAC - A commented disassembly of the TERM program that comes
+301               -   with the Kaypro.
+301  D       .COM - Produces a sorted directory with file sizes.
+301  TERM    .DOC - Information on controlling the Kaypro screen.
+****
+302  Utilities
+302  -KAYFUN .302 - This disk originally MICRO CORNUCOPIA Disk K2.
+302  DISK-302.DOC - A description of the files on this disk.
+302  FORMFEED.COM - Outputs a form feed to the LST: device.
+302  FORMFEED.DOC -
+302  DIR-DUMP.COM - Displays the names of all the disk files, their user
+302               -   areas and locations on the disk.
+302  UNERA   .COM - Unerases files.
+302  UNERA   .DOC -
+302  D       .COM - Produces a sorted directory with file sizes.
+302  D       .DOC -
+302  WASH    .COM - File moving and maintenance utility.
+302  DUMPX   .COM - Extended DUMP utility.  Faster.  Displays ASCII
+302  DUMPX   .DOC -   equivalents.
+302  SUPERSUB.COM - An improvement over CP/M's submit.
+302  SUPERSUB.DOC -
+302  ALLOC   .COM - Produces a bit map of disk, write-protects files.  Menu
+302               -   driven.
+302  COMPARE .COM - Checks one file against another.
+302  DU      .COM - A powerful, useful disk editor.  Version 7.7.
+302  DU      .DOC -
+302  LISTT   .COM - Prints out files with headers, page #'s and offset from
+302  LISTT   .DOC -   left margin.
+302  WCOUNT  .COM - Counts words in text files.  Must have bugs, because
+302  WCOUNT  .DOC -   it counts wrong.
+302  ZESOURCE.COM - Zilog format disassembler.  This is an update of the
+302  ZESOURCE.DOC -   famous RESOURCE.
+302  UNSPOOL .COM - Prints out data while allowing you to use the computer
+302  UNSPOOL .DOC -   at the same time.
+302  UN      .COM - Unlocks "protected" MBASIC programs
+302  UN      .DOC -
+302  FINDBD54.COM - Finds and locks out bad sectors on a disk.
+302  FINDBD54.DOC -
+302  @       .COM - An on-line calculator.
+302  @       .DOC -
+302  FIX     .COM - A verbose disk editor.  Different from DU.
+302  FIX     .DOC -
+302  DIRCHK  .COM - Checks the data on a disk directory.
+302  DIRCHK  .DOC -
+302  UNLOAD  .COM - Turns a .COM file into a .HEX file.
+302  CATALOG2.DOC - This group of programs creates and maintains a
+302  CAT2    .COM -   directory of all the files you have on all your
+302  UCAT    .COM -   disks.  You can display which disks contain certain
+302  MAST    .CAT -   files or which files are on a certain disk etc. etc.
+302  FMAP    .COM -
+302  DIF2    .COM - With these you can update someone else's copy of a
+302  SSED2   .COM -   program by simply creating a file of the updates
+302  DIF/SSED.DOC -   (using DIF2) and sending the differences.  He would
+302               -   then incorporate the differences (using SSED2) into
+302               -   his file.  Saves on modem time.
+****
+303  Games
+303  -KAYFUN .303 - This disk originally MICRO CORNUCOPIA Disk K3.
+303  DISK-303.DOC - A description of the files on this disk.
+303  PACMAN  .COM - Pacman-type game.
+303  PACMAN  .DOC -
+303  ZCHESS  .COM - A Z80 chess game with a 1-6 level look-ahead.
+303  ZCHESS  .DOC -
+303  OTHELLO .COM - An excellent Othello game.
+303  GAMES   .COM - A group of 7 games all put together as one program.
+303  WUMPUS  .COM - WUMPUS, a classic computer game.
+303  WUMPUS  .DOC -
+303  WUMPUS  .PAS - Source for above in Pascal/Z.
+303  CAVE0   .    - You have a choice of caves as you enter the game.
+303  CAVE1   .    -   |
+303  CAVE2   .    -   |
+303  CAVE4   .    -   |
+303  CAVE5   .    -   |
+303  PRESSUP .COM - A game similar to Othello, but easier to master.
+303  PRESSUP .C   - Source for above in BDS C.  Instructions are at the top
+303               -   of this file
+303  MM      .COM - The Master Mind game.
+303  MM      .C   - Source for above in BDS C.
+303  BIO     .COM - Generates biorhythm charts.
+303  MAZE    .COM - Generates random mazes.
+303  ADV-SAVE.DOC - Tells you how to run Disk K4's Adventure on a 191k
+303               -   disk and still be able to save your games.
+303  D       .COM - Produces a sorted directory with file sizes.
+303  WASH    .COM - File moving and maintenance utility.
+****
+304  550 Point Adventure game
+304  -KAYFUN .304 - This disk originally MICRO CORNUCOPIA Disk K4.
+304  ADV     .COM - This is the latest, greatest, most cussed adventure
+304  ADVI    .DAT -   ever devised by half-mortals.  This cave is greatly
+304  ADVI    .PTR -   expanded and the creatures are much smarter.  These
+304  ADVT    .DAT -   files total 191k so there isn't room for the usual
+304  ADVT    .PTR -   documentation files.
+****
+305  MX-80/Gemini 10X Printer Graphics Software
+305  -KAYFUN .305 - This disk originally MICRO CORNUCOPIA Disk K5.
+305  DISK-305.DOC - A comment about this disk.
+305  GRAF    .COM - An interactive routine that allows the user to create
+305               -   simple graphics images.
+305  GRAF    .C   - Source for above in Aztec C.
+305  GRAF    .DOC - Documentation for entire graphics package.
+305  DEMO    .COM - A demonstration program which illustrates some of the
+305  DEMO    .C   -   types of images GRAF will create.
+305  BAR1    .GRF - These files contain the graphics images used in the
+305  BAR2    .GRF -   DEMO program.
+305  CIRCLE  .GRF -   |
+305  HUGH    .GRF -   |
+305  LINE    .GRF -   |
+305  MEDIUM  .GRF -   |
+305  SMALL   .GRF -   |
+305  STAR    .GRF -   |
+305  TITLE   .GRF -   |
+305  GRAFUTIL.C   - These files contain the Aztec C source of the graphics
+305  GRAFPLOT.C   -   routines.
+305  GRAFLINE.C   -   |
+305  GRAFINVT.C   -   |
+305  GRAFCIRC.C   -   |
+305  GRAFFILE.C   -   |
+305  D       .COM - Produces a sorted directory with file sizes.
+****
+306  Text Utilities
+306  -KAYFUN .306 - This disk originally MICRO CORNUCOPIA Disk K6.
+306  DISK-306.DOC - A description of the files on this disk.
+306  ROFF    .COM - A UNIX-like text formatter that allows pretty-printing
+306  ROFF    .DOC -   of files.
+306  ROFF    .H   - Source for above in BDS C.
+306  ROFF1   .C   -   |
+306  ROFF2   .C   -   |
+306  SIGNS   .COM - Creates large block letters on your printer.
+306  FONT    .DAT - Character font data.
+306  EPSMODE4.COM - Sets print modes for Epson MX-80.
+306  EPSMODE4.ASM -
+306  EDIT    .COM - A line editor similar to the line editors under UNIX.
+306  EDIT    .DOC -
+306  EDIT    .HLP -
+306  CHOP    .COM - Chops off a file after n bytes.
+306  CHOP    .C   - Parameters and C/80 source for above.
+306  CP      .COM - Copies a file from one file or device to another.
+306  CP      .C   - Parameters and C/80 source for above.
+306  DUMP    .COM - Dumps a binary file in hex.
+306  DUMP    .C   - Parameters and C/80 source for above.
+306  ENTAB   .COM - Replaces blanks with tabs whenever possible.
+306  ENTAB   .C   - Parameters and C/80 source for above.
+306  MS      .COM - Allows you to specify how many line feeds you want
+306               -   between lines in a file.
+306  MS      .C   - Parameters and C/80 source for above.
+306  RTW     .COM - Removes trailing whitespace from a file.
+306  RTW     .C   - C/80 source for above.
+306  TRUNC   .COM - Truncates each line in a file at a specified column.
+306  TRUNC   .C   - C/80 source for above.
+306  WRAP    .COM - Pretty prints a file.
+306  WRAP    .DOC -
+306  WRAP    .C   - C/80 source for above.
+306  D       .COM - Produces a sorted directory with file sizes.
+****
+307  Small C Version 2
+307  -KAYFUN .307 - This disk originally MICRO CORNUCOPIA Disk K7.
+307  DISK-307.DOC - A description of the files on this disk.
+307  SMC     .COM - The Small C compiler.
+307  SMALLC  .DOC - Documentation for the original Small C compiler.
+307  SMALLC2 .DOC - Documentation for the extensions in this version.
+307  HELLO   .C   - Sample program.
+307  SAMPLE  .DOC - Explanation of how to compile sample program.
+307  LIB     .H   - Header files.
+307  STD     .H   -   |
+307  STDIO   .H   -   |
+307  STDIOA  .H   -   |
+307  VM      .H   -   |
+307  VML     .H   -   |
+307  IOLIB   .ASM - Run-time library.
+307  CALL    .ASM - Arithmetic and logical library.
+307  LIBASM  .C   - Function library.
+307  ABS     .C   - #Include files for above.
+307  DTOI    .C   -   |
+307  ITOD    .C   -   |
+307  ITOU    .C   -   |
+307  ITOX    .C   -   |
+307  LEFT    .C   -   |
+307  OUT     .C   -   |
+307  PRINTF  .C   -   |
+307  SIGN    .C   -   |
+307  STRCMP  .C   -   |
+307  UTOI    .C   -   |
+307  XTOI    .C   -   |
+****
+308  Source of Small C Version 2
+308  -KAYFUN .308 - This disk originally MICRO CORNUCOPIA Disk K8.
+308  STDIOA  .H   -
+308  CC      .DEF -
+308  CC80    .DEF -
+308  SMCC    .DEF -
+308  CC1     .C   -
+308  CC11    .C   -
+308  CC12    .C   -
+308  CC13    .C   -
+308  CC2     .C   -
+308  CC21    .C   -
+308  CC22    .C   -
+308  CC3     .C   -
+308  CC31    .C   -
+308  CC32    .C   -
+308  CC33    .C   -
+308  CC4     .C   -
+308  CC41    .C   -
+308  CC42    .C   -
+308  LIBASM  .C   -
+308  ABS     .C   -
+308  DTOI    .C   -
+308  ITOD    .C   -
+308  ITOU    .C   -
+308  ITOX    .C   -
+308  LEFT    .C   -
+308  OUT     .C   -
+308  PRINTF  .C   -
+308  SIGN    .C   -
+308  STRCMP  .C   -
+308  UTOI    .C   -
+308  XTOI    .C   -
+****
+309  General Utilities
+309  -KAYFUN .309 - This disk originally MICRO CORNUCOPIA Disk K9.
+309  DISK-309.DOC - A description of the files on this disk.
+309  SNOOPY  .TXT - A picture of Snoopy.
+309  EX14    .COM - An excellent replacement for SUBMIT and XSUB.  Much
+309  EX14    .DOC -   better than SUPERSUB.
+309  EX1´    .ASÍ - Assemblù languagå sourcå foò above®  Requireó MAC.
+309  EX14    .SUB - SUB file used to assemble EX14.ASM.
+309  EX14    .TST - SUB file used to test assembled EX14.COM.
+309  FIX     .COM - A verbose disk editor.  Different from DU.
+309  FIX     .DOC -
+309  FIND    .COM - Searches 1 or more files on a disk for a given string.
+309  FIND    .DOC -   Fast and useful.
+309  FIND    .ASM -
+309  PASSWORD.COM - Protects files with a password.
+309  PASSWORD.ASM - Source and documentation for above.
+309  ALIENS  .COM - Space Invaders.
+309  ALIENS  .DOC - Patching instructions for above.
+309  TREK    .COM - Star Trek.
+309  ZCPR    .HEX - A Z80 based improvement on the CP/M CCP.  DO NOT
+309  ZCPR    .DOC -   ATTEMPT TO INSTALL THIS VERSION ON A KAYPRO 10.
+309  INSTALL .SUB - Submit file used to automatically install ZCPR above.
+309  DIF2    .COM - With these you can update someone else's copy of a
+309  SSED2   .COM -   program by simply creating a file of the updates
+309  DIF/SSED.DOC -   (using DIF2) and sending only the differences.  He
+309               -   would then incorporate the differences (using SSED2)
+309               -   into his file.  Saves on modem time.
+309  D       .COM - Produces a sorted directory with file sizes.
+****
+310  Z80 And Linking Assemblers
+310  -KAYFUN .310 - This disk originally MICRO CORNUCOPIA Disk K10.
+310  DISK-310.DOC - A description of the files on this disk.
+310  CROWECPM.COM - A good Z80 assembler.  Creates an Intel format .HEX
+310  CROWECPM.DOC -   file and a .PRN file with a symbol table at the end.
+310  CROWECPM.Z80 - Source in CROWE assembler.
+310  PRINTPRN.COM - Allows you to list CROWECPM .PRN files on any printer.
+310  PRINTPRN.ASM -   Apparently some printers would not do this correctly.
+310  LASM    .COM - A rewrite of CP/M's ASM assembler.  It's faster and can
+310  LASM    .DOC -   link files at assembly time, among other things.
+****
+311  Checkbook Program - Library Utilities
+311  -KAYFUN .311 - This disk originally MICRO CORNUCOPIA Disk K11.
+311  DISK-311.DOC - A description of the files on this disk.
+311  DISPLAY .COM - TYPEs a file to the screen.  Allows you to scroll
+311  DISPLAY .DOC -   forward or backward by pages or lines.
+311  VLIST   .COM - Allows you to vary the scrolling speed of a file you
+311  VLIST   .DOC -   are TYPEing by using the cursor keys.
+311  PGLIST  .COM - Reformats a long text file of short words into columns.
+311  PGLIST  .DOC -   Saves paper and file pre-formatting.
+311  CHECKS  .COM - Take a close look at this one before writing it off as
+311  CHECKS  .DOC -   just another little check program.  It does a lot for
+311  CHECKS  .Z80 -   you.  The documentation and examples are excellent.
+311  EXAMPL  .NAM - Example files for above.
+311  EXAMPL  .CHK -   |
+311  EXAMPL  .DOC -
+311  LU      .COM - Creates and manages libraries of files.  Version 1.10.
+311  LU      .DOC -
+311  LRUN    .COM - Runs a program contained in a library.
+311  LDIR    .COM - Gives a directory of the files contained in a library.
+311  LDIR    .DOC -
+311  LDIR    .LBR - An example library containing LDIR.* files.
+311  LUDEF1  .DOC - A definition of the format of library files.
+311  LIBRARY .LBR - An empty library.
+****
+312  Kaypro FORTH
+312  -KAYFUN .312 - This disk originally MICRO CORNUCOPIA Disk K12.
+312  DISK-312.DOC - A description of the files on this disk.
+312  FORTH   .COM - An extended version of Fig-FORTH.
+312  FORTH   .DOC -
+312  KFORTH  .COM - The above FORTH, but with its own screen editor,
+312               -   decompiler, and 8080 assembler.
+312  FORTH   .SCR - The screens containing the source for the KFORTH
+312               -   extensions.
+****
+313  Source of FORTH
+313  -KAYFUN .313 - This disk originally MICRO CORNUCOPIA Disk K13.
+313  DISK-313.DOC - A description of the files on this disk.
+313  FORTH   .ASM - The source for FORTH.COM on Disk K12.
+313  FORTH   .COM - This is the same FORTH.COM that's on K12.
+****
+314  Smartmodem Programs
+314  -KAYFUN .314 - This disk originally MICRO CORNUCOPIA Disk K14.
+314  DISK-314.DOC - A description of the files on this disk.
+314  SMODEMK .COM - MODEM 7 set up for the Kaypro and the Smartmodem.
+314  SMODEM  .DOC -
+314  SMODEMK .MAC -
+314  PHONE   .001 - A sample phone directory.
+314  KAYTERM .DOC - How to control the Kaypro screen and serial port.
+314  XMODEM  .COM - Allows you to make your Kaypro send a file to you when
+314  XMODEM  .DOC -   you are at another machine.
+314  BYE     .COM - Makes your system disconnect.
+****
+315  Hard Disk Utilities
+315  -KAYFUN .315 - This disk originally MICRO CORNUCOPIA Disk K15.
+315  DISK-315.DOC - A description of the files on this disk.
+315  BACKUP  .COM - Allows you to back-up your hard disk on as many floppy
+315  BACKUP  .DOC -   disks as are necessary.  Performs many organizational
+315  BACKUP  .ASM -   functions as it does so.
+315  FLOPCOPY.COM - Copies one floppy disk to another using the hard disk
+315  FLOPCOPY.DOC -   as a buffer.  Detects disk-full condition so that
+315  FLOPCOPY.ASM -   you can copy a DS/DD disk onto two SS/DD disks.
+315  BIGBURST.COM - Allows you to back-up a file from the hard disk onto
+315  BIGBURST.DOC -   a floppy disk even if it is too large to fit on one
+315  BIGBURST.ASM -   floppy.  It then allows you to easily put it back
+315               -   together when you copy it back to the hard disk.
+315  MULTCOPY.COM - Operates similar to PIP, but will prompt you when the
+315  MULTCOPY.DOC -   floppy is full to change floppies.
+315  MULTCOPY.ASM -
+315  MDIR    .COM - Displays a directory of files in all user areas.
+315  MDIR    .ASM -
+315  MOVE    .COM - Moves a file from current user area to another user
+315               -   area.
+315  MAKE    .COM - Moves a file from any user area to any other user area.
+315  U       .COM - Allows you to change user area and drive with one
+315  U       .ASM -   command.
+315  SWEEP   .COM - A file moving and maintenance utility.
+315  SWEEP38 .DOC -
+315  D       .COM - Produces a sorted directory with file sizes.
+315  UNSQ    .COM - Unsqueezes files.  This version lets you use ambiguous
+315               -         file names.
+****
+316  Pascal Compiler
+316  -KAYFUN .316 - This disk originally MICRO CORNUCOPIA Disk K16.
+316  DISK-316.DOC - A brief description of the Pascal compiler.
+316  PASCAL  .DOC - A description of the files on this disk.
+316  DISK    .DOC - Another description of the files on this disk.
+316  PPC     .COM - The Pascal to p-code compiler.
+316  PPC     .DOC -
+316  PPC     .PAS - Pascal source code for the compiler which can can be
+316               -   compiled by the compiler.
+316  PFET    .COM - The p-code to 8080 machine code translator.
+316  PFET    .PAS - Pascal source code for above.
+316  RTP     .COM - Run time package which must be linked to output of PFET
+316  RTP     .ASM -   to make an executable program.
+316  PC      .SUB - Submit file to automatically compile a Pascal program.
+316  POPS    .DOC - Describes the p-code generated by the compiler.
+316  PSTACK  .DOC - Describes stack operation of run-time p-machine.
+316  REGEN   .DOC - Information on recompilation of compiler and reassembly
+316               -   of run time package.
+316  PASYNTAX.COM - Syntax charts for writing programs for this compiler.
+316  EQ      .PAS - Sample Pascal programs.
+316  EQ      .COM -   |
+316  FWD     .PAS -   |
+316  HW5     .PAS -   |
+316  HW5     .COM -   |
+316  HW5DATA .    -   |
+316  PLAYKAL .PAS -   |
+316  PLAYDATA.    -   |
+316  POWTWO  .PAS -   |
+316  STIRLING.PAS -   |
+316  STIRLING.COM -   |
+316  TESTER  .PAS - A program for testing a compiler.  See REGEN.DOC.
+316  COMPARE .COM - Compares two files for differences.  A must for
+316               -   compiler writers and modifiers.
+316  VALIDATE.SUB - A submit file to test a modified compiler.  See
+316               -   REGEN.DOC.
+316  EX14    .COM - An excellent replacement for SUBMIT.COM.
+316  EX14    .DOC -
+316  XA      .PCO - PPC output using EQ.PAS.  An example of p-code.
+316  XA      .OCO - PFET output using XA.PCO.  An example of object code.
+****
+317  Z80 Tools
+317  -KAYFUN .317 - This disk originally MICRO CORNUCOPIA Disk K17.
+317  DISK-317.DOC - A description of the files on this disk.
+317  XLATE2  .COM - Translates 8080 assembly language programs into Z80
+317  XLATE2  .DOC -   assembly language programs.  The output file can be
+317               -   assembled with Microsoft's M80 assembler or, with
+317               -   some modification, the CROWE assembler on Disk K10.
+317  XLATE2  .MAC -
+317  DASM    .COM - A rewrite of the ZZSOURCE disassembler.  This one is
+317  DASM    .DOC -   much easier to use.
+317  DISASMBL.DOC - Information on the disassembly process for the first
+317               -   time user.
+317  DASM    .MAC - Source for above.
+317  DASMZLG .MAC -   |
+****
+318  System Diagnostics
+318  -KAYFUN .318 - This disk originally MICRO CORNUCOPIA Disk K18.
+318  DISK-318.DOC - A description of the files on this disk.
+318  MEMRS   .COM - A memory diagnostic that tests from about 1000H to the
+318  MEMRS   .DOC -   bottom of the BDOS.
+318  MEMRS   .ASM -
+318  MDIAGTTY.COM - Another memory diagnostic that tests from 1000H to the
+318  MDIAGTTY.MAC -   top of memory.  Its output goes to the serial port.
+318  MDIAGLPT.COM - The same program as above, except its output goes to
+318  MDIAGLPT.MAC -   the parallel port.
+318  MDIAGXXX.DOC - These two programs can be sensitive to system
+318               -   configuration and version of CP/M.  They may not work
+318               -   on newer or modified machines.
+318  LOWTTY  .COM - These two programs test the portion of memory the above
+318  LOWLPT  .COM -   two programs do not (0000H-1000H).
+318  2DISKTST.COM - A very versatile disk diagnostic for the 2.
+318  4DISKTST.COM - For the 4.
+318  10DSKTST.COM - For the 10.
+318  DISKTEST.DOC -
+318  DISKTEST.MAC -
+318  DISKALGN.COM - Allows you to position the heads of the disk drives for
+318  DISKALGN.MAC -   alignment purposes.
+****
+319  Prowriter Printer Graphics
+319  -KAYFUN .319 - This disk originally MICRO CORNUCOPIA Disk K19.
+319  DISK-319.DOC - A comment about this disk.
+319  GRAF    .COM - An interactive routine that allows the user to create
+319               -   simple graphics images.
+319  GRAF    .C   - Source for above in Aztec C.
+319  GRAF    .DOC - Documentation for entire graphics package.
+319  DEMO    .COM - A demonstration program which illustrates some of the
+319  DEMO    .C   -   types of images GRAF will create.
+319  BAR1    .GRF - These files contain the graphics images used in the
+319  BAR2    .GRF -   DEMO program.
+319  CIRCLE  .GRF -   |
+319  HUGH    .GRF -   |
+319  LINE    .GRF -   |
+319  MEDIUM  .GRF -   |
+319  SMALL   .GRF -   |
+319  STAR    .GRF -   |
+319  TITLE   .GRF -   |
+319  GRAFUTIL.C   - These files contain the Aztec C source of the graphics
+319  GRAFPLOT.C   -   routines.
+319  GRAFLINE.C   -   |
+319  GRAFINVT.C   -   |
+319  GRAFCIRC.C   -   |
+319  GRAFFILE.C   -   |
+319  D       .COM - Produces a sorted directory with file sizes.
+****
+321  SBASIC Programs and Screen Dump
+321  -KAYFUN .321 - This disk originally MICRO CORNUCOPIA Disk K21.
+321  DISK-321.DOC - A description of the files on this disk.
+321  DIR+    .COM - A file moving and maintenance utility.
+321  DIR+    .DOC -
+321  DRIVER  .COM - Creates a menu of .COM files on drives A and B and
+321  DRIVER  .DOC -   executes selected file.
+321  DRIVER  .BAS - Source for above in SBASIC.
+321  DUMP24  .COM - Screen to printer dump for older Kaypros.
+321  DUMP24  .DOC -
+321  DUMP24  .MAC -
+321  DUMP10  .COM - Same as above, but this version is for '84 models.
+321  DUMP484 .COM -   Dumps ASCII characters only, but the source is here
+321  DUMP1084.DOC -   for those who want to try to make it dump graphics
+321  DUMP1084.MAC -   as well.
+321  HANGMAN .COM - Traditional word guessing game.  Very fancy.  You can
+321  HANGMAN .DOC -   set up your own word list.
+321  WORD    .COM - Word library of Hangman.  Allows for updating of
+321  WORD    .LIB -   library, but make sure you read the note in
+321               -   HANGMAN.DOC.
+321  INSCREEN.COM - SBASIC screen input program.  Good program to learn
+321  INSCREEN.DOC -   basics of SBASIC.
+321  INSCREEN.BAS -
+321  MATH    .COM - Micro C's structured recoding of Math1 below.  This was
+321  MATH    .DOC -   done to demonstrate the increased readability of
+321  MATH    .BAS -   structured SBASIC programming.
+321  MATH1   .COM - The math game as Micro C originally received it.
+321  MATH1   .BAS -   Unstructured.
+321  MSTRMIND.COM - Mastermind game in SBASIC.
+321  MSTRMIND.DOC -
+321  MSTRMIND.BAS -
+321  SCREEN  .COM - SBASIC program that displays all displayable screen
+321  SCREEN  .DOC -   characters.
+321  SCREEN  .BAS -
+321  SCROLL  .COM - Allows viewing of files by scrolling forward or
+321  SCROLL  .DOC -   backward, printing, searching, and more.
+321  XLATE   .COM - An example on how you use the SBASIC xlate function.
+321  XLATE   .DOC -
+321  XLATE   .BAS -
+****
+322  ZCPR ready configured for Kaypro
+322  -KAYFUN .322 - This disk originally MICRO CORNUCOPIA Disk K22.
+322  DISK-322.DOC - A description of the files on this disk and
+322               -   instructions on how to install ZCPR on your system.
+322  ZCPR    .DOC - A user's guide to ZCPR.
+322  ZCPR    .MAN - An extensive manual on ZCPR written by its creators.
+322  ZCPR    .ASM - The assembly language source for ZCPR.  Requires
+322               -   MAC.COM.  (ASM.COM won't work).
+322  ZCPR2S  .HEX - Two slightly different versions of ZCPR for older 2's
+322  ZCPR2   .HEX -   and 4's.
+322  ZCPR4S  .HEX - Same as above except this version for newer 2's and
+322  ZCPR4   .HEX -   4's.
+322  ZCPR10S .HEX - Same as above except this version for 10's.
+322  ZCPR10  .HEX -
+322  2INSTALL.SUB - Installation commands for older 2's and 4's.
+322  4INSTALL.SUB - Installation commands for newer 2's and 4's with CP/M
+322               -   Version F or earlier.
+322  GINSTALL.SUB - Installation commands for newer 2's and 4's with CP/M
+322               -   Version G.
+322  10INSTAL.SUB - Installation commands for 10's with CP/M Version F.
+322  10GINSTL.SUB - Installation commands for 10's with CP/M Version G.
+322  EX14    .COM - Excellent replacement for SUBMIT and XSUB.  Used to
+322  EX14    .DOC -   automatically install ZCPR.
+****
+323  Fast Terminal & RCP/M Utilities
+323  -KAYFUN .323 - This disk originally MICRO CORNUCOPIA Disk K23.
+323  DISK-323.DOC - A description of the files on this disk.
+323  BYE     .COM - Makes your Kaypro into a Remote CP/M system.  (RCP/M).
+323  BYE     .ASM -
+323  XMODEM  .COM - This program resides on an RCP/M and allows users of
+323  XMODEM  .DOC -   it to send and receive files.
+323  XMODEM  .ASM -
+323  BYEZCPR .DOC - These files contain a protected version of ZCPR that
+323               -   prevents remote users from sabotaging your system.
+323  2ZCPR   .HEX - ZCPR for older 2's and 4's.
+323  484ZCPR .HEX - ZCPR for newer 2's and 4's
+323  10ZCPR  .HEX - ZCPR for 10's
+323  2INSTALL.SUB - Installation commands for older 2's and 4's.
+323  4INSTALL.SUB - Installation commands for newer 2's and 4's with CP/M
+323               -   Version F or earlier.
+323  GINSTALL.SUB - Installation commands for newer 2's and 4's with CP/M
+323               -   Version G.
+323  10INSTAL.SUB - Installation commands for 10's with CP/M Version F.
+323  10GINSTL.SUB - Installation commands for 10's with CP/M Version G.
+323  EX14    .COM - Excellent replacement for SUBMIT and XSUB.  Used to
+323  EX14    .DOC -   automatically install ZCPR.
+323  INTTERM .COM - An expanded replacement for TERM.COM.
+323  INTTERM .MAC -
+323  XLATETBL.ASM - An overlay for INTTERM to allow reassigning of key
+323               -   translation.
+****
+324  Keyboard Translator and MBASIC Games
+324  -KAYFUN .324 - This disk originally MICRO CORNUCOPIA Disk K24.
+324  DISK-324.DOC - A description of the files on this disk.
+324  KSTROKE2.COM - Keyboard translation program for older 2's and 4's.
+324  KSTRO484.COM - Keyboard translation program for newer 2's and 4's.
+324  KSTROK10.COM - Keyboard translation program for 10's.
+324  KSTROKES.DOC -
+324  KSTROKES.ASM -
+324  USOPEN  .BAS - A character graphic golf game.  Looks good on the newer
+324               -   machines that have graphics.  Runs under MBASIC.
+324  DUCK    .BAS - An offshoot of aliens.  Runs under MBASIC.
+324  CASTLE  .BAS - An adventure game with good documentation.  Runs under
+324  CASTLE  .DOC -   MBASIC.
+324  NIM     .BAS - Various other MBASIC games.
+324  RUSROU  .BAS -   |
+324  SLOTS   .BAS -   |
+324  SWORDS  .BAS -   |
+324  MATHDICE.BAS -   |
+324  SKUNK   .BAS -   |
+324  HURKLE  .BAS -   |
+324  DSPACE  .BAS -   |
+324  BACARRAT.BAS -   |
+324  SPACEWAR.BAS -   |
+324  UN2     .COM - An update of UN which unprotects "protected" MBASIC
+324  UN2     .DOC -   programs.
+324  XREFPRN2.COM - Produces a cross reference by line number for the
+324  XREF&UN2.DOC -   output of ASM and LASM files.
+324  D       .COM - Produces a sorted directory with file sizes.
+****
+325  Z80 Macro Assembler
+325  -KAYFUN .325 - This disk originally MICRO CORNUCOPIA Disk K25.
+325  DISK-325.DOC - A description of the files on this disk.
+325  Z80MR   .COM - A Z80 macro assembler.  Micro C has made this the
+325  Z80MR   .DOC -   target assembler for all assembly language source
+325               -   files they put out from now on.  They are also going
+325               -   to put together a macro library for it.
+325  AZM-COM .DOC - How to get from a source file to a .COM file.
+325  PHASE   .DOC - How to get around the phase and dephase operators found
+325               -   in M80 files.
+325  MAC-AZM .DOC - How to change M80 .MAC files into Z80MR .AZM files.
+325  PHASE1  .AZM - Sample program described in PHASE.DOC.
+325  Z80     .COM - An extensively modified version of the CROWE assembler
+325               -   on Disk K10.
+325  README  .ZQ0 - Squeezed documentation for Z80.COM.
+325  Z80     .ZQ0 - Squeezed source of Z80.COM.
+325  Z80A    .ZQ0 -   |
+325  Z80B    .ZQ0 -   |
+325  Z80C1   .ZQ0 -   |
+325  Z80C2   .ZQ0 -   |
+325  Z80D    .ZQ0 -   |
+325  Z80E    .ZQ0 -   |
+325  Z80F    .ZQ0 -   |
+325  UNSQ    .COM - Unsqueezes squeezed files.
+****
+326  Eprom Programmer and Hacker's Tools
+326  -KAYFUN .326 - This disk originally MICRO CORNUCOPIA Disk K26.
+326  DISK-326.DOC - A description of the files on this disk.
+326  EPROM   .COM - Runs the EPROM programmer published in MICRO CORNUCOPIA
+326  EPROM   .DOC -   Magazine Issue #18.
+326  EPROM   .TXT -
+326  EPROM   .AZM -
+326  PROGTEST.COM - Handles test and initialization of above EPROM
+326  PROGTEST.AZM -   programmer.  Instructions at top of PROGTEST.AZM.
+326  GETMON2K.COM - Gets the code in your monitor ROM and loads it at 100H
+326  GETMON4K.COM -   so that you can SAVE it in a file.
+326  GETMON  .AZM -
+326  I/O-CAP .COM - This program captures console input/output and saves it
+326  I/O-CAP .DOC -   in a file.  Make sure to read the .DOC before trying
+326  I/O-CAP .ASM -   this one out.
+326  DDTTOMAC.COM - Works on the output of DDT when using the 'l' command
+326  DDTTOMAC.DOC -   to disassemble a .COM file.  Reworks the file so that
+326  DDTTOMAC.C   -   it can be reassembled.  Source in BDS C.
+326  KDEBUG  .HEX - A kludgey RAM resident monitor.
+326  KDEBUG  .AZM -
+326  COMPARE .COM - Compares binary or other files bit for bit.
+326  LOOK    .COM - Looks for a 1-9 byte sequence in memory.  Very handy
+326  LOOK    .ASM -   when disassembling or modifying your CP/M.
+326  TELL    .COM - Tells you your CP/M landmarks.
+326  TELL    .ASM -
+326  UNLOAD  .COM - Creates a .HEX file out of .COM file.
+326  CHREDIT .COM - A character set editor for 2716 character generator
+326  CHREDIT .DOC -   eproms.  With this you can design your own character
+326  CHARS   .DAT -   set and then burn it with your new EPROM programmer.
+326  CHARK   .DAT -
+326  CHRLIST .COM - Dumps your character set to the printer.  Using
+326               -   asterisks for 'on' pixels.
+****
+327  Typing Tutorial
+327  -KAYFUN .327 - This disk originally MICRO CORNUCOPIA Disk K27.
+327  DISK-327.DOC - A description of the files on this disk.
+327  EATYPE  .COM - Modified version of the TTYPE program.
+327  TTYPE   .DOC -
+327  EATYPE  .BAS - Source for above in MBASIC.
+327  TTYPE   .BAS - Unmodified source in MBASIC.
+327  TTHELP0 .DAT - Data files used by EATYPE.COM above.
+327  TTHELP1 .DAT -   |
+327  TTHELP2 .DAT -   |
+327  TTHELP3 .DAT -   |
+327  TTHELP4 .DAT -   |
+327  TTHELP5 .DAT -   |
+327  TTKEYBD .DAT -   |
+327  TTYPEXA .DAT -   |
+327  TTYPEXB .DAT -   |
+327  TTYPEXC .DAT -   |
+327  TTYPEXD .DAT -   |
+327  TTYPEXE .DAT -   |
+327  TTYPEXF .DAT -   |
+327  TTYPEXG .DAT -   |
+327  TTYPEXH .DAT -   |
+327  TTYPEXI .DAT -   |
+327  TTYPEXJ .DAT -   |
+327  TDRILL  .COM - More typing drills.
+327  TRILL   .BAS - Source for above in MBASIC.
+327  CRT     .DEF - Terminal definition.
+327  ENVELOPE.COM - Types addresses on envelopes inserted into a printer.
+327  ENVELOPE.DOC -
+327  ENVELOPE.BAS - Source for above in SBASIC.
+327  FOGINDEX.COM - Calculates the Gunning-Mueller Clear Writing Institute
+327  FOGINDEX.DOC -   Fog index.
+****
+501  DDRAW, S-BASIC Graphics Etc.
+501  This disk contains mostly graphics programs for the newer Kaypros
+501  with graphics capabilities.  EPSONPRT and HELP are the only programs
+501  usable on older machines.
+501  DISK-501.DOC - Description of the files on this disk.
+501  DDRAW   .COM - A MacPaint-like drawing program.  Can dump your
+501  DDRAW   .DOC -   drawings to an Epson compatible printer.
+501  ATTRIB  .COM - Allows you to set video attributes from a menu.
+501  ATTRIB  .BAS - S-BASIC source for above.
+501  K10VIDEO.DOC - Documents some undocumented graphics features of the
+501               -   newer Kaypros.
+501  GRAP1   .COM - Example graphics programs written in S-BASIC.   They do
+501  GRAP1   .BAS -   some pretty interesting things.  Try them out.
+501  GRAP2   .COM -   |
+501  GRAP2   .BAS -   |
+501  GRAP3   .COM -   |
+501  GRAP3   .BAS -   |
+501  GRAP4   .COM -   |
+501  GRAP4   .BAS -   |
+501  GRAP5   .COM -   |
+501  GRAP5   .BAS -   |
+501  GRAP6   .COM -   |
+501  GRAP6   .BAS -   |
+501  CLRSCR  .BAS -   |
+501  GRAPH1  .BAS - Graphics routines written in S-BASIC.  Used by above.
+501  HELP    .COM - The HELP system.  For use with .HLP files.  Just run
+501               -   the program for on-line documentation.
+501  SBASIC  .HLP - S-BASIC graphics help file for use with above.
+501               -   Usage: A>HELP SBASIC.
+501  CLOCK484.BAS - S-BASIC and C programs to access, set, and read the
+501  CLOCK484.C   -   real time clock in the Kaypros that have it.
+501  CLOCK   .DOC -
+501  EPSONPRT.COM - An Epson printer control program.
+501  EPSONPRT.BAS - S-BASIC source for above.
+****
+502  Utilities
+502  DISK-502.DOC - Description of the files on this disk.
+502  DU-V87  .COM - A powerful, useful disk editor.
+502  DU-V87  .AQM - ASM assembler source for above.  (Squeezed).
+502  DU-V87  .DQC - Documentation for above.  (Squeezed).
+502  NSWP207 .COM - A powerful file moving and maintenance utility.  You
+502  NSWP205 .DOC -   need to use this to unsqueeze or view squeezed files
+502  NSWP207 .DOC -   on this disk unless you already have USQ119.
+502  NSWP205V.COM - A special version of NSWP205 (which is essentially the
+502               -   same as NSWP207 for Kaypros) that uses the reverse
+502               -   video capability of the newer Kaypros.
+502  SD95    .COM - Produces a detailed, sorted directory display including
+502               -   file sizes and many other things.  Read the DOC.
+502  SD95    .AQM - ASM assembler source for above.  (Squeezed).
+502  SD95    .DOC -
+502  SD95    .IQF - Information on how to modify SD95.  (Squeezed).
+****
+503  Catalog, Unerase, SAP, and Wordstar Utilities
+503  DISK-503.DOC - Description of the files on this disk.
+503  NCAT32  .COM - Catalogs the files on all your disks into a MASTer
+503  NCAT32  .DOC -   CATalog file called MAST.CAT.  See below.
+503  NCAT32  .SQT - Information on customizing NCAT32.COM.  (Squeezed).
+503  XCAT37  .COM - Produces a cross-reference of the master catalog file
+503               -   to disk or printer.
+503  MAST    .CAT - An example MASTer CATalog file.
+503  CATALOG .DOC - Documentation for the files above.
+503  FIND52  .COM - Searches 1 or more files on a disk for a given string
+503  FIND52  .DOC -   or strings.  Faster and easier than a word processor.
+503  EX14    .COM - A fantastic replacement for SUBMIT and XSUB.  Used with
+503               -   WSFAST16 below.
+503  WSFAST16.SUB - Patches Wordstar to eliminate the long sign-on time,
+503  WSFAST16.HEX -   among other things.  Read the DOC.
+503  WSFAST16.DOC -
+503  WSPAIR  .COM - Goes through a Wordstar file and makes sure that all
+503  WSPAIR  .DOC -   print control characters are paired.
+503  WS0     .COM - These programs will load Wordstar AND its overlays from
+503  WS15    .COM -   user area 0 or 15 even if you are in another user
+503  WS0/WS15.INF -   area.
+503  PURETEXT.COM - Takes a Wordstar file and converts it to ASCII.  Read
+503  PURETEXT.DOC -   the DOC.
+503  SETDRU  .COM - Allows you to make any program AND its overlays
+503  SETDRU  .REL -   accessible from any drive or user area.
+503  SETDRU  .CQ  - C/80 source for above.  (squeezed)
+503  UNSETDRU.COM - Undoes above.
+503  UNSETDRU.C   - Source for above in C/80.
+503  SETDRU  .DQC - Documentation for above files.  (squeezed)
+503  SDRU1   .MQC - M80 assembler source files for above.  (squeezed)
+503  SDRU2   .MQC -
+503  SAP40   .COM - Sorts and packs a disk directory.  You'll really
+503  SAP40   .AQM -   appreciate this utility once you try it.
+503  SAP40   .DOC -
+503  UNERA30 .COM - Unerases accidentally erased files.  This version also
+503  UNERA   .DOC -   works on the Kaypro 10's hard disk.
+503  UNERA30 .AQM - ASM assembler source for above.  (squeezed)
+503  USQ120  .COM - Unsqueezes squeezed files.
+503  USQ     .DOC -   3k
+****
+504  MDM740, and Telecommunications Info
+504  This disk contains MDM740 WITH ITS OVERLAYS so that you may customize
+504  and/or experiment with it.  Note: This version of MDM740 does not
+504  support Kaypro internal modems at the present time.
+504  DISK-504.DOC - A description of the files on this disk.
+504  M7KAYPRO.DOC - How to use the two .SUB file on this disk.
+504  MDM740  .COM - An unconfigured version of the MDM740
+504               -   telecommunications program.  Won't run on Kaypros
+504               -   until overlay MDM711KP.ASM is installed.  Read
+504               -   M7KAYPRO.DOC.
+504  MDM711KP.ASM - The Kaypro overlay file used to configure MDM740.COM
+504               -   for the Kaypro.  This file can be easily modified so
+504               -   as to make MDM740 suit your specific needs.
+504  MDM740KP.SUB - Automatically installs the above overlay file into
+504               -   MDM740.COM to make the Kaypro configured version,
+504               -   MDM740KP.COM.  Read M7KAYPRO.DOC.
+504  MDM740KP.COM - MDM740.COM configured for the Kaypro.
+504  M7NM-6  .ASM - The MDM740 phone number library overlay.  This file can
+504               -   be easily modfiied to suit your specific needs.
+504               -   Install this after installing MDM711KP.ASM.
+504  M7NM-6  .SUB - The submit file for automatically installing the above
+504               -   into MDM740KP.COM.  Read M7KAYPRO.DOC.
+504  MDM740  .DOC - Documentation on using MDM740.
+504  MDM740  .INF -   |
+504  M7FNK   .COM - Allows you to redefine the 10 function keys of MDM740.
+504  M7FNK   .DOC -
+504  M7FNK   .NOT -
+504  M7LIB   .COM - Allows you to add to or modify the MDM740 phone number
+504  M7LIB   .DOC -   library.
+504  M7KPRO  .FIX - Info on patching a bug in the Kaypro 4's BIOS.
+504  EX14    .COM - A fantastic replacement for SUBMIT.  Use with the .SUB
+504               -   files on this disk.
+504  HELP    .COM - The HELP system.  For use with .HLP files.  Just run
+504               -   the program for on-line documentation.
+504  XMODEM  .HLP - A HELP file on downloading from a bulletin board such
+504               -   as KAY*FOG using XMODEM.  Usage: A>HELP XMODEM.
+504  MDM-PROG.HLP - A HELP file about CP/M public domain modem programs.
+504               -   Usage: A>HELP MDM-PROG.
+504  PROTOCOL.DOC - Information on the XMODEM communications protocol.
+504  TELECOMP.DOC - Info on what telecommunications is all about.
+****
+505  The Complete Telecommunications Package
+505  Note: This version of MDM740 does not support Kaypro internal modems
+505  at the present time.
+505  DISK-505.DOC - Description of the files on this disk.
+505  MDM740KP.COM - The MDM740 telecommunications program.
+505  MDM740  .DOC -
+505  MDM740  .IQF - Information on how to patch MDM740KP.COM.  (Squeezed).
+505  M7LIB   .COM - Allows you to add to and modify the MDM740 phone number
+505  M7LIB   .DOC -   library.
+505  M7FNK   .COM - Allows you to redefine the 10 function keys of MDM740.
+505  M7FNK   .DOC -
+505  LU327   .COM - A utility for handling libraries.  A library is a file
+505  LU300   .DOC -   which can contain many files.  You will find
+505  LU327   .UPD -   libraries on just about every RCP/M bulletin board
+505  LU327   .HLP -   you log on to.
+505  LSWEEP13.COM - A utility which quickly handles the extraction and/or
+505  LSWEEP13.DOC -   viewing of files contained in libraries.
+505  NSQ110  .COM - Squeezes files for tight storage and fast transmission.
+505  NSQ110  .DOC -
+505  USQ119  .COM - Unsqueezes squeezed files.
+505  USQ     .DOC -
+505  D       .COM - Produces a sorted directory with file sizes.
+****
+506  MEX112
+506  DISK-506.DOC - Description of the files on this disk.
+506  MEX112  .CQM - An unconfigured version of MEX112, a multi-featured
+506               -   communications program. Will not run on Kaypros until
+506               -   the overlay file MXO-KP41.ASM is installed.
+506  MXO-KP41.AQM - The Kaypro overlay file used to configure MEX112.COM
+506               -   for the Kaypro.  This file can be easily modified so
+506               -   as to make MEX112 suit your specific needs.
+506  MEX112KP.COM - The Kaypro-configured version of MEX112.
+506  MEXPAT11.AQM - The overlay patch file for MEX112.  You can edit this
+506               -   file to change various initial variables within the
+506               -   program.
+506  MEX     .HQP - On-line help file.  Can only be read while in MEX112.
+506  LIST    .KEY - MEX112 keystring file.
+506  LIST    .PHN - MEX112 phone number file.
+506  INI     .MEX - Automatically loads the above two files when you start
+506               -   up MEX112.
+506  MEX11DOC.TQC - Documentation on using MEX112.
+506  MEX11DOC.WQ  -   |
+506  MX112UPD.DQC -   |
+506  MEX112  .BQG - Documentation of a minor bug in MEX112.
+506  MLOAD21 .COM - A linking, relocating loader used here for installing
+506  MLOAD21 .DQC -   the MEX overlay files, MXO-KP41.ASM & MEXPAT11.ASM.
+506  USQ120  .COM - Unsqueezes squeezed files.
+506  USQ     .DOC -
+506  D       .COM - Produces a sorted directory with file sizes.
+****
+507  Finance, Genealogy, Measures Etc.
+507  DISK-507.DOC - Description of the files on this disk.
+507  DISK    .DOC - Additional disk documentation.
+507  LOOKUP  .COM - Searches every line in a file for a specified keyword.
+507  LOOKUP  .DOC -   Good for phone number lookup applications.
+507  LOOKUP  .ASM - ASM assembler source for above.
+507  BOOK    .    - A sample telephone book for use with above.
+507  NEWGENEA.BAS - MBASIC program for genealogists.
+507  FINANCE .BAS - MBASIC program that calculates loans, deposits, and
+507               -   compound interest.
+507  MEASURE .BAS - MBASIC program that performs conversions between
+507               -   all kinds of measuring units.  Very extensive.
+507  MENU    .BAS - An electronic card file system that runs under MBASIC.
+507  MENU    .DOC -   Note: This program uses the video attributes of the
+507               -   newer Kaypros.  If you have an older machine you will
+507               -   get spurious characters on the screen.
+507  REPORT  .BAS - Programs branched to by the above program.
+507  REPT-FRM.BAS -   |
+507  MAIL    .BAS -   |
+507  SORT    .BAS -   |
+507  OPERATE .BAS -   |
+507  MERGE   .BAS -   |
+507  HELP    .BAS -   |
+507  HELP-1  .BAS - Help program and text files used by the above HELP.BAS.
+507  HELP-2       -   |
+507  HELP-3       -   |
+507  HELP-4       -   |
+507  CMENU   .INT - Checkbook management system.  You need C-BASIC to run
+507               -   this program.
+507  CMENU   .BAS - Source for above in C-BASIC.
+507  CBOOK   .INT - Programs chained to by CMENU, including executable .INT
+507  CBOOK   .BAS -   files and C-BASIC source .BAS files.
+507  CDAILY  .INT -   |
+507  CDAILY  .BAS -   |
+507  C-UPDATE.INT -   |
+507  C-UPDATE.BAS -   |
+507  CHKBOOK .DOC - Documentation on the above checkbook management system.
+507  WSMODS1 .AQM - An ASM assembler patch file that groups together
+507  WSMODS1 .DOC -   several Wordstar modifications, including WSFAST &
+507               -   NEC 8023A printer control commands.
+507  D       .COM - Produces a sorted directory with file sizes.
+****
+508  Handy Time Management
+508  -KAYFUN .508 - This disk originally KUG Disk #125.
+508  DISK-508.DOC - Description of the files on this disk.
+508  READ    .ME  - Disk documentation from KUG.
+508  TIMEMGT .125 -   |
+508  HANDYSYS.COM - The main program from which the following overlays
+508               -   are called.
+508  AGGENDAS.OVL - Personal appointment calendar.
+508  DO-TODAY.OVL - To Do List application.
+508  REMINDER.OVL - Quickly reminds you of important dates and events
+508               -   coming up in the current month.
+508  PLANNING.OVL - Allows the planning of time segments over a month for
+508               -   things like traveling or vacation periods.
+508  CALENDER.OVL - Displays months on a quarterly basis.
+508  ACTIONPL.OVL - "Action Planning" application.
+508  NOTEBOOK.OVL - Notebook for keeping logs.
+508  FONEBOOK.OVL - Quick reference phone number listing.
+508  DECISION.OVL - Helps with prioritizing or decision making.
+508  REMINDER.DAT - Data files used by the above overlays.
+508  PLANNING.DAT -   |
+508  ACTIONPL.DAT -   |
+508  NOTEBOOK.DAT -   |
+508  FONEBOOK.DAT -   |
+508  APPOINTS.DAT -   |
+508  CATEGORY.DAT -   |
+508  DOTHINGS.DAT -   |
+508  HANDY200.DOC - Documentation for the entire system described above.
+508  H200KPSR.LBR - A library containing the squeezed C-BASIC source files
+508               -   for the above .COM and .OVL files.
+508  D       .COM - Produces a sorted directory with file sizes.
+****
+509  Algolm & Data Base System
+509  -KAYFUN .509 - This disk originally CPMUG VOL 28.
+509  DISK-509.DOC - Description of the files on this disk.
+509  DBENTRY .BAS - Data Base system file load utility.
+509  DBQUERY .BAS - Data Base system query and update module.
+509  DBSETUP .BAS - Data Base system file initialization module.
+509  INV     .    - Sample file definition for inventory Data Base.
+509  INV     .IND - Sample part number index for inventory file.
+509  DATABASE.DOC - Documentation for above Data Base system.
+509  MAINT   .BAS - Maillist program.
+509  REPORT  .BAS - Maillist report program.
+509  MAILLIST.DOC - Documentation for above two files.
+509  ALGOLM  .COM - Compiler for the Algolm programming language.
+509  RUNALG  .COM - Algolm run-time interpreter.
+509  ALGINTRO.TXT - Algolm introduction.
+509  ALGSTART.TXT - Algolm run instructions.
+509  COMERR  .TXT - Algolm compile errors documentation.
+509  RUNERR  .TXT - Algolm run-time errors documentation.
+509  USRMAN  .TXT - Algolm user manual.
+509  ARRAY   .ALG - Sample Algolm program.
+509  BOOLINT .ALG - Sample Algolm programs.
+509  CASETEST.ALG -   |
+509  CASETWO .ALG -   |
+509  FLYTEST .ALG -   |
+509  GOTOTEST.ALG -   |
+509  HANOI   .ALG -   |
+509  LUNAR   .ALG -   |
+509  LUNAR   .AIN -   |
+509  PERM    .ALG -   |
+509  READWORD.ALG -   |
+509  RWINT   .ALG -   |
+509  SIISTR  .ALG -   |
+509  SORT    .ALG -   |
+509  STRING  .ALG -   |
+509  STRTST  .ALG -   |
+509  BLKTEST .ALG -   |
+509  ONEND2  .ALG -   |
+509  WFILE   .OUT -   |
+509  WINPUT  .INP - Demo input file for READWORD.ALG.
+509  RFILE   .INP - Demo input file for RWINT.ALG.
+509  BLK     .INP - Other demo input files.
+509  FILE1   .INP -   |
+509  FILE2   .INP -   |
+509  ADM3    .MOD - Mods for ADM3 terminals.
+509  UGFORM  .    - Form for submission of software to CPMUG.
+****
+510  dBase II Utilities
+510  -KAYFUN .510 - NOTE: All the programs on this disk run under dBase II.
+510  DISK-510.DOC - Description of the files on this disk.
+510  DBSQUASH.COM - Compacts .CMD files an average of 35-40%, thereby
+510  DBSQUASH.DOC -   saving memory and speeding program execution.
+510  DBSQUASH.BAS - MBASIC source for above.
+510  MAIN    .CMD - A rolodex program for keeping track of people's and
+510  ADD     .ACG -   company's phone numbers and addresses etc..
+510  BACKUP  .ACG -   |
+510  DEFAULTS.ACG -   |
+510  DELCHECK.ACG -   |
+510  DELETE  .ACG -   |
+510  DUPCHECK.ACG -   |
+510  DUPREC  .ACG -   |
+510  EDIT    .ACG -   |
+510  HELP    .ACG -   |
+510  INIT    .ACG -   |
+510  MAINTAIN.ACG -   |
+510  PRINT   .ACG -   |
+510  PURGE   .ACG -   |
+510  REPORT  .ACG -   |
+510  SEARCH  .ACG -   |
+510  SIGN-ON .ACG -   |
+510  VALID   .ACG -   |
+510  VERIFDEL.ACG -   |
+510  VERIFNEW.ACG -   |
+510  WSFILE  .ACG -   |
+510  MAINTAIN.FMT -   |
+510  MOD-REC .FMT -   |
+510  REPORT  .FMT -   |
+510  SAY-REC .FMT -   |
+510  TWO-REC .FMT -   |
+510  ADD     .MEM -   |
+510  LABELPRT.MEM -   |
+510  ACG     .DBF -   |
+510  ACGMAIL .DBF -   |
+510  COMPANY .NDX -   |
+510  LASTNAME.NDX -   |
+510  ZIP     .NDX -   |
+510  ACG     .DOC - Documentation for entire system above.
+510  LIBRARY .CMD - Allows you to store references to articles and books,
+510  LIBRARY .DOC -   along with a list of keywords (subjects) for each
+510  LIBRARY .DBF -   reference.  It maintains a history of all the
+510  AUTHORS .NDX -   keywords that are in the database.  New additions to
+510  DATES   .NDX -   the database, and changes to the database, auto-
+510  KEYWORDS.DBF -   matically update the keywords database.  You can
+510  KEYWORDS.NDX -   display a list of all available keywords, and can
+510  LIBADD  .CMD -   also search for references that contain any given
+510  LIBED2  .CMD -   keyword, or group of keywords.
+510  LIBEDIT .CMD -   |
+510  LIBFIND .CMD -   |
+510  LREPORTS.CMD -   |
+510  ZIPS    .NDX -   |
+****
+511  dBase II Utilities
+511  -KAYFUN .511 - NOTE: All the programs on this disk run under dBase II.
+511  DISK-511.DOC - Description of the files on this disk.
+511  PRLABEL .CMD - A program for printing address labels.
+511  PRLABEL .DOC -   |
+511  PRLABEL .DBF -   |
+511  DMASTER .CMD - A file cataloging program with procedures to add, edit
+511  DMASTER .DOC -   and search for files.  Lets you see what files are on
+511  UPDAT   .CMD -   a particular disk and allows you to look up certain
+511  VIEW    .CMD -   types of files (like all your copying programs, for
+511  ADD     .CMD -   instance).
+511  COMM    .CMD -   |
+511  DELET   .CMD -   |
+511  DISC    .CMD -   |
+511  EDET    .CMD -   |
+511  PART    .CMD -   |
+511  PRINT   .CMD -   |
+511  P1      .CMD -   |
+511  P2      .CMD -   |
+511  P3      .CMD -   |
+511  P4      .CMD -   |
+511  P11     .CMD -   |
+511  P111    .CMD -   |
+511  P1      .FRM -   |
+511  P2      .FRM -   |
+511  P3      .FRM -   |
+511  MSCREEN1.FMT -   |
+511  HELP    .CMD - Provides interactive help information on dBase II.
+511  HELP    .DOC -   Very useful for beginning or occasional users of
+511  HELP    .DBF -   dBase II.
+511  HELP    .NDX -   |
+511  HELP1   .CMD -   |
+511  HELP2   .CMD -   |
+511  HELP3   .CMD -   |
+511  HELP4   .CMD -   |
+511  HELP5   .CMD -   |
+511  HELP1   .ZIP -   |
+511  HELP2   .ZIP -   |
+511  HELP3   .ZIP -   |
+511  HELP4   .ZIP -   |
+511  MAILLIST.CMD - A mailing list system that permits the creation of two
+511  MAILLIST.DOC -   differently formatted mailing lists.  Contains
+511  MAILLIST.NOT -   procedures to add to the list, display the list, edit
+511  SHORT   .DBF -   the list, print the list, copy mailmerge files from
+511  SHORT   .FRM -   the list, and print mailing labels.
+511  SSHORT  .FRM -   |
+511  LONG    .DBF -   |
+511  LONG    .FRM -   |
+511  LLONG   .FRM -   |
+511  MAILADD .CMD -   |
+511  MAILCOPY.CMD -   |
+511  MAILEDIT.CMD -   |
+511  MAILFACT.CMD -   |
+511  MAILLABE.CMD -   |
+511  MAILMENU.CMD -   |
+511  MEMBER  .NDX -   |
+511  FACT    .MEM -   |
+511  &FILENAM.TXT -   |
+****
+512  Library and Display Utilities
+512  DISK-512.DOC - Description of the files on this disk.
+512  TYPEL36 .COM - A TYPE utility that pauses after every screenful.
+512  TYPEL36 .DOC -   Works with squeezed files and squeezed or unsqueezed
+512               -   files contained in libraries.
+512  TYPEL36 .MQC - M80 assembler source for above.  (squeezed)
+512  USQB    .REL - Needed if you wish to reassemble TYPEL36.COM.
+512  BISHOW31.COM - A bidirectional TYPE utility.  Allows you to scroll
+512               -   thru a file a page or a line at a time, forward or
+512               -   backward.  Works with squeezed files and squeezed or
+512               -   or unsqueezed files contained in libraries.
+512  BISHOW31.AQM - ASM assembler source for above.  (squeezed)
+512  NULU11  .COM - A very extensive library handling utility.  A superset
+512  NULU11  .DOC -   of LU327.  See Disk 505.
+512  NULU11  .NOT -
+512  NULU11V .COM - A version of the above configured to use the video
+512               -   attributes of the newer Kaypros.
+512  NULUTERM.ASM - Terminal installation overlay for NULU11.COM.  Already
+512               -   installed, but you may want to make changes.
+512  NULU11F1.ASM - A bug fix overlay.  Already installed.
+512               -
+512  MLOAD24 .COM - Used to install overlays above.
+512  LDIR23  .COM - Produces a directory of the files in a library.
+512  LDIR23  .DQC - Documentation for above.  (squeezed)
+512  LDIR23  .MQC - M80 assembler source for above.  (squeezed)
+512  LDIR23  .SUB - A submit file for reassembling LDIR23.COM.
+512  MATCHF  .REL - These files are needed if you wish to reassemble
+512  MYSORT  .REL -   LDIR23.COM.
+512  USQBASE .REL -   |
+512  LRUN    .COM - Runs a program contained in a library.
+512  LRUN212 .AQM - MAC assembler source for above.  (squeezed)
+512  USQ120  .COM - Unsqueezes squeezed files.
+512  USQ     .INF -
+****
+513  Disk, File & Memory Editors
+513  DISK-513.DOC - Description of the files on this disk.
+513  DU-V88  .COM - A powerful, useful disk editor. Allows you to directly
+513  DU-V87  .DOC -   view and edit the tracks and sectors of a disk.
+513  DU-V88  .AQM - ASM assembler source for above.  (squeezed)
+513  EDFILE  .COM - A full screen binary file editor.  You may edit or
+513  EDFILE  .DOC -   patch any type of file, text, object or otherwise,
+513               -   with this program.  Has hex and ASCII windows.
+513  EDFILE  .NOT - Note on patching EDFILE to use Wordstar arrow keys.
+513  PATCH   .COM - A full screen disk, file & memory editor.  Combines
+513  PATCH   .DOC -   many features of DU-V88 and EDFILE and adds to them.
+513  READ    .ME  - Additional documentation for above.
+513  PATCH18 .BUG - Documentation of a minor bug in PATCH.COM.
+513  PATCHINS.COM - Terminal installation program for PATCH.COM.
+513  INSTALL .DOC - Documentation for above.
+513  PATCHINS.DTA - Data and message files used by PATCHINS.COM.
+513  PATCHINS.MSG -   |
+513  USQ120  .COM - Unsqueezes squeezed files.
+513  USQ     .DOC -
+****
+514  Z80 Disassembler and CP/M Investigating Tools
+514  DISK-514.DOC - Description of the files on this disk.
+514  Z80DIS  .COM - A very powerful, extensive AND easy to use Z80
+514  Z80DIS  .000 -   disassembler written in Turbo Pascal.  Has many
+514  Z80DIS  .001 -   special features for ease of understanding the intent
+514               -   of the disassembled Z80 code.
+514  Z80DIS  .DQC - Documentation for above.  (squeezed)
+514  READ    .ME  - Overview of the Z80DIS package.
+514  ZDINSTAL.COM - Terminal installation program for Z80DIS.COM.
+514  ZDINSTAL.DTA - Data and message files used by ZDINSTAL.COM.
+514  ZDINSTAL.MSG -   |
+514  LOCATE  .COM - Tells you where your CP/M landmarks are (start of CCP,
+514               -   CBIOS jump table, warm start routine etc.).
+514  LOCATE  .ASM - ASM assembler source for above.
+514  TPA     .COM - Tells you how much TPA space you have.
+514  TPA     .DOC -
+514  BDLOC   .COM - Tells you the base page address of your BDOS and CCP.
+514  BDLOC   .ASM - ASM assembler source for above.
+514  USQ120  .COM - Unsqueezes squeezed files.
+514  USQ     .DOC -
+514  D       .COM - Produces a sorted directory with file sizes.
+****
+515  Assembly Language Translators
+515  DISK-515.DOC - Description of the files on this disk.
+515  XLT86   .COM - Translates an 8080 assembly language file into an 8086
+515  XLT86   .DOC -   assembly language file.
+515  XLT86   .INF -
+515  TEST1B86.ASM - Test file for above.
+515  XLT86   .AQM - ASM assembler source for above.  (squeezed)
+515  XLTZ80  .COM - Translates an 8080 assembly language file into a Z80
+515  XLTZ80  .DOC -   assembly language file.
+515  XLTZ80  .UPD -
+515  TEST1B  .ASM - Test file for above.
+515  XLTZ80  .ZQ0 - M80 assembler source for above.  (squeezed)
+515  XLT80   .COM - Translates a Z80 assembly language file into an 8080
+515  XLT80   .DOC -   assembly language file.
+515  XLT80   .UPD -
+515  TEST1B  .Z80 - Test file for above.
+515  XLT80   .AQM - ASM assembler source for above.  (squeezed)
+515  XLATE5  .COM - Does the same thing as XLTZ80 above, but is not as fast
+515  XLATE5  .DOC -   and does not have as many features.  It will run on an
+515               -   8080 machine and can be assembled with ASM, however.
+515  XLATE5  .AQM - ASM assembler source for above.  (squeezed)
+515  USQ120  .COM - Unsqueezes squeezed files.
+515  USQ     .DOC -
+515  D       .COM - Produces a sorted directory with file sizes.
+****
+516  Debugger/Monitors
+516  DISK-516.DOC - Description of the files on this disk.
+516  Z8E     .COM - A full featured, professional quality Z80
+516               -   debugger/monitor.
+516  Z8E     .DQC - Documentation for above.  (squeezed)
+516  Z8E     .SYM - Symbol table for above.
+516  NDDT    .COM - A greatly expanded version of DDT complete with source.
+516  NDDT    .DOC -
+516  NDDT    .AQM - ASM source for above.  (squeezed)
+516  RELOCATE.ASM - Merge this with DDT to obtain the relocatable (!) RDDT.
+516  CMDLINE .ASM - Used with RDDT to allow you to watch the CCP execute a
+516               -   command line, or watch CCP, BDOS or BIOS operations.
+516  CALLADDR.COM - Tells you the location of the CCP code that calls 100H.
+516  CALLADDR.ASM - ASM source for above.
+516  ZDT     .COM - An enhanced version of DDT that understands TDL Z80
+516  ZDT     .DOC -   mnemonics.
+516  SDT     .SUB - Submit file to patch an enhanced version of DDT.
+516  SDT     .NOT - Note on above.
+516  EX14    .COM - Super replacement for SUBMIT.  Use with SDT.SUB, above.
+516  USQ120  .COM - Unsqueezes squeezed files.
+516  USQ     .DOC -
+****
+517  Calculators & Assembly Language
+517  DISK-517.DOC - Description of the files on this disk.
+517  HP      .COM - Emulates a 4 base Hewlett-Packard RPN calculator
+517  HP      .DOC -    complete with memory registers.   Integer only.
+517  N41     .COM - Another calculator which constantly displays all 4
+517  N41     .DOC -   bases (hex, binary, decimal and character).  Has many
+517               -   features.  Integer only.
+517  N41     .AQM - ASM source for above.  (squeezed)
+517  FU      .COM - A full screen file editor similar to EDFILE on Disk
+517  FU      .DOC -   513, but has a Wordstar-like command set and a
+517               -   4 base integer calculator window.
+517  FUINST  .COM - Terminal installation program for FU.COM.
+517  FUINST  .DOC -
+517  FUINST  .DTA - Data and message files used by above.
+517  FUINST  .MSG -   |
+517  LASM3   .COM - A faster and greatly enhanced version of ASM.  Includes
+517  LASM3   .DOC -   Z80 op-codes and XREF, LINK and SYM directives.
+517  MLOAD24 .COM - A linking, relocating loader to replace LOAD.
+517  MLOAD24 .AQM - ASM source and documentation for above.  (squeezed)
+517  NEAT7   .COM - Does extensive reformatting of assembly language source
+517  NEAT7   .DOC -   files.  Numerous options.
+517  FORM7   .COM - Similar to NEAT7 above, but handles a different set of
+517  FORM7   .DOC -   reformatting chores.
+517  USQ120  .COM - Unsqueezes squeezed files.
+517  USQ     .DOC -
+****
+518  Text and Wordstar Utilities
+518  DISK-518.DOC - Description of the files on this disk.
+518  FINDU11 .COM - Searches for a string in a specified file or files.
+518  FINDU10 .DOC -   Works with squeezed files.
+518  FINDU11 .MAC - M80 assembler source for above.
+518  FINREP21.COM - Finds and replaces a string in a text OR object file.
+518  FINREP21.DOC -   Uses wildcards.  Has numerous features and options.
+518  WINDEX  .COM - Creates indexes from Wordstar files written in document
+518  WINDEX  .DOC -   mode.
+518  ALPHA   .COM - Produces an alpha listing of words in a text file along
+518               -   with how many times each word has been used.
+518  WS3330  .DOC - Ted Silveira's list of user patch points for Wordstar
+518               -   3.0 and 3.3.
+518  WSPATNEW.3/3 - Documentation of patches for Wordstar with very
+518               -   complete instructions and examples on using DDT.
+518  WS-CMDS .DOC - A comprehensive chart of Wordstar commands.
+518  COPY2WS .COM - Takes a text file and strips all hard carriage returns
+518  COPY2WS .DOC -   except for those occuring at the end of paragraphs so
+518               -   that the file can be reformatted with Wordstar.
+518  COPY2WS .PAS - Turbo Pascal source for above.
+518  UNBRST22.COM - Formats a text file to the printer so that it can be
+518  UNBRST22.DOC -   inserted into an unburst binder without covering up
+518               -   any lines or wasting any space on overlarge margins.
+518  UNBRST22.BAS - S-BASIC source for above.
+518  PRINTOUT.COM - An "express" version of UNBRST22 with no options menu.
+518  PRINTOUT.BAS - S-BASIC source for above.
+518  FILT7   .COM - Universal filter program.  Removes high bits, trailing
+518  FILT7   .DOC -   spaces, soft hyphens, soft carriage returns etc.
+518               -   from text or Wordstar files.
+518  TABS7   .COM - Another filter program similar to above, but this one
+518  TABS7   .DOC -   specializes in tab reformatting.  Take your pick.
+518  READ    .COM - A bidirectional TYPE utility that will handle Wordstar
+518  READ    .DOC -   files correctly.
+****
+519  Turbo Pascal Source Routines and Utilities
+519  -KAYFUN .519 - NOTE: All files below are for use with Turbo Pascal.
+519  DISK-519.DOC - Description of the files on this disk.
+519  TOOLS1  .PAS - A collection of Turbo procedures and functions.
+519  TOOLS2  .PAS - A further collection of Turbo procedures and functions.
+519  TURBO   .PAS - 5 utilites for use while in Turbo Pascal.  Includes
+519  TURBO   .DOC -   copying, erasing, renaming, printing and directory
+519               -   programs.
+519  XREFT   .PAS - Takes a Turbo source file and produces a numbered
+519               -   listing and a cross reference of identifiers.
+519  XREFT1  .INC - Include file for above.
+519  INKEY   .INC - An INKEY$ function.
+519  POWER   .INC - A function that raises a real number to a positive or
+519               -   negative integer power.
+519  STRING  .INC - An extensive collection of Turbo string functions.
+519  README  .DOC - Documentation for 3 files above.
+519  T/EDITOR.PAS - A set of routines for dealing with Turbo random access
+519  T/READ  .PAS -   files.
+519  T/UPD   .PAS -   |
+519  T/SERIES.DOC - Documentation for 3 files above.
+519  Z/INIT  .PAS - More routines for dealing with Turbo random access
+519  Z1/READ .PAS -   files.
+519  Z1/UPD  .PAS -   |
+519  Z/SERIES.DOC - Documentation for 3 files above.
+519  TPATCH  .PAS - A patch for compiled Turbo programs to allow them to
+519               -   use the entire CP/M command tail.
+519  TURBOPAT.DOC - Documentation for above.
+519  SAMPLE  .PAS - Sample program to use with TPATCH.PAS.
+519  TLOAD   .PAS - Takes an assembly language .PRN file and converts it to
+519  TLOAD   .DOC -   a Turbo INLINE routine for inclusion into a Turbo
+519               -   program.
+519  SCREEN  .PAS - Produces an editable screen file and an include file
+519               -   containing a procedure to draw a screen and read or
+519               -   write externally declared variables.
+519  SCRHELP0.INC - Include files for above.
+519  SCRHELP1.INC -   |
+519  SCRHELP2.INC -   |
+519  SCRHELP3.INC -   |
+519  TESTSCR .SCR - An editable screen file to demonstrate SCREEN.PAS.
+519  TESTSCR .INC - Source code produced from above.
+519  TESTSCR .PAS - A sample program using the above include file.
+519  READ    .ME  - Documentation for 8 files above.
+519  QSDEMO  .PAS - Quick sort algorithm demonstration
+519  QSDEMO  .DOC -
+519  VALNTINE.PAS - Prints a customized valentine.
+519  TURBO   .INF - One review of Turbo Pascal.
+****
+520  General Utilities
+520  -KAYFUN .520 -
+520  DISK-520.DOC - Description of the files on this disk.
+520  QK21    .COM - A RAM resident key redefinition program that allows you
+520  QK21    .DOC -   to redefine any key to up to 30 characters at any
+520  QK21    .UPD -   time.  Can save and reload full keyboard definitions.
+520  SD100   .COM - Produces a detailed, sorted directory with file sizes.
+520  SD100   .INF -   Many many options and features.
+520  SD100   .SUM - Summary of options for above.
+520  SD100   .AQM - ASM assembler source for above.  (squeezed)
+520  SAP44   .COM - Sorts and packs a disk directory.
+520  SAP44   .DOC -
+520  SAP44   .AQM - ASM assembler source for above.  (squeezed)
+520  FBAD59  .COM - Finds and locks out bad sectors on a disk.  Friendlier
+520  FBAD59  .DOC -   than FBAD60 which has no better or additional
+520               -   features.
+520  FBAD59  .AQM - ASM assembler source for above.  (squeezed)
+520  EX14    .COM - A fantastic replacement for SUBMIT.  Much faster, more
+520  EX14    .DOC -   reliable and with many added features.
+520  EX14    .TXT - An endorsement of above.
+520  EX14    .AQM - MAC assembler source for above.  (squeezed)
+520  EX14    .SUB - Sumbit file used for reassembling EX14.COM.
+520  EX14    .TST - A test submit file.
+520  USQ120  .COM - Unsqueezes squeezed files.
+520  USQ     .DOC -   3k
+****
+521  IMP244 is a telecommunications program based on MDM740.  It adds
+521  the new batch mode and 1k protocols currently in use on most bulletin
+521  boards and the auto stepdown feature of most 2400 baud modems.  NOTE:
+521  This version of IMP244 does not support Kaypro internal modems at the
+521  present time.
+521  DISK-521.DOC - Description of the files on this disk.
+521  IMP244KP.COM - A pre-configured Kaypro version of IMP244.
+521  IMP244  .COM - An unconfigured version of IMP244.  Will not run on
+521               -   Kaypros until the overlay, I2KP-1.ASM is installed.
+521  I2KP-1  .ASM - Kaypro overlay used to configure IMP244.COM for the
+521               -   Kaypro.  This file can be easily modified with any
+521               -   text editor to make IMP244 suit your specific needs.
+521  I2NM-2  .ASM - Phone number library and function key overlay for
+521               -   IMP244.  Put your own phone numbers and function keys
+521               -   here with any text editor.
+521  IMP244KP.SUB - Submit file for automatically installing the above 2
+521               -   overlays into IMP244.COM.
+521  IMP-OVL .CUS - Notes on how to customize and install the overlays
+521  READ    .ME  -   I2KP-1.ASM and I2NM-2.ASM.
+521  EX14    .COM - Replacement for submit.  Use with IMP244KP.SUB above.
+521  IMP     .DOC - Documentation for IMP244.
+521  NOTE         -   |
+521  IMP-NEW .INF -   |
+521  NEW          -   |
+521  IMP-DISK.NOT - Note on file transfers for floppy based systems.
+521  IMP-OVL .LST - List of current overlays for IMP244.
+521  I2LIB   .COM - Allows you to add to or modify the IMP244 phone number
+521  I2LIB   .DOC -   library.
+521  I2FUNC  .COM - Allows you to redefine the 10 function keys of IMP244.
+521  I2FUNC  .DOC -
+521  KMD     .INF - A discussion of KMD (the new XMODEM) and the 1k file
+521               -   transfer protocol.
+521  MLOAD24 .COM - A linking, relocating loader used here to install the
+521  MLOAD21 .DOC -   overlays, I2NM-2.ASM and I2KP-1.ASM into IMP244.COM.
+521  SQ111   .COM - Squeezes files for tight storage and fast transmission
+521  SQ111   .DOC -   over telephone lines.
+521  USQ120  .COM - Unsqueezes squeezed files.
+521  USQ     .DOC -   3k
+****
+522  MEX114
+522  This version of the MEX telecommunications program fixes some bugs
+522  in version 1.12 on Disk 506 and also supports the new 1k protocol
+522  currently in use on most bulletin boards.
+522  DISK-522.DOC - Description of the files on this disk.
+522  MEX114KP.COM - The Kaypro-configured version of MEX114.
+522  MEX114  .CQM - An unconfigured version of MEX114.  Will not run on
+522               -   Kaypros until the overlay file MXO-KP42.ASM is
+522               -   installed.
+522  MXO-KP42.AQM - The Kaypro overlay file used to configure MEX114.COM
+522               -   for the Kaypro.  This file can be easily modified to
+522               -   make MEX114 suit your specific needs.
+522  MEXPAT22.AQM - Patch overlay file for MEX114.  You can edit this file
+522               -   to change various initial variables within the
+522               -   program.
+522  MEX114KP.SUB - Submit file for automatically installing the above 2
+522               -   overlays into MEX114.COM
+522  EX14    .COM - Replacement for SUBMIT.  Used with MEX114KP.SUB above.
+522  MEX     .HQP - On-line help file.  Can only be read while in MEX114.
+522  LIST    .KEY - MEX114 keystring file.
+522  LIST    .PHN - MEX114 phone number file.
+522  INI     .MEX - Automatically loads the above two files when you start
+522               -   up MEX114.
+522  MEX11DOC.TQC - Documentation on using MEX114.
+522  MEX11DOC.WQ  -   |
+522  MX114UPD.DQC - Update documentation for MEX114.
+522  MLOAD24 .COM - A linking, relocating loader used here for installing
+522  MLOAD21 .DQC -   the MEX overlay files, MXO-KP42.ASM & MEXPAT22.ASM.
+522  USQ120  .COM - Unsqueezes squeezed files.
+****
+523  VDO25 & Tour20
+523  DISK-523.DOC - Description of the files on this disk.
+523  VDO25   .COM - A fast full-screen non-document editor that uses a
+523               -   subset of Wordstar commands.
+523  VDO25   .MAN - Manual for above.
+523  VDO25   .NOT - Update note for above.
+523  VINST11 .COM - Terminal installation program for VDO25.COM which is
+523               -   presently installed for newer Kaypros.  Run this
+523               -   first if you have something different.
+523  VTERM   .DAT - Data file used by above.
+523  VDO-OVR .AQM - A squeezed overlay to add some enhancements to VDO25.
+523               -   Note: You will need USQxxx or NSWPxxx from another
+523               -   disk to unsqueeze and make use of this file.
+523  VDO-OVR .SUB - A submit file to automatically install the above.
+523  EX14    .COM - Replacement for SUBMIT.  Used with VDO-OVR.SUB above.
+523  TOUR    .COM - A Thinktank-like outline processor or document hierarchy
+523  TOURGUID.DOC -   editor.
+523  MAKETINI.COM - Creates a terminal definition file for TOUR.
+523  MAKETINI.DOC -
+523  TOURINI .INI - Terminal definition file for TOUR presently set up for
+523               -   any terminal that uses a ^Z clear screen sequence.
+523  ROFFTOUR.COM - A text formatter for creating the final output of TOUR.
+523  ROFFGUID.DOC -
+****
+524  Express 1.0
+524  DISK-524.DOC - Description of the files on this disk.
+524  E       .COM - Express, a fast, full screen text editor with lots of
+524               -   extras.
+524  EXPRESS .OVL - Overlay used by E.COM.
+524  DIF     .MKT -
+524  ECONFIG .COM - Installs E.COM for different machines.
+524  TERM    .DAT - Data file used by above.
+524  README  .    - Overview of this, the public domain version of Express.
+524  FEATURES.TQT - Overview of the commercial version of Express, version
+524               -   2.0.  (squeezed)
+524  EXPRESS1.DQC - Documentation for Express.  All of these files are
+524  EXPRESS2.DQC -   squeezed.
+524  EXPRESS3.DQC -
+524  EXPRESS4.DQC -
+524  EXPRESS5.DQC -
+524  EXPRESS6.DQC -
+524  ROFF4   .COM - Formats text for printed output.
+524  ROFF4   .DOC -
+524  MX      .    - Examples of ROFF printer commands.
+524  USQ120  .COM - Unsqueezes squeezed files.
+524  USQ     .DOC -
+****
+525  Kaypro Video Dependent Programs
+525  DISK-525.DOC - Description of the files on this disk.
+525  CURSOR  .COM - Allows you to change your cursor's attributes, slow or
+525  CURSOR  .DOC -   fast blinking, block, underline etc..
+525  DBLICK-V.COM - Kaypro video version of the famous breakout game.
+525  DBLICK-V.INF - INFormation on above.
+525  DBLICK-V.PAS - Turbo Pascal source code for above.
+525  KPBSHW32.COM - A bidirectional TYPE utility that uses Kaypro video
+525  KPBISHOW.INF -   attributes.
+525  SD99-KP .COM - Kaypro version of the super-directory program.  Gives
+525  SD      .DOC -   an alphabetical directory with file sizes in addition
+525               -   to lots of other information.
+525  USOPEN  .BAS - A video golf game written in MBASIC.
+525  VKPCHESS.COM - Kaypro video version of chess.  You can play against
+525  VKPCHESS.DOC -   the computer or the computer can play itself.  An
+525               -   excellent program.
+525  KPCHRSET.COM - Shows you the complete Kaypro character set including
+525  KPCHRSET.DOC -   graphics characters.
+525  KPCHRSET.BAS - Very informative CBASIC source code for above.
+525  KPLN25  .DOC - Shows you how to use the Kaypro screen's 25th line.
+525  KPTIME24.COM - Sets and allows you to view the time with the Kaypro's
+525  KPTIME12.COM -   internal clock.  24 and 12 hour versions.
+525  KPTIME24.ASM - ASM source code for above.
+525  KPTIME  .INF - INFormation for above.
+525  ROLO-KP .COM - A rolodex program using Kaypro video attributees.
+525  ROLO    .DAT -
+525  ROLO    .INF - INFormation for above.
+525  ROLOKP11.BAS - CBASIC source code for above.
+****
+701  IMP244 for C128 commodore
+701  IMP244 is a telecommunications program based on MDM740.  It adds
+701  the new batch mode and 1k protocols currently in use on most bulletin
+701  boards and the auto stepdown feature of most 2400 baud modems.
+701  DISK-701.DOC - Description of the files on this disk.
+701  C128-NEW.DOC - How to copy, transfer and install all these files.
+701  C128-NEW.IRV - Documentation file discussing C-128 and IMP.
+701  64CONVRT.    - Converts the following two files to CP/M.
+701  NEWSYS  .COM - Replacement for original CPM+.SYS file.
+701  IMP-C128.COM - A pre-configured C-128 version of IMP244.
+701  IMP244  .COM - An unconfigured version of IMP244.  Will not run on
+701               -   C128s until the overlay, I2C8-1.ASM is installed.
+701  IMP     .DOC - Documentation for IMP244 and IMP-C128.
+701  I2C8-1  .ASM - Overlay used to reconfigure IMP-C128.COM, if need be.
+701  I2NM-2  .ASM - Phone number library and function key overlay for
+701               -   IMP244.  Put your own phone numbers and function keys
+701               -   here with any text editor.
+701  READ    .ME  - How to change and install I2C8-1.ASM and I2NM-2.ASM
+701               -   files.
+701  IMP-C128.SUB - Submit file for automatically installing the above two
+701               -   ASM overlay files into IMP244.COM (see READ.ME).
+701  EX14    .COM - Replacement for submit.  Use with IMP-C128.SUB above.
+701  EX14    .DOC -
+701  MLOAD   .COM - A linking, relocating loader used here to install the
+701  MLOAD21 .DOC -   overlays, I2NM-2.ASM and I2C8-1.ASM into IMP244.COM.
+701               -   Taken care of by IMP-C128.SUB.
+701  I2FUNC  .COM - Allows you to redefine the 10 function keys of IMP244.
+701  I2FUNC  .DOC -
+701  I2LIB   .COM - Allows you to add to or modify the IMP244 phone number
+701  I2LIB   .DOC -   library.
+****
+

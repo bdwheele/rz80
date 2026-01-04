@@ -1,0 +1,2605 @@
+title KAYPRO II/IV RESIDENT SOFTWARE PACKAGE 2.2 , Copyright (C) 1982, 1983 NLS, Inc.
+subttl Cold start and configure
+.comment %
+##########################################################
+##							##
+##	Cold start routine, reset and configure		##
+##	system for power up condition.			##
+##							##
+##	By G. Ohnysty					##
+##							##
+##	Copyright (C) 1982, 1983 By			##
+##	Non-Linear Systems, Inc.			##
+##	No warranty is made, expressed or implied.	##
+##							##
+##======================================================##
+##							##
+##	Revision:		2.5	26-Oct-83	##
+##	Revision:		2.4	02-Sep-83	##
+##	Revision:		2.3	19-Jul-83	##
+##	Revision:		2.2	28-Feb-83	##
+##							##
+##======================================================##
+##							##
+##	Changes, version 2.5:  Modified bitport init.	##
+##	 byte for motor on during reset-power/up.	##
+##	 (M. Sherman)					##
+##	Changes, version 2.4:  Modified for Kaypro	##
+##	 Universal board.  New revision includes	##
+##	 screen graphics routines. (M. Sherman)		##
+##	Changes, version 2.3:  Corrected problem with	##
+##	 cursor erasing underline characters, video	##
+##	 driver no longer displays nulls, floppy disk	##
+##	 read/write routines now step out one track,	##
+##	 then back on error for greater reliability,	##
+##	 corrected problems with multiple formats.	##
+##	Changes, version 2.2:  Modified for double-	##
+##	 sided drives.  (M. Sherman)			##
+##							##
+##########################################################
+%
+
+extrn	$pixon, $pixoff, $linon, $linoff
+
+public	row, row2, col, col2, esccmd, vrbase, onoff, newc, pix
+public	saddr, vatt, difx, dify, xoff, yoff
+
+.Z80
+
+; conditional equates
+
+FALSE	equ	0000H
+TRUE	equ	NOT FALSE
+DSIDED	equ	TRUE
+SSIDED	equ	NOT DSIDED
+
+; ROM master jump table
+
+jp	start		; start up computer
+jp	diskinit	; disk initialize
+jp	vidinit		; video initialize
+jp	devinit		; device initialize
+
+jp	home		; home selected disk drive
+jp	seldsk		; select a disk drive
+jp	settrk		; seek a track
+jp	setsec		; set sector number to read
+jp	setdma		; set dma address
+jp	read		; read logical sector
+jp	write		; write logical sector
+jp	sectran		; xlate sector number
+jp	diskon		; turn on disk
+jp	diskoff		; turn off disk
+
+jp	kbdstat		; KeyBoarD character ready
+jp	kbdin		; input from keyboard
+jp	kbdout		; output to keyboard (used to ring bell)
+jp	ttystat		; status of serial input port
+jp	ttyin		; serial input
+jp	ttyout		; serial output
+jp	liststat	; list output status (Centronics)
+jp	list		; list output
+JP	TTYOSTAT	;TESTSTATUS OF SERIAL OUTPUT
+jp	vidout		; video output
+jp	thnsd		; short delay
+
+start:	di			; stop interupts while setup
+	ld	sp,stack	; rom stack point
+	ld	b,10		; a delay to let the hardware stabilize
+	call	thnsd
+	call	devinit		; init device sub-system
+	call	vidinit		; init video sub-system
+	call	diskinit	; init disk sub-system
+	jr	bootsys		; boot system
+	org	66H		; nmi vector
+	ret			; return from "halt", NMI sequence when in rom
+page
+; boot system, the first sector (1) of the first track (0)
+; hold system boot information. It does NOT hold a short boot routine!
+; the image is:
+;	self:	jr	self	; hang if booted and run
+;		defw	loadpt	; where to load the opsys image
+;		defw	bios	; where to go after booting system
+;		defw	length	; length of image in 128 byte sectors
+;	(* the rest of the sector is not used *)
+;
+; This sector image is loaded and inspected at 0FA00H during the boot process
+
+bootsys:call	print
+	defb	esc,'=',20H+10,20H+31
+	DEFB	'*     KAYPRO      *'
+	defb	esc,'=',20H+13,20H+20
+	defb	' Please place your diskette into Drive A',lcur,00
+	ld	c,0
+	call	seldsk		; select disk, set density, do home after diskinit
+	ld	bc,0		; set track
+	call	settrk
+	ld	c,0		; read the first sector
+	call	setsec
+	ld	bc,0FA00H	; header sector to go here
+	call	setdma
+	call	read		; read sector to FA00
+	di			; read does EI upon exit
+	or	a		; trouble reading?
+	jr	nz,booterr	; tell crt
+	ld	bc,(0FA02H)	; where to load system image
+	ld	(dmaadr),bc
+	ld	bc,(0FA04H)	; where to go after loading system
+	push	bc		; save for latter use
+	ld	bc,(0FA06H)	; length of system in 128 byte sectors
+	ld	b,c		; reg B holds # of sectors to load
+	ld	c,1		; initial sector (0 was header sector)
+cb1:	push	bc		; save sector count and current sector
+	call	setsec		; select sector
+	call	read
+	di			; read does EI upon exit
+	pop	bc
+	or	a
+	jr	nz,booterr	; bad read of sector
+	ld	hl,(dmaadr)	; update dma address for next sector
+	ld	de,128		; new dma address
+	add	hl,de
+	ld	(dmaadr),hl
+	dec	b
+	ret	z		; done booting goto system
+	inc	c		; bump sector count
+	ld	a,40		; over sectors/track?
+	cp	c
+	jr	nz,cb1		; fetch another sector
+	ld	c,16		; first sector to read on next track
+	push	bc		; save counts
+	ld	bc,1		; set for next track
+	call	settrk
+	pop	bc
+	jr	cb1
+
+booterr:call	print
+	defb	cr,lf,lf
+	defb	belli,'I cannot read your diskette.',0
+	call	diskoff		; turn off disk drive
+self:	jr	self		; hang till user pushes reset
+
+page
+title System device I/O routines.   (C) 1983 By NLS
+.comment %
+########################################################
+##                                                    ##
+##      KAYPRO 10 System                              ##
+##                                                    ##
+##      By G. Ohnysty                                 ##
+##                                                    ##
+##      System device I/O routines                    ##
+##                                                    ##
+##      Copyright (C) 1983 By Non-Linear Systems, Inc ##
+##      No warranty is made, expressed or implied.    ##
+##                                                    ##
+########################################################
+##      Date: 04/14/83                    [01]        ##
+########################################################
+%
+.z80
+
+	public	kbdstat, kbdin, kbdout, ttystat, ttyin, ttyout, TTYOSTAT
+	public	liststat, list, devinit
+
+
+;***************
+;* sio equates *
+;***************
+
+sio	equ	04H	; base address of sio
+sioa0	equ	sio+2	; channel a command/status
+sioa1	equ	sio+0	; channel a data
+siob0	equ	sio+3	; channel b command/status
+siob1	equ	sio+1	; channel b data
+sioc0	equ	sio+10	; channel a command/status
+sioc1	equ	sio+8	; channel a data
+siod0	equ	sio+11	; channel b command/status
+siod1	equ	sio+9	; channel b data
+
+; write registers 0-7 and control bits
+; init registers in the following order 0,2,4,3,5,1
+
+WR0	equ	0	; command register, crc reset, reg pointer
+; bits 0-2 are register pointers to WRx and RRx
+; bits 3-5 and commands as given bellow
+null	equ	0	; null command
+extrset	equ	10H	; reset ext/status interrupts
+reset	equ	18H	; channel reset
+ienrc	equ	20H	; Enable Int on Next Rx Character
+rtip	equ	28H	; disable transmitter (prevents buffer empty int.)
+			; and enable break (prevents under-run int.)
+			; (note: since the transmitter is disabled,
+			;  no break characters are transmitted.)
+			; (also note:  Transmitter output is High-Z,
+			;  which is neither high nor low (niether 'Mark'
+			;  nor all zero's.  Value dependent upon pullup
+			;  or pull down resistors or other external loading
+			;  factors.) )
+			; (note:  Auto Turnaround is also enabled.)
+errset	equ	30H	; error reset
+
+WR1	equ	1H	; interrupt enable and Wait/Ready modes
+esie	equ	1H	; external/status interrupt enable
+tie	equ	2H	; transmitter interrupt enable
+tid	equ	0	; transmitter interrupt disable
+statav	equ	4H	; Status affects vector (z80 mode 2) (see WR2)
+; bits 3-4 affect receive interrupt mode
+rid	equ	0	; receive interrupts disabled
+rifc	equ	8H	; receive interrupt on first char only
+riep	equ	10H	; recv interrupts enabled, parity err Special Recv Cond
+rie	equ	18H	; same as riep but parity error not Special Recv Cond
+
+WR2	equ	2	; interrupt vector address/pointer (chan b only)
+; interrupt address (z80 reg I+WR2=interrupt address)
+; returned as is if not statav above in wr1
+; if statav then bits 1-3 are modified as bellow:
+;	000	ch b transmit buffer empty
+;	001	ch b external/status change
+;	010	ch b receive char available
+;	011	ch b special receive condition (parity error, Rx overrun,
+;			framing error, end of frame(sdlc) )
+;	1xx	ch a (* same vectors as for channel b above *)
+
+WR3	equ	3	; receiver logic control and parameters
+re	equ	1	; receiver enable
+autoe	equ	20H	; auto enable (use dcd and cts to enable recv and xmt
+; bits 6-7 are receiver bits/character
+rbits5	equ	0	; 5 bits/character
+rbits7	equ	40H	; 7 bits/character
+rbits6	equ	80H	; 6 bits/character
+rbits8	equ	0C0H	; 8 bits/character
+
+WR4	equ	4	; control bits that affect both xmt and recv
+pon	equ	1	; enable parity (parity on)
+pstate	equ	2	; parity even   not pstate = parity odd
+; bits 2-3 are number of stop bits
+syncmd	equ	0	; sync mode is to be selected
+sbits1	equ	4	; 1 stop bit
+sbits5	equ	8H	; 1.5 stop bits
+sbits2	equ	0CH	; 2 stop bits
+; bits 6-7 control clock rate
+cr1	equ	0	; data rate x1=clock rate
+cr16	equ	40H	;           x16
+cr32	equ	80H	;           x32
+cr64	equ	0CH	;           x64
+
+WR5	equ	5	; control bits that affect xmt
+te	equ	8H	; transmit enable
+break	equ	10H	; send break
+; bits 5-6 are number of bits/character to transmit
+tbits5	equ	0	; 5 or less bits/character
+tbits7	equ	20H	; 7 bits/character
+tbits6	equ	40H	; 6 bits/character
+tbits8	equ	60H	; 8 bits/character
+rts	equ	2	; RTS output
+dtr	equ	80H	; DTR output
+
+WR6	equ	6	; sdlc transmit sync character
+WR7	equ	7	; sdlc receive sync character
+
+; read registers 0-2 and status bits
+rr0	equ	0	; general recv and xmt status
+rca	equ	1	; receive character available
+intped	equ	2	; interrupt pending (ch a only)
+tbe	equ	4	; transmit buffer empty
+synhnt	equ	10H	; sync/hunt
+dcd	equ	8H	; DCD input
+cts	equ	20H	; CTS input
+xmtundr	equ	40H	; transmit underrun/ EOM
+brk	equ	80H	; break/abort status
+
+rr1	equ	1	; Special Receive conditions and Residue codes
+; bits 4-7 are special receive conditions
+rpe	equ	10H	; parity error
+rovr	equ	20H	; Rx overrun error
+framerr	equ	40H	; framing error
+
+rr2	equ	2	; interrupt vector address/pointer
+
+pdat	equ	24	; cent out data port (8 bit latch)
+
+bitport	equ	20	; system bit port for status and control
+;0 floppy drive 0 select:  0=select, 1=deselect.
+;1 floppy drive 1 select / hard disk controller reset:
+;  0=floppy drive 1 select / hard disk controller reset,
+;  1=floppy drive 1 deselect / hard disk controller enable,
+;2 floppy drive side select line:  0=side 1, 1=side 0.
+;3 parallel port output line, used (for example) for centronics data strobe.
+;4 floppy motor control:  0=motor off, 1=motor on.
+;5 floppy controller density select, 0=double density, 1=single density.
+;6 parallel port input line, used (for example) for centronics busy line.
+;7 bank select:  0=64K ram only, 1=rom, video ram and upper 32k ram select.
+
+;***************
+;* baud rate   *
+;***************
+
+bauda	equ	00H	; baud rate generator for serial chan a (modem)
+baudb	equ	08H	; baud rate generator for serial chan b (printer)
+
+; baud rate factors, output to baudx to select baud rate
+baud10	equ	02H	; 110 baud rate
+baud30	equ	05H	; 300 baud rate
+baud12	equ	07H	; 1200 baud rate
+baud24	equ	0AH	; 2400 baud rate
+baud48	equ	0CH	; 4800 baud rate
+baud96	equ	0EH	; 9600 baud rate
+baud19k	equ	0FH	; 19.2k baud rate
+subttl I/O configuration tables
+page
+
+iotbint:defb	reset			; reset sio channel
+	defb	wr4
+	defb	sbits1 or cr16		; one stop bit, 16x clock
+	defb	wr3
+	defb	re or rbits8		; recv enable, 8 bits/char
+	defb	wr5
+	defb	te or tbits8 or dtr	; xmt enable, 8bits/char, assert dtr
+	defb	wr1
+	defb	tid or rid		; xmt & recv interrupts disabled
+iotbend:
+
+tblen	equ	iotbend-iotbint		; table length
+
+devinit:ld	a,0dfh
+	out	(bitport),a	; initialize bitport
+	ld	c,siob0
+	call	tblout		; initialize channel
+	ld	c,sioc0
+tblout:	ld	hl,iotbint
+	ld	b,tblen
+	otir
+	ret
+
+subttl Device I/O handlers
+page
+kbdstat:in	a,(siob0)	; kbd char avail?
+	and	rca
+comout:	ld	a,0
+	ret	z		; 0=no char
+	ld	a,0FFH		; FF=char avail
+	ret
+
+kbdin:	call	kbdstat		; loop till char avail
+	jr	z,kbdin
+	in	a,(siob1)	; get char
+	call	kbdmap		; map out funny chars of vector pad and #'s
+	ret
+
+kbdout:	in	a,(siob0)	; xmit buffer empty?
+	and	tbe
+	jr	z,kbdout
+	ld	a,c		; out character
+	out	(siob1),a
+	ret
+
+kbdmap:	ld	hl,mapin	; input map table
+	ld	bc,mapout-mapin	; table length
+	cpir			; search table
+	ret	nz		; not found
+	ld	de,mapin	; make hl=table index
+	or	a		; hl-mapin=index
+	sbc	hl,de
+	ld	de,mapout-1	; index
+	add	hl,de
+	ld	a,(hl)		; get char from mapout
+	ret
+
+mapin:	defb	0F1H, 0F2H, 0F3H, 0F4H	; up, down, left, right arrows
+	defb	0B1H, 0C0H, 0C1H, 0C2H	; 0,1,2,3
+	defb	0D0H, 0D1H, 0D2H, 0E1H	; 4,5,6,7
+	defb	0E2H, 0E3H, 0E4H, 0D3H	; 8,9, '-', ','
+	defb	0C3H, 0B2H		; return, '.'
+	defb	0FFH			; end of mapin table
+mapout:	defb	80H, 81H, 82H, 83H	; vector pad, xlate in bios
+	defb	84H, 85H, 86H, 87H
+	defb	88H, 89H, 8AH, 8BH
+	defb	8CH, 8DH, 8EH, 8FH
+	defb	90H, 91H
+
+ttystat:in	a,(sioc0)		; serial port status input
+	and	rca
+	JR	COMOUT
+
+ttyin:	call	ttystat			; is a char ready?
+	jr	z,ttyin
+	in	a,(sioc1)
+	ret
+
+ttyout:	in	a,(sioc0)		; output a char to serial port
+	and	tbe
+	jr	z,ttyout		; xmit buffer full?
+	ld	a,c
+	out	(sioc1),a		; xmit character
+	ret
+
+;
+TTYOSTAT:	;TEST STATUS OF SERIAL OUTPUT
+	IN	A,(SIOD0)
+	AND	TBE			;TX BUF FULL ?
+	JR	COMOUT
+;
+; list port centronics equates
+pready	equ	6			; bit in bit port
+pstrob	equ	3			; bit in bit port
+
+liststat:in	a,(bitport)		; centronics printer port status
+	bit	pready,a
+	ld	a,0
+	ret	nz			; 00=busy
+	ld	a,0FFH			; FF=ready
+	ret
+
+list:	call	liststat		; is printer busy?
+	jr	nz,list
+	ld	a,c
+	out	(pdat),a		; output char to printer
+	in	a,(bitport)		; strb. printer
+	res	pstrob,a
+	out	(bitport),a
+	set	pstrob,a
+	out	(bitport),a
+	ret
+
+page
+subttl Disk Equate and Parameters
+.comment %
+###############################################################
+##                                                           ##
+##       Disk support routines (Deblocking)                  ##
+##                                                           ##
+###############################################################
+##       Last Update:06/08/82           [001]                ##
+###############################################################
+%
+.z80
+
+drvmask	equ	11111100b	; drive select mask
+denmask	equ	11011111b	; density bit mask
+ddbit	equ	00000000b	; double density bit
+sdbit	equ	00100000b	; single density bit
+sidmsk	equ	11111011b	; side mask
+sid0	equ	00000100b	; side 0
+sid1	equ	00000000b	; side 1
+control	equ	16		; I/O port of disk controller
+status	equ	control+0	; status register
+cmnd	equ	control+0	; command register
+track	equ	control+1	; track register
+sector	equ	control+2	; sector register
+data	equ	control+3	; data register
+ficmd	equ	11010000B	; force interrupt (Abort current command)
+rdcmd	equ	10001000B	; read command
+wrtcmd	equ	10101100B	; write command
+seekcmd	equ	00010000B	; seek command
+rstcmd	equ	00000000B	; home (restore) command
+stpic	equ	01011110b	; step in command
+stpoc	equ	01111110b	; step out command
+adrcmd	equ	11000100B	; read track address
+rdmask	equ	10011100B	; read status mask
+wrtmask	equ	11111100B	; write status mask
+tries1	equ	4		; re-home on bad sector # of tries+1
+tries2	equ	15		; re-read/write # of retries+1
+ssmblk	equ	194
+dsmblk	equ	ssmblk*2
+retcod	equ	0C9H		; return op code
+nmivec	equ	0066H	; non-maskable interupt vector (used in rd/wt loop)
+page
+; This section defines the disk parameters (dph's are images moved to RAM)
+dph0:	defw	0,0,0,0		; dph for unit A:
+	defw	dirbuf,dpbd	; directory buffer, Disk Parameter Block
+	defw	csva, alva	; check sum pointer, allocation map pointer
+	defb	ddbit		; density flag for this drive
+
+	defw	0,0,0,0		; dph for unit B:
+	defw	dirbuf,dpbd	; directory buffer, Disk Parameter Block
+	defw	csvb, alvb	; check sum pointer, allocation map pointer
+	defb	ddbit		; density flag for this drive
+
+;dpbs:	;( single density );
+	defw	18		; (spt) sectors per track
+	defb	3		; (bsh) block shift factor
+	defb	7		; (blm) block mask
+	defb	0		; (exm) extent mask
+	defw	82		; (dsm) max logical block #
+	defw	31		; (drm) max directory #
+	defb	80H		; (al0) directory allocation map
+	defb	00H		; (al1)
+	defw	8		; (cks) size of directory check vector
+	defw	3		; (off) reserved tracks
+IF DSIDED
+ssdpbd:	; single sided disk parameter block for use by dsksel (double den.)
+ENDIF
+;dpbd:	;( double density );
+	defw	40		; (spt) sectors per track
+	defb	3		; (bsh) block shift factor
+	defb	7		; (blm) block mask
+	defb	0		; (exm) extent mask
+	defw	194		; (dsm) max logical block #
+	defw	63		; (drm) max directory #
+	defb	0F0H		; (al0) directory allocation map & BIOS space
+	defb	00H		; (al1)
+	defw	16		; (cks) size of directory check vector
+	defw	1		; (off) reserved tracks
+
+; sector interleave table  ( single density )
+;tbl1:
+	defb	1,6,11,16
+	defb	3,8,13,18
+	defb	5,10,15,2
+	defb	7,12,17,4
+	defb	9,14
+enddph:
+
+IF DSIDED
+dsdpbd:	; double sided disk parameter block for use by dsksel (double den.)
+;dsdpbd	;( double sided double density );
+	defw	40		; (spt) sectors per track
+	defb	4		; (bsh) block shift factor
+	defb	15		; (blm) block mask
+	defb	1		; (exm) extent mask
+	defw	196		; (dsm) max logical block #
+	defw	63		; (drm) max directory #
+	defb	0C0H		; (al0) directory allocation map & BIOS space
+	defb	00H		; (al1)
+	defw	16		; (cks) size of directory check vector
+	defw	1		; (off) reserved tracks
+ENDIF
+
+subttl Logical BIOS entry points & Deblocking
+page
+.8080
+;*****************************************************
+;*      Logical BIOS entry points                    *
+;*      Sector Deblocking Algorithms                 *
+;*****************************************************
+blksiz	equ	1024		;CP/M allocation size
+hstsiz	equ	512		;host disk sector size
+hstspt	equ	10		;host disk sectors/trk
+hstblk	equ	hstsiz/128	;CP/M sects/host buff
+cpmspt	equ	hstblk * hstspt	;CP/M sectors/track
+secmsk	equ	hstblk-1	;sector mask
+secshf	equ	2		;log2(hstblk) sector mask
+wrall	equ	0		;write to allocated
+wrdir	equ	1		;write to directory
+wrual	equ	2		;write to unallocated
+
+single	macro	lbl
+	lda	denflag
+	ora	a
+	jnz	lbl
+	endm
+
+diskinit:	;enter here on system boot to initialize
+.z80
+	ld	hl,ioimage	;move rd/wrt routines into RAM
+	ld	de,move
+	ld	bc,imaglen
+	ldir
+	ld	hl,dph0		; set dph's
+	ld	de,dpha
+	ld	bc,enddph-dph0
+	ldir
+.8080
+	xra	a		;0 to accumulator
+	sta	hstact		;host buffer inactive
+	sta	unacnt		;clear unalloc count
+	mvi	a,ddbit		;set double density flag
+	sta	denflag
+	mvi	a,255		;set track numbers to 255
+	sta	dsk		;clear disk number
+	sta	tracka
+	sta	trackb
+	ret
+
+seldsk:				;select disk
+	mov	a,c		;selected disk number
+	sta	sekdsk		;seek disk number
+	jmp	dsksel		;physical disk select (If needed to check den)
+
+setsec:				;set sector given by register c 
+	mov	a,c
+	sta	seksec		;sector to seek
+	single	secset
+	ret
+
+.z80
+setdma:	ld	(dmaadr),bc	;set dma address given by BC
+	ret
+
+settrk:	ld	(sektrk),bc	;set track given by registers BC
+.8080
+	single	trkset
+	ret
+
+home:	single	dohome		; if single goto dohome
+	lda	hstwrt		; patch by DRI
+	ora	a
+	jnz	homed
+	sta	hstact
+homed:	jmp	dohome		; go do home disk drive
+
+read:				;read the selected CP/M sector
+	single	rd128		;128 byte sector?
+	xra	a		; a patch by DRI
+	sta	unacnt
+	mvi	a,1
+	sta	readop		;read operation
+	sta	rsflag		;must read data
+	mvi	a,wrual
+	sta	wrtype		;treat as unalloc
+	jmp	rwoper		;to perform the read
+
+write:				;write the selected CP/M sector
+	single	wrt128		;128 byte sector?
+	xra	a		;0 to accumulator
+	sta	readop		;not a read operation
+	mov	a,c		;write type in c
+	sta	wrtype
+	cpi	wrual		;write unallocated?
+	jnz	chkuna		;check for unalloc
+
+;	write to unallocated, set parameters
+	mvi	a,blksiz/128	;next unalloc recs
+	sta	unacnt
+	lda	sekdsk		;disk to seek
+	sta	unadsk		;unadsk = sekdsk
+	lhld	sektrk
+	shld	unatrk		;unatrk = sectrk
+	lda	seksec
+	sta	unasec		;unasec = seksec
+
+chkuna:
+	;check for write to unallocated sector
+	lda	unacnt		;any unalloc remain?
+	ora	a
+	jz	alloc		;skip if not
+
+;	more unallocated records remain
+	dcr	a		;unacnt = unacnt-1
+	sta	unacnt
+	lda	sekdsk		;same disk?
+	lxi	h,unadsk
+	cmp	m		;sekdsk = unadsk?
+	jnz	alloc		;skip if not
+
+;	disks are the same
+	lxi	h,unatrk
+	call	sektrkcmp	;sektrk = unatrk?
+	jnz	alloc		;skip if not
+
+;	tracks are the same
+	lda	seksec		;same sector?
+	lxi	h,unasec
+	cmp	m		;seksec = unasec?
+	jnz	alloc		;skip if not
+
+;	match, move to next sector for future ref
+	inr	m		;unasec = unasec+1
+	mov	a,m		;end of track?
+	cpi	cpmspt		;count CP/M sectors
+	jc	noovf		;skip if no overflow
+
+;	overflow to next track
+	mvi	m,0		;unasec = 0
+	lhld	unatrk
+	inx	h
+	shld	unatrk		;unatrk = unatrk+1
+
+noovf:
+	;match found, mark as unnecessary read
+	xra	a		;0 to accumulator
+	sta	rsflag		;rsflag = 0
+	jmp	rwoper		;to perform the write
+
+alloc:
+	;not an unallocated record, requires pre-read
+	xra	a		;0 to accum
+	sta	unacnt		;unacnt = 0
+	inr	a		;1 to accum
+	sta	rsflag		;rsflag = 1
+
+;*	Common code for READ and WRITE follows       *;
+
+rwoper:
+	;enter here to perform the read/write
+	xra	a		;zero to accum
+	sta	erflag		;no errors (yet)
+	lda	seksec		;compute host sector
+	ora	a		;carry = 0
+	rar			;shift right
+	ora	a		;carry = 0
+	rar			;shift right
+	sta	sekhst		;host sector to seek
+
+;	active host sector?
+	lxi	h,hstact	;host active flag
+	mov	a,m
+	mvi	m,1		;always becomes 1
+	ora	a		;was it already?
+	jz	filhst		;fill host if not
+
+;	host buffer active, same as seek buffer?
+	lda	sekdsk
+	lxi	h,hstdsk	;same disk?
+	cmp	m		;sekdsk = hstdsk?
+	jnz	nomatch
+
+;	same disk, same track?
+	lxi	h,hsttrk
+	call	sektrkcmp	;sektrk = hsttrk?
+	jnz	nomatch
+
+;	same disk, same track, same buffer?
+	lda	sekhst
+	lxi	h,hstsec	;sekhst = hstsec?
+	cmp	m
+	jz	match		;skip if match
+
+nomatch:
+	;proper disk, but not correct sector
+	lda	hstwrt		;host written?
+	ora	a
+	cnz	writehst	;clear host buff
+
+filhst:
+	;may have to fill the host buffer
+	lda	sekdsk
+	sta	hstdsk
+	lhld	sektrk
+	shld	hsttrk
+	lda	sekhst
+	sta	hstsec
+	lda	rsflag		;need to read?
+	ora	a
+	cnz	readhst		;yes, if 1
+	xra	a		;0 to accum
+	sta	hstwrt		;no pending write
+
+match:
+	;copy data to or from buffer
+	lda	seksec		;mask buffer number
+	ani	secmsk		;least signif bits
+	mov	l,a		;ready to shift
+	mvi	h,0		;double count
+	dad	h		;shift left 7
+	dad	h
+	dad	h
+	dad	h
+	dad	h
+	dad	h
+	dad	h
+;	hl has relative host buffer address
+.z80
+	ld	de,hstbuf
+	add	hl,de		;hl = host address
+	ld	de,(dmaadr)	;de = dma address
+	ld	bc,128		;length
+	ld	a,(readop)	;which way?
+	or	a
+	jr	nz,rwmove	;skip if read
+
+;	write operation, mark and switch direction
+	ld	a,1
+	ld	(hstwrt),a	;hstwrt = 1
+	ex	de,hl		;source/dest swap
+
+rwmove:	call	move		;move a logical sector to/from buffer
+
+.8080
+;	data has been moved to/from host buffer
+	lda	wrtype		;write type
+	cpi	wrdir		;to directory?
+	lda	erflag		;in case of errors
+	rnz			;no further processing
+
+;	clear host buffer for directory write
+	ora	a		;errors?
+	rnz			;skip if so
+	xra	a		;0 to accum
+	sta	hstwrt		;buffer written
+	call	writehst
+	lda	erflag
+	ret
+
+;*	Utility subroutine for 16-bit compare        *;
+
+sektrkcmp:			;HL = .unatrk or .hsttrk, compare with sektrk
+	xchg
+	lxi	h,sektrk
+	ldax	d		;low byte compare
+	cmp	m		;same?
+	rnz			;return if not
+;	low bytes equal, test high 1s
+	inx	d
+	inx	h
+	ldax	d
+	cmp	m	;sets flags
+	ret
+subttl Physical disk routines
+page
+.z80
+; select disk drive, C=drive number 0=A:, 1=B:
+; return HL=dph for selected drive, or HL=0 for non-existent drive
+dsksel:	ld	hl,0	; hl = 0 for non-existent drive
+	ld	a,c
+	cp	2
+	ret	nc	; drive number >B:
+	or	a	; zero flag set => A: drive else B: drive
+	ld	hl,dpha	; select proper dph for drive
+	jr	z,sel0
+	ld	hl,dphb
+sel0:	ld	a,(dsk)	; selecting disk already selected?
+	cp	c
+	ret	z	; yes, no further action needed
+	ld	a,c	; save new disk number
+	ld	(dsk),a
+	or	a	; set zero flag if A: drive
+	push	hl	; hl=dph of disk to be selected
+	ld	hl,ctrack
+	ld	de,trackb ;now find proper track(x)
+	jr	z,sel1
+	ld	de,tracka
+sel1:	ld	a,(de)	; have we been on the disk we are "leaving"
+	cp	255	; if not do not update trackx
+	jr	z,selnot
+	push	bc
+	ld	bc,03
+	ldir		; save old table
+	pop	bc
+selnot:	ld	de,ctrack	; now to update main table
+	ld	a,c	; set zero flag if A: drive
+	or	a
+	ld	hl,tracka
+	jr	z,sel2
+	ld	hl,trackb
+sel2:	ld	a,(hl)
+	cp	255	; first time for this drive?
+	jr	z,density	; if so, go set it up
+	ld	bc,03
+	ldir		; init table for density, last side, last track.
+	ld	bc,15	; dparm size
+	ld	de,dpbd	; dparm addr.
+	ld	hl,ssdpbd	; ss dparm.
+	ld	a,(sidflg)
+	or	a
+	jr	z,sel2a
+	ld	hl,dsdpbd	; ds dparm.
+sel2a:	ldir			; block move dparm for this drive
+	ld	a,(ctrack)
+	out	(track),a
+	pop	hl	; address of dph for disk we are selecting
+	ret
+
+density:pop	hl
+	ld	a,ddbit
+	ld	(denflag),a
+	call	ready		; physical disk select
+	call	home		; seek track 0, side 0
+	call	dcheck		; see if we can read address
+	jr	z,dend		; density is double?
+	ld	a,sdbit
+	ld	(denflag),a
+	call	ready		; try single density
+	call	dcheck		; see if we can read address
+	ret	nz		; can't read single or double so don't change
+	jr	dens
+dend:	push	hl		; (* double density *)   hl^ to dph
+	push	de
+	ld	de,0		; no xlate table (done by FORMAT program)
+	ld	(hl),e		; store table^ into dph
+	inc	hl
+	ld	(hl),d
+	ld	de,9		; move foward in dph to dpb pointer
+	add	hl,de
+	ld	de,dpbd		; double density dpb
+	ld	(hl),e
+	inc	hl
+	ld	(hl),d
+	in	a,(bitport)	; now try side 1 (double sided?)
+	and	sidmsk
+	or	sid1
+	out	(bitport),a	; select side 1,
+	call	dcheck		; try to read it.
+	ld	bc,15
+	ld	de,dpbd
+	ld	hl,ssdpbd	; source, single sided dparm
+	ld	a,0		; single sided flag,
+	jr	nz,selsid	; single sided if not zero,
+	ld	a,(adrbuf+2)	; is sector # >9 ?
+	cp	10		; (it must be for valid double sided op.)
+	ld	a,0		; if not single sided drives!
+	jr	c,selsid	; select single sided
+	ld	hl,dsdpbd	; source double sided dparm
+	ld	a,0FFH		; proper sidflg
+selsid:	ldir			; set up double density dparm
+slsid2:	ld	(sidflg),a	; set side flag
+	in	a,(bitport)	; return to side 0
+	and	sidmsk
+	or	sid0		; side 0 mask
+	out	(bitport),a
+	jr	den1		; exit
+
+dens:	push	hl		; (* single density *)   hl^ to dph
+	push	de
+	ld	de,tbl1		; single density sector xlate table
+	ld	(hl),e		; store table^ into dph
+	inc	hl
+	ld	(hl),d
+	ld	de,9		; move foward in dph to dpb pointer
+	add	hl,de
+	ld	de,dpbs		; single density dpb
+	ld	(hl),e
+	inc	hl
+	ld	(hl),d
+	ld	a,0		; side flag,
+	jr	slsid2		; set it and make sure side 0 is selected.
+den1:	ld	hl,ctrack
+	ld	de,tracka
+	ld	a,(dsk)
+	or	a
+	jr	z,dskupd	; update disk track, side, etc. table
+	ld	de,trackb
+dskupd:	push	bc
+	ld	bc,03
+	ldir
+	pop	bc
+	pop	de		; restore pointer to dph
+	pop	hl		; pointer to track(x) bios register
+	ret
+
+dcheck:	push	hl		; save hl and bc
+	push	bc
+	ld	hl,adrbuf	; buffer space
+	ld	bc,6*256+data	; read 6 bytes from data port
+	ld	a,adrcmd
+	out	(cmnd),a
+dchk1:	halt			; wait for drq
+	ini
+	jr	nz,dchk1
+	call	busy		; wait for intrq
+	bit	4,a		; test rnf flag
+	pop	bc
+	pop	hl
+	ret
+
+; home disk head
+dohome:	call	ready	; make sure drive is on and ready
+	in	a,(bitport)
+	and	sidmsk
+	or	sid0
+	out	(bitport),a	; select side 0
+	xor	a
+	ld	(ctrack),a	; reset current track number
+	ld	a,rstcmd	; restore command
+	out	(cmnd),a	; issue command
+	jp	busy		; test and wait for not busy
+
+; seek track #, BC=Track #
+trkset:	call	ready		; make sure drive is on and ready
+	ld	b,sid0		; put side zero mask in reg. b
+	ld	a,(sidflg)	; get side flag, current drive
+	or	a		; is it a single sided drive?
+	jr	z,trkst2	; yes, select side 0,
+	ld	a,c		; else it's a double sided drive,
+	rra			; divide the track number by two,
+	ld	c,a		; store the new track number in c,
+	jr	nc,trkst2	; and select side 0 if no carry
+	ld	b,sid1		; else select side 1 (carry flag = side #)
+trkst2:	in	a,(bitport)	; get system control port status,
+	and	sidmsk		; clear side bits,
+	or	b		; or in floppy side select mask,
+	out	(bitport),a	; select side.
+	ld	a,c		; get track number from reg. c,
+	ld	(ctrack),a	; update current track pointer
+	out	(data),a	; issue req. track to controller
+	ld	a,seekcmd	; seek command
+	out	(cmnd),a	; issue command
+	jr	busy		; test and wait for not busy
+
+; select sector #, BC=Sector #
+secset:	in	a,(bitport)	; single or double sided?
+	and	not sidmsk
+	cp	sid0
+	ld	a,c		; pure sector number in a
+	jr	z,secx		; single sided
+	add	a,10		; double sided sector disp.
+secx:	out	(sector),a	; to controller register
+	ret
+
+; perform logical to physical sector translation.
+; logical sector number in BC, table address in DE
+; return physical sector number in HL
+sectran:ld	a,d	; table address 0?
+	or	e
+	ld	h,b	; if so no xlate
+	ld	l,c
+	ret	z
+	ex	de,hl	; table address in hl
+	add	hl,bc	; index by logical sector number
+	ld	l,(hl)
+	ld	h,0
+	ret
+
+; ready disk drive, perform physical disk select, set density bit
+ready:	push	hl		; save hl
+	push	de		; and de
+	push	bc
+	ld	a,ficmd		; abort any controller action
+	out	(cmnd),a
+	call	diskon		; turn drive motor on
+	ld	a,(dsk)		; A=drive #
+	or	a		; drive 1?
+	jr	nz,rdyx2	; yes, do nothing
+	ld	a,02		; select drive 0
+rdyx2:	ld	e,a		; save drive # (drive 0 = 10, drive 1 = 01)
+	in	a,(bitport)	; A=bit port
+	and	0DCH		; strip current drive bits, density
+	or	e		; or in requested drive
+	ld	hl,denflag	; hl^ to density bit for this drive
+	or	(hl)
+	out	(bitport),a	; to bit port
+	pop	bc
+	pop	de
+	pop	hl
+	ret
+
+; turn disk motor on, delay for drive speed
+diskon:	in	a,(bitport)	; get current drive motor status
+	bit	4,a		; is motor on?
+	ret	nz		; motor on, do nothing
+	set	4,a		; motor on bit
+	out	(bitport),a	; turn motor on
+	ld	b,50		; delay
+	call	thnsd
+	ret
+
+; turn disk motor off
+diskoff:in	a,(bitport)
+	res	4,a		; motor off bit
+	out	(bitport),a
+	ret
+; delay for B th's @ 4Mhz
+thnsd:	ld	de,1670
+tlp:	dec	de
+	ld	a,d
+	or	e
+	jp	nz,tlp
+	djnz	thnsd
+	ret
+
+; check status of controller, wait for command to finish executing
+busy:	halt			; wait for command done
+bsy:	in	a,(status)	; now wait for not busy
+	bit	0,a
+	jr	nz,bsy
+	ret
+subttl Writehst and Readhst logical to Physical routines
+page
+;*	WRITEHST performs the physical write to      *;
+;*	the host disk, READHST reads the physical    *;
+;*	disk.					     *;
+
+writehst:;hstdsk = host disk #, hsttrk = host track #,
+	;hstsec = host sect #. write "hstsiz" bytes
+	;from hstbuf and return error flag in erflag.
+	;return erflag non-zero if error
+	ld	de,tries1*256+tries2	; retry error counts
+wrthst:	push	hl
+	push	de		; save error counts
+	call	hstcom		; set track and sector
+	call	wrt512		; read sector
+	pop	de		; restore error flags
+	pop	hl		; restore r/w error count
+	jr	z,wrtchk	; do read after write
+wthst3:	dec	e		; retry count
+	jr	z,wthst2
+	call	wiggle
+	jr	wrthst		; try again
+wthst2:	dec	d		; home and reseek count
+	jr	z,chk3		; can't recover
+	call	dohome		; re seek
+	ld	e,tries2	; reset retry count
+	jr	wrthst
+wrtchk:	ld	l,3
+chklp:	ld	b,0		; dummy read loop to check sector
+	ld	a,rdcmd
+	out	(cmnd),a
+chk1:	halt
+	in	a,(data)
+	djnz	chk1
+chk2:	halt
+	in	a,(data)
+	djnz	chk2
+	call	busy		; get status
+	and	rdmask
+	jr	z,chk3
+	call	wiggle
+	xor	a
+	dec	a		; a=0ffh, Z flag = not zero
+chk3:	ld	(erflag),a	; error return flag
+	ret	z
+	dec	l
+	jr	nz,chklp		; try again
+	jr	wthst3			; retry write (reenter write loop)
+
+readhst:;hstdsk = host disk #, hsttrk = host track #,
+	;hstsec = host sect #. read "hstsiz" bytes
+	;into hstbuf and return error flag in erflag.
+	ld	de,tries1*256+tries2	; retry error counts
+rdhst:	push	de		; save error counts
+	call	hstcom		; set track and sector
+	call	rd512		; read sector
+	ld	(erflag),a	; error return flag
+	pop	de		; restore error flags
+	ret	z		; good op
+	dec	e		; retry count
+	jr	z,rdhst2
+	call	wiggle
+	jr	rdhst		; try again
+rdhst2:	dec	d		; home and reseek count
+	ret	z		; can't recover
+	call	dohome		; re seek
+	ld	e,tries2	; reset retry count
+	jr	rdhst
+
+hstcom:	ld	a,(hstdsk)	; select disk
+	ld	c,a
+	call	dsksel
+	ld	bc,(hsttrk)	; set track to hsttrk
+	call	trkset		; physical seek
+	ld	a,(hstsec)	; set physical sector
+	ld	c,a		; c=sector
+	call	secset
+	ret
+
+wiggle:	ld	a,stpoc		; step out command
+	out	(cmnd),a
+	call	busy
+	ld	a,stpic
+	out	(cmnd),a
+	call	busy
+	ret
+
+subttl Physical disk I/O, RAM image
+page
+ioimage:
+;move:				; block memory move, turn rom on/off
+	in	a,(bitport)	; turn rom off
+	res	7,a
+	out	(bitport),a
+	ldir			; move logical sector from hstbuf
+	in	a,(bitport)	; turn rom back on
+	set	7,a
+	out	(bitport),a
+	ret			; back to rom
+
+;rd128:
+	ld	hl,(dmaadr)	; address of operation
+	ld	b,1		; read a 128 byte sector
+	jr	rd
+;rd512:
+	ld	hl,hstbuf
+	ld	b,4		; read a 512 byte sector
+; read a sector, return A=0 for no errors, A=1 for non-recoverable error
+; if b=1 128, b=2 256, b=3 384, b=4 512   bytes/sector
+rd:	ld	de,rdmask*256+rdcmd	; d=read status mask, e=read command
+	jr	action
+
+;wrt128:
+	ld	hl,(dmaadr)
+	ld	b,1		; write a 128 byte sector
+	jr	wrt
+;wrt512:
+	ld	hl,hstbuf
+	ld	b,4		; write a 512 byte sector
+; write a sector, return as per read
+wrt:	ld	de,wrtmask*256+wrtcmd ; d=status mask, e=write command
+	;fall through to action
+
+action:	call	ready			; make sure drive is on and ready
+	di				; no interrupts during disk I/O operations
+	in	a,(bitport)		; turn rom off
+	res	7,a
+	out	(bitport),a
+	push	hl			; save address of disk buffer
+	ld	hl,nmivec		; set up nmi vector
+	ld	a,(hl)			; save current contents
+	ex	af,af'
+	ld	(hl),retcod		; this is a return after HALT in loop
+	pop	hl			; hl = dma address
+	ld	a,b			; sector multiple
+	ld	bc,128*256+data		; b=sector length, c=data port
+	bit	0,a			; if 0 then 256 or 512 bytes/sector
+	jr	nz,actn			; b set for 128 or 384 bytes/sector
+	ld	b,0			; b set for 256 or 512 bytes/sector
+actn:	cp	1			; compute entry point 1st or 2nd loop
+	push	psw			; save as Z flag
+	ld	a,e			; i/o command
+	cp	wrtcmd			; a write?
+	jr	z,wstart		; start write command
+
+	out	(cmnd),a		; fall through to read loop
+	pop	psw
+	jr	z,rl2
+rl1:	halt				; wait for controller
+	ini
+	jr	nz,rl1
+rl2:	halt
+	ini
+	jr	nz,rl2
+	jr	done			; read loop done, exit
+
+wstart:	out	(cmnd),a		; write loop
+	pop	psw
+	jr	z,wl2
+wl1:	halt
+	outi
+	jr	nz,wl1
+wl2:	halt
+	outi
+	jr	nz,wl2
+
+done:	ex	af,af'			; byte at nmi vector address
+	ld	(nmivec),a		; restore it
+	in	a,(bitport)		; turn rom back on
+	set	7,a
+	out	(bitport),a
+	ei				; turn interrupts on
+	call	busy			; get status when contoller not busy
+	and	d			; status mask
+	ret	z			; no bit set, return operation ok
+	ld	a,1			; cp/m error return
+	ret
+
+imaglen	equ	$-ioimage		; length of this image
+page
+
+title Video driver routines for the KAYPRO-10  (C) 1983 By NLS.
+.comment %
+########################################################
+##                                                    ##
+##      KAYPRO 10 System                              ##
+##                                                    ##
+##      By M. Sherman                                 ##
+##                                                    ##
+##      Video driver routines for the KAYPRO-10       ##
+##      and the 6545 video controller chip.           ##
+##                                                    ##
+##      Copyright (C) 1983 By Non-Linear Systems, Inc ##
+##      No warranty is made, expressed or implied.    ##
+##                                                    ##
+########################################################
+##      Date: 04/14/83                    [01]        ##
+########################################################
+%
+
+; conditional assembly equates
+
+TRUE	equ	0ffffh
+FALSE	equ	NOT TRUE
+
+; video controller locations
+
+vcbase	equ	1ch		; video controller base address
+vccmd	equ	vcbase		; register select port
+vcstat	equ	vcbase		; status port
+vcrdat	equ	vcbase+1	; register data port
+vcdata	equ	vcbase+3	; video controller data port
+
+; command format, video controller commands:
+; high byte = register to select, low byte = base addr. (register select)
+
+curcmd	equ	0e1ch		; place cursor command
+rwcmd	equ	121ch		; read/write command
+strcmd	equ	01fh		; strobe, or "tickle", command
+scrcmd	equ	0c1ch		; set start of display address command
+				; ("scroll" command)
+hiadd	equ	12h	; high byte register #, video mem. address,
+loadd	equ	13h	; low byte register #, video mem. address.
+cstart	equ	0ah	; cursor starting row count, cursor def. reg #
+cstop	equ	0bh	; cursor ending row count.
+
+csron	equ	60h	; cursor on, blinking at 1/32, starting row=0
+csroff	equ	20h	; no cursor, starting row=0 (irrelevant)
+
+; special character equates
+
+space	equ	020h
+nrmlatt	equ	00h
+
+; single character control codes
+
+belli	equ	07h	; bell code to video driver,
+bello	equ	04h	; bell code to keyboard.
+cr	equ	0dh	; carriage return
+lf	equ	0ah	; line feed
+ceol	equ	18h	; clear to end of line
+ceos	equ	17h	; clear to end of screen
+clrscr	equ	1ah	; clear screen
+homec	equ	1eh	; home cursor
+lcur	equ	08h	; left cursor (backspace)
+rcur	equ	0ch	; right cursor (forespace)
+ucur	equ	0bh	; up cursor
+esc	equ	1bh	; escape code, initiates multi-
+			; -character control sequences
+
+; two-character commands
+
+dline	equ	'R'	; delete line
+iline	equ	'E'	; insert line
+
+; three-character commands
+
+atton	equ	'B'	; set attribute
+attoff	equ	'C'	; clear attribute
+
+; four-character commands
+
+setpix	equ	'*'	; set pixel
+clrpix	equ	' '	; clear pixel
+lodcur	equ	'='	; load cursor address (cursor positioning)
+
+; six-character commands
+
+lindraw	equ	'L'	; draw a line
+lineras	equ	'D'	; erase a line
+
+; video driver equates
+
+linesiz	equ	80		; characters per line
+linesps	equ	24		; number of lines in the normal display
+statlin	equ	linesps+1	; line number, status line
+lastlin	equ	(linesps-1)*linesiz	; address, first chara last
+					; normal display line
+					; (the line above the status line)
+
+;################################################
+;#						#
+;#		video drivers			#
+;#						#
+;################################################
+
+	; clear to end of line
+clreol:	call	caleol		; calculate end of line count
+	jr	clrdis
+
+	; clear to end of screen
+clreos:	ld	c,linesps-1
+	ld	a,(vatt)
+	and	20h
+	jr	nz,ceos22
+	inc	c
+ceos22:	ld	a,(crow)
+	sub	c
+	jr	nc,clreol	; clear to end of line if on last legal line
+	neg			; two's complement, number of lines to erase
+	ld	b,a
+	ld	de,linesiz
+	ld	hl,0
+clresl:	add	hl,de
+	djnz	clresl
+	push	hl
+	call	caleol
+	pop	bc
+	add	hl,bc		; total count in hl
+	jr	clrdis		; do it
+
+caleol:	ld	hl,linesiz
+	ld	de,(cursor)
+	ld	a,(ccol)
+	ld	c,a
+	xor	a		; clear a, clear flags (especially carry!)
+	ld	b,a		; clear b
+	sbc	hl,bc		; hl=number of bytes to move
+	ret
+
+vidinit:; Video hardware/software initialization routine.  Will set
+	; video driver ram storage to reset/restart values,
+	; reprogram the video controller chip,
+	; clear the screen and place the cursor in the upper right corner.
+	;
+ramini:	ld	hl,vidram	; first, initialize the ram.
+	ld	b,ramlen
+	xor	a
+rinilp:	ld	(hl),a
+	inc	hl
+	djnz	rinilp
+
+ctrini:	ld	hl,ctrtbl	; then initialize the controller,
+	ld	bc,ctblen*256+vcbase+1
+	xor	a		; first register,=00
+cinilp:	dec	c		; c:=base
+	out	(c),a		; select register
+	inc	a		; a:=register to program
+	inc	c		; c:=data port
+	outi			; (hl):=program data, out to (c)
+	jr	nz,cinilp	; until b:=0
+	ld	a,strcmd
+	out	(vccmd),a	; start video chip processing.
+	; fall through to clear screen
+clear:	call	homecr		; home cursor
+clear2:	ld	a,(vatt)
+	and	0f0h		; clear ordinary attributes
+	ld	(vatt),a	; clear attribute byte
+	ld	de,(cursor)	; same as vrbase, now
+	ld	hl,statlin*linesiz	; screen size
+	and	20h
+	jr	z,clrdis
+	ld	hl,linesps*linesiz
+	; fall through to clrdis...
+
+clrdis:	; clear display and associated attributes.
+	; de := start address, hl := number of locations to clear
+	; all registers affected...
+	;
+	ld	bc,hiadd*100h+loadd
+cdislp:	in	a,(vcstat)
+	or	a
+	jp	p,cdislp	; wait until ready,
+	ld	a,b		; high address byte register number,
+	out	(vccmd),a	; select it
+	ld	a,d		; get high byte, new address,
+	and	07h		; qualify address,
+	ld	d,a		; put it back,
+	out	(vcrdat),a	; output it.
+	ld	a,c		; select
+	out	(vccmd),a	; low address byte register,
+	ld	a,e		; get low address byte,
+	out	(vcrdat),a	; output it.
+	ld	a,strcmd
+	out	(vccmd),a	; start a new cycle,
+cdislp3:in	a,(vcstat)	; wait until it's ready,
+	or	a
+	jp	p,cdislp3
+	ld	a,20h		; clear data byte,
+	out	(vcdata),a
+	inc	de		; set up for attr., next byte
+cdislp2:in	a,(vcstat)	; go do attributes
+	or	a
+	jp	p,cdislp2
+	ld	a,b		; high address byte register number,
+	out	(vccmd),a	; select it
+	ld	a,d		; get high byte, new address,
+	or	08h		; qualify address,
+	out	(vcrdat),a	; output it.
+	ld	a,c		; select
+	out	(vccmd),a	; low address byte register,
+	ld	a,e		; get low address byte,
+	out	(vcrdat),a	; output it.
+	ld	a,strcmd
+	out	(vccmd),a	; start a new cycle,
+cdislp4:in	a,(vcstat)	; wait until finished.
+	or	a
+	jp	p,cdislp4
+	xor	a		; clear attribute byte
+	out	(vcdata),a
+	dec	hl
+	ld	a,h
+	or	l
+	jr	nz,cdislp
+	ret
+
+homecr:	xor	a
+	ld	(ccol),a	; reset column count
+	ld	(crow),a	; reset row count
+	ld	hl,(vrbase)
+	ex	de,hl
+	jp	putcur		; place cursor and exit
+
+; video controller initialization table, currently for a 25 by 80 display.
+;
+ctrtbl:	db	6ah	; reg00 total char/sweep including retrace, clocks
+	db	50h	; reg01 total displayed, cclks
+	db	56h
+	db	99h
+	db	19h
+	db	0ah
+	db	19h
+	db	19h
+	db	78h
+	db	0fh
+	db	60h
+	db	0fh
+	db	00h
+	db	00h
+	db	00h
+	db	00h
+ctblen	equ	$-ctrtbl	; table length
+
+; main entry point.
+
+vidout:	ld	a,(leadflg)	; set by escape sequences
+	or	a
+	jp	nz,escseq	; an escape sequence is in progress
+	ld	a,c
+	or	a
+	ret	z		; ignore nulls (requested by tech support)
+	jp	m,vgmod		; video mode set? find out if negative (>80h)
+	cp	space
+	jp	c,spechar	; special characters
+spcexe:	ld	a,c
+	ld	de,(cursor)	; special character re-entry if non-control
+	call	putc
+	call	puta		; place attribute
+vgmexe:	ld	a,(ccol)
+	inc	a
+	cp	linesiz
+	jp	nc,crlf
+	ld	(ccol),a		; save new count
+	ld	de,(cursor)
+	inc	de
+	jp	putcur			; reposition cursor and exit
+
+vgmod:	ld	a,(vatt)
+	and	10h
+	jr	z,spcexe	; not video graphics mode if not zero
+	ld	a,(vgb1)
+	and	40h
+	jr	z,vgmod2
+	ld	a,c
+	and	01
+	ld	(vgb1),a
+	ret
+vgmod2:	ld	a,(vgb1)
+	or	a
+	ld	a,c
+	jr	z,vgmod5
+	cpl
+vgmod5:	or	80h
+	ld	de,(cursor)
+	call	putc
+	ld	a,(vgb1)
+	ld	c,a
+	ld	a,(vatt)
+	or	c
+	call	putatt
+	ld	a,40h
+	ld	(vgb1),a	; set first
+	jr	vgmexe
+
+; move the cursor to the beginning of the line
+
+carret:	ld	hl,(cursor)
+	ld	a,(ccol)
+	ld	e,a
+	xor	a		; clear flags,a
+	ld	d,a
+	ld	(ccol),a	; reset line count to zero
+	sbc	hl,de		; hl = beginning of line
+	ex	de,hl		; de = beginning of line
+	jr	putcur		; place cursor and exit
+
+; crlf places the cursor at the beginning of the next line and sets the
+; character column count, ccol, to zero.
+
+crlf:	call	carret		; carriage return
+	; fall through to linefeed...
+
+; move the cursor down one line, scroll if necc.
+
+linefd:	ld	a,(crow)	; character row count
+	cp	linesps-1	; lines per screen
+	jr	c,linef2	; not last line if carry,
+	cp	statlin-1	; status line?
+	ret	z		; if so, don't scroll
+	call	scroll		; else is last line, scroll screen
+	jr	linef3		; don't update character row count.
+
+linef2:	inc	a		; update character row count,
+	ld	(crow),a
+
+linef3:	ld	hl,(cursor)	; move the cursor down one line.
+	ld	de,linesiz
+	add	hl,de
+	ex	de,hl
+	; fall through to putcur...
+
+; place cursor, new cursor address in de
+putcur:	ld	a,d
+	and	07h
+	ld	d,a
+	ex	de,hl
+	ld	(cursor),hl
+	ld	bc,(vrbase)
+	sbc	hl,bc
+	jr	nc,putcr2
+	ld	de,0800h
+	add	hl,de
+putcr2:	add	hl,bc
+	ex	de,hl
+	ld	bc,curcmd
+	jp	regrst
+
+upcur:	ld	a,(crow)
+	cp	statlin-1
+	ret	z		; no cursor up from status line,
+	or	a
+	ret	z		; or from top line
+	dec	a
+	ld	(crow),a	; update row count
+	ld	hl,(cursor)
+	ld	de,linesiz
+	sbc	hl,de
+	ex	de,hl		; put new value in de
+	jr	putcur
+
+lfcur:	ld	a,(ccol)
+	or	a
+	jr	nz,lcur2
+	ld	a,(crow)
+	or	a
+	ret	z		; no way can do
+	cp	statlin-1	; on status line?
+	jr	z,lcur3
+	dec	a
+	ld	(crow),a	; update row count
+	ld	a,linesiz
+lcur2:	dec	a
+	ld	(ccol),a	; update column count
+	ld	de,(cursor)
+	dec	de
+	jr	putcur		; place and exit
+lcur3:	ld	a,linesiz-1
+	ld	(ccol),a	; going to the end of the line
+	ld	hl,(cursor)
+	ld	de,linesiz-1
+	add	hl,de
+	ex	de,hl
+	jr	putcur
+
+rtcur:	ld	a,(ccol)
+	cp	linesiz-1
+	jp	nc,crlf		; do a cr, do a lf if not status line
+	ld	de,(cursor)
+	inc	de
+	inc	a
+	ld	(ccol),a	; reset column count
+	jr	putcur
+
+scroll:	jp	movsts		; fast scroll
+
+setatr:	ld	hl,vatt
+	ld	a,c
+	sub	30h
+	jr	z,revid		; set reverse video on
+	dec	a
+	jr	z,redint	; set reduced intensity on
+	dec	a
+	jr	z,sblink	; set blinking on
+	dec	a
+	jr	z,sunlin	; set underlining on
+	dec	a
+	jr	z,setcur	; set cursor on
+	dec	a
+	jr	z,setvid	; set video mode on
+	dec	a
+	jr	z,savcur	; save current cursor location
+	dec	a
+	jr	z,savsts	; save contents of status line during scroll
+	ret			; illegal, exit
+
+; set attributes
+
+revid:	ld	a,(hl)
+	or	01h
+	ld	(hl),a
+	ret
+redint:	ld	a,(hl)
+	or	02h
+	ld	(hl),a
+	ret
+sblink:	ld	a,(hl)
+	or	04h
+	ld	(hl),a
+	ret
+sunlin:	ld	a,(hl)
+	or	08h
+	ld	(hl),a
+	ret
+setcur:	ld	c,csron		; cursor on, 1/16 blink
+setcr2:	ld	a,cstart	; cursor select register
+	out	(vccmd),a
+	ld	a,c
+	out	(vcdata),a	; turn on cursor, 1/16 blink
+	ret
+setvid:	ld	a,(vatt)	; turn on video mode.
+	or	10h		; (GB1,GB2 graphics pairs)
+	ld	(vatt),a
+	ld	a,40h
+	ld	(vgb1),a
+	ret
+
+savcur:	ld	hl,(crow)	; save, or 'remember', current cursor position
+	ld	(precur),hl
+	ret
+
+savsts:	ld	a,(vatt)	; turn on status line preservation,
+	or	00100000b	; protect it from scrolling.
+	ld	(vatt),a
+	ret
+
+; clear attributes
+
+clratr:	ld	hl,vatt
+	ld	a,c
+	sub	30h
+	jr	z,nrmvid	; set normal video on
+	dec	a
+	jr	z,nrmint	; set normal intensity on
+	dec	a
+	jr	z,cblink	; set blinking off
+	dec	a
+	jr	z,cunlin	; set underlining off
+	dec	a
+	jr	z,clrcur	; set cursor off
+	dec	a
+	jr	z,clrvid	; set video mode off
+	dec	a
+	jr	z,rstcur	; restore cursor to last loc.
+	dec	a
+	jr	z,scrsts	; scroll contents of status line during scroll
+	ret			; illegal, exit
+
+; clear attributes:
+
+nrmvid:	ld	a,(hl)		; set to non-inverted display mode.
+	and	11111110b
+	ld	(hl),a
+	ret
+nrmint:	ld	a,(hl)		; set to normal intensity
+	and	11111101b
+	ld	(hl),a
+	ret
+cblink:	ld	a,(hl)		; set to no blinking.
+	and	11111011b
+	ld	(hl),a
+	ret
+cunlin:	ld	a,(hl)		; set to no underlining.
+	and	11110111b
+	ld	(hl),a
+	ret
+clrcur:	ld	c,csroff	; turn cursor off
+	jr	setcr2
+clrvid:	ld	a,(hl)		; turn off video mode
+	and	11101111b
+	ld	(hl),a
+	ret
+rstcur:	ld	hl,(precur)	; return cursor to last remembered location.
+	ld	a,h		; ccol
+	add	a,space
+	ld	(col),a
+	ld	a,l
+	add	a,space
+	ld	(row),a
+	jp	curpos		; restore previously saved cursor
+scrsts:	ld	a,(vatt)	; turn off status line preservation,
+	and	11011111b	; scroll status line on scrolls
+	ld	(vatt),a
+	ret
+
+; X,Y cursor positioning routine
+;
+curpos:	ld	hl,0
+	ld	c,l	; set c to zero, too.
+	ld	a,(row)
+	sub	space
+	ret	c	; error, exit
+	ld	b,a
+	jr	z,curpo3
+	cp	statlin		; lines per screen
+	ret	nc		; error, exit
+	ld	de,linesiz
+curpo2:	add	hl,de
+	djnz	curpo2
+curpo3:	ld	e,a	; save row count
+	ld	a,(col)
+	sub	 space
+	ret	c	; error, exit
+	cp	linesiz
+	ret	nc	; error, exit
+	ld	c,a
+	ld	(ccol),a	; new column count
+	ld	a,e
+	ld	(crow),a	; new row count
+	add	hl,bc
+	ld	de,(vrbase)
+	add	hl,de
+	ex	de,hl
+	jp	putcur		; place cursor
+
+dtwait:	ld	bc,rwcmd
+rgwait:	call	regrst
+	dec	c		; return c to original value
+	ld	a,strcmd	; tickle the dummy
+	out	(c),a
+rgwt2:	in	a,(c)
+	or	a
+	jp	p,rgwt2
+	ret
+
+regrst:	out	(c),b
+	inc	c
+	out	(c),d
+	dec	c
+	inc	b
+	out	(c),b
+	inc	c
+	out	(c),e
+	ret
+
+getc:	ld	a,d
+	and	07h
+	ld	d,a
+getc2:	call	dtwait
+	in	a,(vcdata)
+	ret
+
+putc:	push	af	; save data
+	ld	a,d
+	and	07h
+	ld	d,a
+putc2:	call	dtwait
+	pop	af
+	out	(vcdata),a
+	ret
+
+puta:	ld	a,(vatt)	; video attribute
+putatt:	push	hl		; save hl
+	push	af
+	call	addatt
+	call	dtwait
+	pop	af
+	out	(vcdata),a
+	ex	de,hl
+	pop	hl
+	ret
+
+getatt:	push	hl
+	call	addatt
+	call	getc2
+	ex	de,hl
+	pop	hl
+	ret
+
+addatt:	ld	hl,801h		; video attribute offset
+	add	hl,de
+	ld	a,h
+	and	07h		; 00000000 to 00000111
+	or	08h		; 00001000 to 00001111
+	ld	h,a
+	ex	de,hl
+	ret
+
+escseq:	ld	hl,leadflg
+	ld	(hl),0		; clear flag
+	cp	1
+	jr	nz,esc2
+	ld	a,c
+	and	07fh
+	cp	dline		; delete line?
+	jp	z,dltlin
+	cp	iline		; insert line?
+	jp	z,inslin
+	cp	'A'		; Kaypro-II display lower case?
+	ret	z		; yes, ignore
+	cp	'G'		; Kaypro-II display greek?
+	ret	z		; yes, ignore
+	ld	(esccmd),a	; set command
+	ld	(hl),2
+	ret
+
+esc2:	cp	2
+	jr	nz,esc3
+	ld	a,(esccmd)
+	cp	atton
+	jp	z,setatr	; set attribute command
+	cp	attoff
+	jp	z,clratr	; clear attribute
+	ld	a,c
+	ld	(row),a
+	ld	(hl),3
+	ret
+
+esc3:	cp	3
+	jr	nz,esc4
+	ld	a,c
+	ld	(col),a
+	ld	a,(esccmd)
+	cp	lodcur
+	jp	z,curpos	; cursor positioning
+	cp	setpix
+	jp	z,$pixon	; pixel on
+	cp	clrpix
+	jp	z,$pixoff	; pixel off
+	ld	(hl),4
+	ret
+esc4:	cp	4
+	jr	nz,esc5
+	ld	a,c
+	ld	(row2),a
+	ld	(hl),5
+	ret
+esc5:	ld	a,c
+	ld	(col2),a
+	ld	a,(esccmd)
+	cp	lindraw
+	jp	z,$linon
+	cp	lineras
+	jp	z,$linoff
+	ret			; illegal command, exit.
+
+bell:	ld	c,bello		; put keyboard bell chara in c reg.,
+	jp	kbdout		; ring bell
+
+spechar:cp	cr
+	jp	z,carret	; carriage return
+	cp	lf
+	jp	z,linefd	; line feed
+	cp	belli
+	jr	z,bell		; bell
+	cp	ceol
+	jp	z,clreol	; clear to end of line
+	cp	ceos
+	jp	z,clreos	; clear to end of screen
+	cp	clrscr
+	jp	z,clear		; clear screen
+	cp	lcur
+	jp	z,lfcur		; left cursor
+	cp	rcur
+	jp	z,rtcur		; right cursor
+	cp	ucur
+	jp	z,upcur		; up cursor
+	cp	homec
+	jp	z,homecr	; home cursor
+	cp	esc
+	jp	nz,spcexe	; not a control character, write it
+	ld	a,1
+	ld	(leadflg),a	; set escape in progress
+	ret
+
+; print routine
+
+print:	pop	hl
+	ld	a,(hl)
+	inc	hl
+	push	hl
+	or	a
+	ret	z
+	ld	c,a
+	call	vidout
+	jr	print
+
+title Block Move Routines for the 6545 CRT Controller.  (C) 1983 By NLS
+.comment %
+########################################################
+##                                                    ##
+##      KAYPRO 10 System                              ##
+##                                                    ##
+##      By M. Sherman                                 ##
+##                                                    ##
+##      block move routines for the 6545              ##
+##                                                    ##
+##      Copyright (C) 1983 By Non-Linear Systems, Inc ##
+##      No warranty is made, expressed or implied.    ##
+##                                                    ##
+########################################################
+##      Date: 03/28/83                    [77]        ##
+########################################################
+
+	Current revision:	7.7		28-Mar-83
+	Previous revision:	7.6		11-Mar-83
+	Prev. working rev.:	7.5		14-Feb-83
+		Changes:  Attempt to add insert line.
+		 (revision 7.5)
+		Changes:  Updated scrolling (movsts), insert
+		 line (revision 7.6)
+		Changes:  Final modifications and debugging
+		 prior to shipping (version 7.7)
+
+includes the following routines:
+
+MOVSTS:		move status line (if preserved=true), scroll screen
+MDIR:		move data with attributes (emulates Z-80 LDIR)
+MDDR:		move data with attributes (emulates Z-80 LDDR)
+DLTLIN:		delete the current cursor line.
+INSLIN:		insert a line at the current cursor location.
+%
+page
+
+vcdata	equ	1fh		; video ram data port
+vccmd	equ	1ch		; register select port
+vcstat	equ	1ch		; vc status port
+scrcmd	equ	0c1ch		; used with regrst to alter base address
+rwcmd	equ	121ch		; used with regrst to set up data address
+strcmd	equ	1fh		; 'tickle', 'dummy' or strobe register.
+lastlin	equ	0730h		; beginning address of last line (except stat)
+linesiz	equ	80		; line length in counting numbers
+bufsiz	equ	linesiz		; buffer size, if any
+hiadd	equ	12h		; high byte of data address port
+loadd	equ	13h		; low byte of data address port
+vcrdat	equ	vccmd+1		; video controller register data port
+linesps	equ	24
+
+.Z80
+
+page
+
+; move status line and scroll
+;
+
+movsts:	ld	a,(vatt)	; first, check to see if the status line
+	and	20h		; is to be preserved or not.
+	jr	z,mvsts2	; if bit 5 is zero, no. else...
+; status line preservation is TRUE.  Move the status line before doing
+; anything else.
+;
+mvsts:	ld	hl,(vrbase)
+	ld	de,lastlin+linesiz
+	ld	bc,linesiz	; amount to move
+	add	hl,de		; hl=source, de=statline
+	ld	a,h		; qualify it
+	and	07h
+	ld	h,a
+	ld	d,h		; copy it into de,
+	ld	e,l		; de=source.
+	add	hl,bc		; de=source, hl=destination
+	ld	a,h		; qualify it
+	and	07h
+	ld	h,a
+	ex	de,hl		; hl=source, de=destination
+	push	hl		; save status line address
+	call	mdir		; if so, move it
+	pop	de		; status line address in de
+	ld	hl,linesiz	; amount to clear
+	call	clrdis		; clear it
+	ld	hl,(vrbase)
+	ld	de,linesiz
+	add	hl,de
+	ld	a,h
+	and	07h
+	ld	h,a
+	ld	(vrbase),hl
+	ex	de,hl
+	ld	bc,scrcmd
+	jp	regrst		; scroll screen and exit
+
+; enter here for scroll if status line preservation IS NOT enabled.
+; MVSTS2 scrolls the screen, then clears the status line.
+;
+mvsts2:	ld	hl,(vrbase)
+	ld	de,linesiz
+	add	hl,de
+	ld	a,h
+	and	07h
+	ld	h,a
+	ld	(vrbase),hl	; new base address
+	ex	de,hl
+	ld	bc,scrcmd
+	call	regrst
+	ld	hl,(vrbase)
+	ld	de,linesps*linesiz	; starting addr., status line
+	add	hl,de
+	ld	a,h
+	and	07h
+	ld	h,a
+	ex	de,hl
+	ld	hl,linesiz
+	jp	clrdis			; clear status line, exit.
+
+; move a block of data, source in hl, destination in de, count in bc.
+; (just like a Z-80 block move, or LDIR, command, only slower.)
+;
+
+mdir:	ld	a,b
+	and	07h		; qualify the upper byte,
+	or	c		; qualify the count
+	ret	z		; not 65,535 please!
+mdir2:	push	bc		; save the count
+rdlopx:	in	a,(vcstat)
+	or	a
+	jp	p,rdlopx	; wait until ready to begin
+	ld	bc,hiadd*100H+loadd	; address register numbers
+			; change the data update address register:
+	ld	a,b		; high address byte register, UA,
+	out	(vccmd),a	; select it.
+	ld	a,h		; get high byte, new address,
+	out	(vcrdat),a	; put it in high byte, UA.
+	ld	a,c		; low address byte, UA,
+	out	(vccmd),a	; select it.
+	ld	a,l		; new low address byte,
+	out	(vcrdat),a	; set it.
+	ld	a,strcmd	; strobe register
+	out	(vccmd),a	; start a new cycle
+rdlop1:	in	a,(vcstat)	; get status
+	or	a		; set flags
+	jp	p,rdlop1	; wait until vc is ready
+	in	a,(vcdata)	; get a data byte
+	ex	af,af'		; save it
+	ld	a,b		; change address,
+	out	(vccmd),a
+	ld	a,d
+	out	(vcrdat),a
+	ld	a,c
+	out	(vccmd),a
+	ld	a,e
+	out	(vcrdat),a
+	ld	a,strcmd
+	out	(vccmd),a
+	ex	af,af'
+	out	(vcdata),a
+	inc	de
+	inc	hl
+	ld	a,d
+	and	7h
+	ld	d,a
+	ld	a,h
+	and	7h
+	ld	h,a
+; and now for the attributes
+rdlop2:	in	a,(vcstat)
+	or	a
+	jp	p,rdlop2
+	ld	a,b		; change address,
+	out	(vccmd),a
+	ld	a,h
+	or	08h		; go to attribute ram
+	out	(vcrdat),a
+	ld	a,c
+	out	(vccmd),a
+	ld	a,l
+	out	(vcrdat),a
+	ld	a,strcmd
+	out	(vccmd),a
+rdlop3:	in	a,(vcstat)
+	or	a
+	jp	p,rdlop3
+	in	a,(vcdata)
+	ex	af,af'
+	ld	a,b		; change address,
+	out	(vccmd),a
+	ld	a,d
+	or	08h		; attribute ram
+	out	(vcrdat),a
+	ld	a,c
+	out	(vccmd),a
+	ld	a,e
+	out	(vcrdat),a
+	ld	a,strcmd
+	out	(vccmd),a
+	ex	af,af'
+	out	(vcdata),a
+	pop	bc
+	dec	bc
+	ld	a,b
+	or	c
+	jp	nz,mdir2
+	jp	mdexlp		; make sure last byte got moved
+
+; move a block of data, source in hl, destination in de, count in bc.
+; (just like a Z-80 block move, or LDDR, command, only slower.)
+;
+
+mddr:	ld	a,b
+	and	07h		; qualify the upper byte,
+	or	c		; qualify the count
+	ret	z		; not 65,535 please!
+mddr2:	push	bc		; save the count
+ddlopx:	in	a,(vcstat)
+	or	a
+	jp	p,ddlopx	; wait until ready to begin
+	ld	bc,hiadd*100H+loadd	; address register numbers
+			; change the data update address register:
+	ld	a,b		; high address byte register, UA,
+	out	(vccmd),a	; select it.
+	ld	a,h		; get high byte, new address,
+	and	07h		; qualify it
+	out	(vcrdat),a	; put it in high byte, UA.
+	ld	a,c		; low address byte, UA,
+	out	(vccmd),a	; select it.
+	ld	a,l		; new low address byte,
+	out	(vcrdat),a	; set it.
+	ld	a,strcmd	; strobe register
+	out	(vccmd),a	; start a new cycle
+ddlop1:	in	a,(vcstat)	; get status
+	or	a		; set flags
+	jp	p,ddlop1	; wait until vc is ready
+	in	a,(vcdata)	; get a data byte
+	ex	af,af'		; save it
+	ld	a,b		; change address,
+	out	(vccmd),a
+	ld	a,d
+	and	07h
+	out	(vcrdat),a
+	ld	a,c
+	out	(vccmd),a
+	ld	a,e
+	out	(vcrdat),a
+	ld	a,strcmd
+	out	(vccmd),a
+	ex	af,af'
+	out	(vcdata),a
+	inc	de
+	inc	hl
+	ld	a,d
+	and	7h
+	ld	d,a
+	ld	a,h
+	and	7h
+	ld	h,a
+; and now for the attributes
+ddlop2:	in	a,(vcstat)
+	or	a
+	jp	p,ddlop2
+	ld	a,b		; change address,
+	out	(vccmd),a
+	ld	a,h
+	or	08h		; go to attribute ram
+	out	(vcrdat),a
+	ld	a,c
+	out	(vccmd),a
+	ld	a,l
+	out	(vcrdat),a
+	ld	a,strcmd
+	out	(vccmd),a
+ddlop3:	in	a,(vcstat)
+	or	a
+	jp	p,ddlop3
+	in	a,(vcdata)
+	ex	af,af'
+	ld	a,b		; change address,
+	out	(vccmd),a
+	ld	a,d
+	or	08h		; attribute ram
+	out	(vcrdat),a
+	ld	a,c
+	out	(vccmd),a
+	ld	a,e
+	out	(vcrdat),a
+	ld	a,strcmd
+	out	(vccmd),a
+	ex	af,af'
+	out	(vcdata),a
+	pop	bc
+	dec	hl
+	dec	hl
+	dec	de
+	dec	de
+	dec	bc
+	ld	a,b
+	or	c
+	jp	nz,mddr2
+mdexlp:	in	a,(vcstat)
+	or	a
+	jp	p,mdexlp
+	ret
+
+dltlin:	call	carret		; do a carriage return
+	ld	a,(crow)
+	or	a
+	jp	z,dscroll	; special scroll
+	ld	de,(cursor)
+	ld	hl,linesiz
+	cp	23
+	jp	nc,clrdis	; clear last line or status line, exit
+	cp	11
+	jr	nc,dltl1a	; normal delete line, lines 11-22
+	ex	de,hl		; de=linesiz, hl=cursor
+	ld	bc,linesiz-1
+	add	hl,bc		; hl=end of current line=dest
+	ld	a,h
+	and	07h		; qualify it
+	ld	h,a		; hl=dest.
+	ld	b,h
+	ld	c,l		; bc=dest.
+	sbc	hl,de		; hl=source
+	ld	a,h
+	and	7h		; qualify it
+	ld	h,a		; source in hl
+	push	hl		; save source
+	ld	de,(vrbase)
+	sbc	hl,de		; hl=source-vrbase
+	jr	nc,dltl2b	; true count if no carry
+	ld	hl,0800h
+	or	a		; clear carry
+	sbc	hl,de
+	pop	de		; source in de
+	add	hl,de		; count in hl
+	ld	a,h
+	and	07h
+	ld	h,b
+	ld	b,a
+	ld	a,l
+	ld	l,c
+	ld	c,a
+	ex	de,hl		; hl=source, de=dest., bc=count
+dscrla:	inc	bc		; count=count-1
+	call	mddr
+dscroll:call	mvsts		; scroll, saving status line
+	ld	hl,(cursor)
+	ld	de,linesiz
+	add	hl,de
+	ex	de,hl		; new cursor position in de
+	jp	putcur		; place cursor and exit
+
+dltl2b:	ld	d,b
+	ld	e,c		; de=dest.
+	ld	b,h
+	ld	c,l		; bc=count
+	pop	hl		; hl=source
+	jr	dscrla		; go do it
+
+dltl1a:	add	hl,de		; source = linesiz+destination
+	ld	a,h
+	and	7h		; qualify it,
+	ld	d,a
+	ld	e,l		; put source in de.
+	ld	hl,(vrbase)
+	ld	bc,lastlin+linesiz
+	add	hl,bc		; lastpos=vrbase+(lastlin+linesiz)
+	ld	a,h
+	and	07h		; qualify it,
+	ld	h,a		; put it back in hl,
+	ld	b,a
+	ld	c,l		; save lastpos in bc.
+	sbc	hl,de		; hl=lastpos-source
+	jr	nc,dltl3a	; valid if no carry,
+	ld	hl,0800h	; else put boundry in hl,
+	or	a		; clear carry
+	sbc	hl,de		; hl=boundry-source
+	add	hl,bc		; +lastpos
+dltl3a:	ld	b,h		; put count in bc
+	ld	c,l
+	ld	hl,(cursor)	; dest
+	ex	de,hl		; in de, source in hl
+	call	mdir		; move it.
+	ld	hl,(vrbase)
+	ld	de,lastlin
+	add	hl,de
+	ld	a,h
+	and	07h
+	ld	d,a
+	ld	e,l		; last line in de
+	ld	hl,linesiz
+	jp	clrdis		; clear the last line
+
+; insert a line
+
+inslin:	ld	a,(crow)
+	cp	12
+	jp	nc,insln2	; 'normal' insert line
+	ld	hl,(vrbase)	; source
+	ld	de,linesiz
+	or	a		; clear carry
+	sbc	hl,de		; hl = new vrbase
+	ld	a,h
+	and	07h		; qualify it
+	ld	h,a
+	ex	de,hl		; dest in de,
+	ld	bc,scrcmd	; scroll
+	call	regrst
+	ld	hl,(cursor)
+	ld	bc,(vrbase)
+	or	a
+	sbc	hl,bc
+	jr	nc,insl2a	; hl=amount
+	ld	hl,0800h
+	or	a		; clear carry flag
+	sbc	hl,bc		; hl=800h-source
+	ld	a,h
+	and	07h
+	ld	h,a
+	ld	bc,(cursor)
+	add	hl,bc
+insl2a:	ld	a,h
+	and	07h
+	ld	b,a
+	ld	c,l		; amount in bc
+; test
+	ld	hl,80+48
+	add	hl,bc
+	ld	a,h
+	and	07h
+	ld	b,a
+	ld	c,l
+;
+	ld	hl,(vrbase)	; source in hl
+; test
+	ld	de,23*linesiz
+	add	hl,de
+	ld	a,h
+	and	07h
+	ld	h,a
+	ex	de,hl
+	ld	hl,80
+	add	hl,de		; source in hl, dest in de
+	ld	a,h
+	and	07h
+	ld	h,a
+;
+	call	mdir
+	ld	hl,(cursor)
+	ld	bc,linesiz
+	or	a		; clear carry
+	sbc	hl,bc
+	ld	a,h
+	and	07h
+	ld	h,a		; qualify address
+	ex	de,hl		; put in de
+	ld	a,(ccol)
+	ld	c,a
+	ld	b,0
+	ld	hl,linesiz
+	sbc	hl,bc		; hl=amount
+	push	de		; save new cursor address
+	push	hl
+	call	clrdis		; clear to end of inserted line
+	pop	bc		; amount
+	push	bc
+	ld	hl,(cursor)
+	ld	a,(ccol)
+	ld	e,a
+	ld	d,0
+	or	a
+	sbc	hl,de
+	ld	a,h
+	and	07h
+	ld	d,a
+	ld	e,l		; dest in de
+	ld	hl,(cursor)	; source in hl
+	call	mdir
+	pop	bc		; amount
+	ld	hl,linesiz
+	or	a
+	sbc	hl,bc
+	call	nz,clrdis
+	ld	hl,(vrbase)
+	ld	bc,linesiz
+	or	a
+	sbc	hl,bc
+	ld	a,h
+	and	07h
+	ld	h,a
+	ld	(vrbase),hl	; new vr base, 
+	pop	de
+	jp	putcur		; put cursor and exit
+
+insln2:	sub	22
+	jr	z,inl33
+	jp	nc,clreol
+	neg			; two's complement, number of lines to move
+	push	af
+	ld	hl,(vrbase)
+	ld	de,79+22*80	; source
+	ld	bc,80
+	add	hl,de
+	ld	a,h
+	and	07h
+	ld	d,a
+	ld	e,l
+	add	hl,bc		; destination
+	ld	a,h
+	and	07h
+	ld	h,a
+	ex	de,hl		; hl:=source, de:=dest.
+	pop	af
+	push	hl
+	ld	hl,0
+inl22:	add	hl,bc
+	dec	a
+	jr	nz,inl22
+	ld	b,h
+	ld	c,l		; bc=amount
+	pop	hl		; restore source to hl
+	call	mddr		; move them
+inl33:	ld	hl,(cursor)	; source in de,
+	ld	d,h
+	ld	e,l
+	ld	a,(ccol)
+	ld	c,a		; amount to clear, next line
+	ld	a,80
+	sub	c		; amount to move and distance to go
+	ld	c,a
+	ld	b,0
+	add	hl,bc		; dest. in hl,
+	ld	a,h
+	and	07h
+	ld	h,a
+	ex	de,hl		; now hl=source, de=dest, bc=amount
+	call	mdir		; move the rest to beginning of next line
+	ld	a,(ccol)
+	ld	l,a
+	ld	h,0
+	or	a
+	call	nz,clrdis	; clear to the end of the next line,
+	jp	clreol		; clear to the end of this one.
+
+subttl RAM storage
+.comment %
+###############################################################
+##                                                           ##
+##       System scratch RAM used by ROM software             ##
+##                                                           ##
+###############################################################
+##       Last Update:05/31/82           [001]                ##
+###############################################################
+%
+.z80
+
+ramscratch	equ	0FB00H	; scratch ram
+
+sekdsk	equ	ramscratch	;seek disk number
+sektrk	equ	sekdsk+1	;seek track number
+seksec	equ	sektrk+2	;seek sector number
+hstdsk	equ	seksec+1	;host disk number
+hsttrk	equ	hstdsk+1	;host track number
+hstsec	equ	hsttrk+2	;host sector number
+sekhst	equ	hstsec+1	;seek shr secshf
+hstact	equ	sekhst+1	;host active flag
+hstwrt	equ	hstact+1	;host written flag
+unacnt	equ	hstwrt+1	;unalloc rec cnt
+unadsk	equ	unacnt+1	;last unalloc disk
+unatrk	equ	unadsk+1	;last unalloc track
+unasec	equ	unatrk+2	;last unalloc sector
+erflag	equ	unasec+1	;error reporting
+rsflag	equ	erflag+1	;read sector flag
+readop	equ	rsflag+1	;1 if read operation
+wrtype	equ	readop+1	;write operation type
+dmaadr	equ	wrtype+1	;last dma address
+hstbuf	equ	dmaadr+2	;host buffer
+dsk	equ	hstbuf+512	; current disk drive
+ctrack	equ	dsk+1		; track number (real) for current drive
+denflag	equ	ctrack+1	; density flag for current drive
+sidflg	equ	denflag+1
+tracka	equ	sidflg+1	; track of disk A	(255=density unknown)
+dflga	equ	tracka+1
+sflga	equ	dflga+1
+trackb	equ	sflga+1		; track of disk B
+dflgb	equ	trackb+1
+sflgb	equ	dflgb+1
+csva	equ	sflgb+1		; directory check
+alva	equ	csva+16		; allocation map
+csvb	equ	alva+26
+alvb	equ	csvb+16
+leadflg	equ	alvb+26		; video leadin sequence count
+; begin video driver storage ram.
+vidram	equ	leadflg			; initialization pointer
+crow	equ	leadflg+1
+ccol	equ	crow+1
+vatt	equ	ccol+1
+cursor	equ	vatt+1
+vrbase	equ	cursor+2
+esccmd	equ	vrbase+2
+precur	equ	esccmd+1
+ramlen	equ	12			; number of bytes to initialize
+col	equ	precur+2
+col2	equ	col+1
+row	equ	col2+1
+row2	equ	row+1
+onoff	equ	row2+1
+newc	equ	onoff+1
+pix	equ	newc+1
+saddr	equ	pix+1
+xoff	equ	saddr+2
+yoff	equ	xoff+1
+difx	equ	yoff+1
+dify	equ	difx+1
+vgb1	equ	dify+1
+; end video driver storage ram.
+dpha	equ	vgb1+1		; DPH for A
+dphb	equ	dpha+17		; DPH for B
+dpbs	equ	dphb+17		; single density dpb
+dpbd	equ	dpbs+15		; double density dpb
+tbl1	equ	dpbd+15		; single density skew table
+adrbuf	equ	tbl1+18		; 512 byte sector skew table
+move	equ	adrbuf+6	; move logical sector from hstbuf
+rd128	equ	move+15		; routine to read 128 byte sector
+rd512	equ	rd128+7		; routine to read 512 byte sector
+wrt128	equ	rd512+10	; routine to write 128 byte sector
+wrt512	equ	wrt128+7	; routine to wrtie 512 byte sector
+rdwrtend equ	rd128+140	; end of read and write routines
+dirbuf	equ	rdwrtend+1	; bdos directory buffer
+
+stack	equ	0FFFFH		; boot up stack space
+	end
+

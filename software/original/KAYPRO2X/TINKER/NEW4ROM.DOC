@@ -1,0 +1,6 @@
+to link rom
+
+l80 /p:0,new4rom,pixel,lines,new4rom/n/x/y/e
+
+the same rom is used in the KPII & KP4.
+

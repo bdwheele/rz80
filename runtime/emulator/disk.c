@@ -10,45 +10,49 @@ int lba_from_dts(struct state *state) {
     return lba;   
 }
 
-int disk_read(struct state *state) {
-    //fseek(state->disk[state->drive], lba_from_dts(state) * 128, SEEK_SET);
-    //fread(state->memory + state->dma, 1, 128, state->disk[state->drive]);
-    int fd = open(state->disk_names[state->drive], O_RDONLY);
+#define READ 1
+#define WRITE 2
+
+#define fail(x) {setA(x); state->disk_fd[state->drive] = -1; return -1; }
+
+
+int disk_op(struct state *state, int operation) {
+    int fd = state->disk_fd[state->drive];
     if(fd < 0) {
-        setA(1); // error on open
-    } else {
-        if(lseek(fd, lba_from_dts(state) * 128, SEEK_SET) < 0) {
-            setA(1); //error on seek
-        } else {
-            if(read(fd, state->memory + state->dma, 128) < 0) {
-                setA(1); // error on read
-            } else {
-                setA(0);
-            }
+        // something has happened and we need (re)open the disk
+        fd = open(state->disk_names[state->drive], O_RDWR | O_SYNC);
+        if(fd < 0) {
+            fail(1);
         }
-        close(fd);
+        state->disk_fd[state->drive] = fd;
     }
+    if(lseek(fd, lba_from_dts(state) * 128, SEEK_SET) < 0) {
+        // the seek failed.  blech.
+        fail(1);
+    }
+    int res;
+    if(operation == READ) {
+        res = read(fd, state->memory + state->dma, 128);
+    } else {
+        res = write(fd, state->memory + state->dma, 128);
+    }
+    if(res < 0) {
+        fail(1);
+    } 
+    setA(0);
+    return 0;
+}
+
+
+int disk_read(struct state *state) {
+    return disk_op(state, READ);
 }
 
 int disk_write(struct state *state) {
-    //fseek(state->disk[state->drive], lba_from_dts(state) * 128, SEEK_SET);
-    //fwrite(state->memory + state->dma, 1, 128, state->disk[state->drive]);
-    int fd = open(state->disk_names[state->drive], O_RDWR);
-    if(fd < 0) {
-        printf("Error opening %s for write: %d\n", state->disk_names[state->drive], errno);
-        setA(fd == EROFS? 2 : 1); // error on open
-    } else {
-        if(lseek(fd, lba_from_dts(state) * 128, SEEK_SET) < 0) {
-            setA(1); // error on seek
-        } else {
-            if(write(fd, state->memory + state->dma, 128) < 0) {
-                printf("Error writing %s error: %d\n", state->disk_names[state->drive], errno);
-                setA(1);
-            } else {
-                setA(0);
-            }
-        }
-        close(fd);
-    }
+    return disk_op(state, WRITE);
+}
 
+
+void disk_init(struct state *state) {
+    // I probably do some sanity checking
 }

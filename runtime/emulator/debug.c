@@ -37,12 +37,13 @@ void trace(struct state *state, uint16_t addr) {
     }
     *p = 0;
 
-    fprintf(state->log,
-            "%6s:%04x %-12s %-15s AF=%04x BC=%04x DE=%04x SP=%04x HL=%04x\n",
-            base_name, addr - base_addr, 
-            byte_dump, disasm,
-            z80ex_get_reg(state->cpu, regAF), z80ex_get_reg(state->cpu, regBC),
-            z80ex_get_reg(state->cpu, regDE), z80ex_get_reg(state->cpu, regSP),
-            z80ex_get_reg(state->cpu, regHL));
+    if(state->log) 
+        fprintf(state->log,
+                "%6s:%04x %-12s %-15s AF=%04x BC=%04x DE=%04x SP=%04x HL=%04x\n",
+                base_name, addr - base_addr, 
+                byte_dump, disasm,
+                z80ex_get_reg(state->cpu, regAF), z80ex_get_reg(state->cpu, regBC),
+                z80ex_get_reg(state->cpu, regDE), z80ex_get_reg(state->cpu, regSP),
+                z80ex_get_reg(state->cpu, regHL));
 
 }

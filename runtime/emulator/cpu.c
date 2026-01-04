@@ -1,5 +1,5 @@
 #include "rz80.h"
-#include <sys/select.h>
+
 
 Z80EX_BYTE cpu_mem_read(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *user_data) {
     return mem_read_byte(user_data, addr);
@@ -11,7 +11,8 @@ void cpu_mem_write(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *
 
 
 Z80EX_BYTE cpu_port_read(Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data) {
-
+    struct state *state = user_data;
+    debug("Read port %d\n", port);
 }
 
 void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *user_data) {
@@ -25,9 +26,10 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
         svc_name = svcs[port];
     }
     struct state *state = (struct state *)user_data;
-    debug("Port write %02x (%s), value (%02x) PC=%04x, AF=%04x, BC=%04x, DE=%04x SP=%04x HL=%04x\n",
-        port, svc_name,  value,
-        z80ex_get_reg(state->cpu, regPC), z80ex_get_reg(state->cpu, regAF), z80ex_get_reg(state->cpu, regBC),
+    if(state->trace_port)
+        debug("Port write %02x (%s), value (%02x) PC=%04x, AF=%04x, BC=%04x, DE=%04x SP=%04x HL=%04x\n",
+            port, svc_name,  value,
+            z80ex_get_reg(state->cpu, regPC), z80ex_get_reg(state->cpu, regAF), z80ex_get_reg(state->cpu, regBC),
             z80ex_get_reg(state->cpu, regDE), z80ex_get_reg(state->cpu, regSP), z80ex_get_reg(state->cpu, regHL));
     switch(port) {
         case 1:
@@ -36,35 +38,15 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
             break;
         case 2:
             // console status
-            fd_set fds;
-            FD_ZERO(&fds);
-            int stdin_fileno = fileno(stdin);
-            FD_SET(stdin_fileno, &fds);
-            struct timeval tv;
-            tv.tv_sec = 0;
-            tv.tv_usec = 100; // 100us wait time
-            select(stdin_fileno + 1, &fds, NULL, NULL, &tv);
-            if(FD_ISSET(stdin_fileno, &fds)) {
-                setA(0xff);
-            } else {
-                setA(0x00);
-            }
+            setA(terminal_status(state));
             break;        
         case 3:
             // console input
-            char c;
-            fread(&c, 1, 1, stdin);
-            if(c == 0x11) {
-                // ctrl-q halts.
-                state->halted = 1;
-            } else {
-                setA(c);
-            }
+            setA(terminal_read(state));
             break;
         case 4:
             // console output
-            fputc(getC() &0x7f, stdout);
-            fflush(stdout);
+            terminal_write(state, getC());
             break;
         case 5:
             // list output (C)
@@ -109,7 +91,6 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
         case 14:
             // write block
             disk_write(state);
-            setA(0);
             break;
         case 15:
             // list status

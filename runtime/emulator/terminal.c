@@ -1,5 +1,6 @@
 #include "rz80.h"
 #include <termios.h>
+#include <sys/select.h>
 
 void terminal_setup(struct state *state) {
     state->old_settings = calloc(1, sizeof(struct termios));
@@ -25,4 +26,194 @@ void terminal_restore(struct state *state) {
     tcsetattr(fileno(stdin), TCSAFLUSH, state->old_settings);
 }
 
+Z80EX_BYTE terminal_status(struct state *state) {
+    fd_set fds;
+    FD_ZERO(&fds);
+    int stdin_fileno = fileno(stdin);
+    FD_SET(stdin_fileno, &fds);
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 100; // 100us wait time
+    select(stdin_fileno + 1, &fds, NULL, NULL, &tv);
+    if(FD_ISSET(stdin_fileno, &fds)) {
+        return 0xff;        
+    } else {
+        return 0x00;
+    }
+}
 
+Z80EX_BYTE terminal_read(struct state *state) {
+    char c;
+    fread(&c, 1, 1, stdin);
+    if(c == 0x11) {
+        // ctrl-q halts.
+        state->halted = 1;
+    }
+    return c;
+}
+
+
+void terminal_write(struct state *state, char c) {
+    static int in_escape = 0;    
+    //char escape_buffer[9];
+    //char *escape_p = &escape_buffer;
+    c &= 0x7f;  // not 8-bit clean?
+    if(!in_escape) {
+        switch(c) {
+            case 0x1b:
+                // an escape
+                in_escape = 1;
+                break;
+            case 0x08:
+                // backspace / cursor left
+                fputc(c, stdout);
+               break;
+            case 0x12:
+                // cursor right
+                fprintf(stdout, "\e[C");
+                //debug("term: Cursor right\n");
+                break;
+            //case 0x0A:
+            //    // cursor down
+            //    break;
+            case 0x0B:
+                // cursor up
+                fprintf(stdout, "\e[A");
+                //debug("term: cursor up\n");
+                break;
+            case 0x1A:
+                // clear screen and home
+                fprintf(stdout, "\e[2J");
+                //debug("term: clear screen\n");
+                break;
+            //case 0x13:
+            //    // carriage return
+            //    break;
+            case 0x18:
+                // clear to end of line
+                fprintf(stdout, "\e[K");
+                break;
+            case 0x17:
+                // clear to end of screen
+                fprintf(stdout, "\e[J");
+                break;
+            default:
+                fputc(c, stdout);
+                break;
+        }    
+    } else {
+        char row, col;
+        switch(in_escape) {
+            case 1:
+                // we don't know what kind of escape yet...
+                switch(c) {
+                    case 'B':
+                        // enable attribute
+                        in_escape = 0x100;
+                        break;
+                    case 'C':
+                        // enable attribute
+                        in_escape = 0x110;
+                        break;
+                    case 61:
+                        // cursor position, wait for data
+                        in_escape = 61;
+                        break;
+                    case 69:
+                        // insert line (scroll down)
+                        in_escape = 0;
+                        debug("term: scroll down (unimplemented)\n");
+                        // TODO: do someting
+                        break;
+                    case 82:
+                        // insert line (scroll up)
+                        in_escape = 0;
+                        debug("term: insert line (unimplemented)\n");
+                        // TODO: do something
+                        break;
+                    default:
+                        // not a valid escape sequence, so just dump the
+                        // original escape we got, and whatever this 
+                        // character is.
+                        debug("term: unknown escape %c (%d)\n", c, c);
+                        fputc(0x1b, stdout);
+                        fputc(c, stdout);
+                        in_escape = 0;
+                        break;
+                }
+                break;
+            case 61:
+            case 62:
+                // we're in set cursor position, waiting for the 
+                // row + 20 (61), or column + 20 (62)
+                if(in_escape == 61) {
+                    row = c - 32;
+                    in_escape = 62;
+                } else {
+                    col = c - 32;
+                    fprintf(stdout, "\e[%d;%dH", row, col);
+                    in_escape = 0;
+                }
+                break;
+            case 0x100:
+                // enable attribute
+                switch(c) {
+                    case '0':
+                        //inverse
+                        fprintf(stdout, "\e[7m");
+                        break;
+                    case '1':
+                        // dim
+                        fprintf(stdout, "\e[2m");
+                        break;
+                    case '2':
+                        // blinking
+                        fprintf(stdout, "\e[5m");
+                        break;
+                    case '3':
+                        // underline
+                        fprintf(stdout, "\e[4m");
+                    default:
+                        debug("term: disable unhandled attribute %c\n", c);
+                        break;
+
+                }
+                in_escape = 0;
+                break;
+            case 0x110:
+                // disable attribute
+                switch(c) {
+                    case '0':
+                        //inverse
+                        fprintf(stdout, "\e[27m");
+                        break;
+                    case '1':
+                        // dim
+                        fprintf(stdout, "\e[22m");
+                        break;
+                    case '2':
+                        // blinking
+                        fprintf(stdout, "\e[25m");
+                        break;
+                    case '3':
+                        // underline
+                        fprintf(stdout, "\e[24m");
+                        break;
+                    default:
+                        debug("term: disable unhandled attribute %c\n", c);
+                        break;
+                }
+                in_escape = 0;
+                break;
+            default:
+                // no idea what this is.  Pass the original escape and
+                // this char.    
+                fputc(0x1b, stdout);
+                fputc(c, stdout);
+                debug("term: Unknown escape state %d, character %c (%d)\n", in_escape, c, c);
+                in_escape = 0;
+                break;
+        }
+    }
+    fflush(stdout);
+}

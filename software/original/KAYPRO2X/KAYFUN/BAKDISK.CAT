@@ -1,0 +1,800 @@
+***
+000  Disk 000 is BAKUP's 'Greatest Hits' disk.  No file is included on
+000  this disk that does not appear somewhere else in their library.
+000  -KAYFUN .000 - This disk originally BAKUP Volume 0.
+000  DISK-000.DOC - A description of the files on this disk.
+000  COMHEX  .COM - Converts a COM file back into hex.  Very useful for
+000  COMHEX  .DOC - file transfers without error checking.
+000  COMPARE .COM - Compares text files.
+000  SD98    .COM - Produces a detailed, sorted directory with file sizes.
+000  SD98    .DOC - 
+000  SD-44   .COM - An older, but smaller version of the above program.
+000  FBAD59  .COM - Finds and locks out bad sectors on a disk.
+000  FBAD59  .DOC - 
+000  UNERA30 .COM - Unerases accidentally erased files.
+000  UNERA30 .DOC - 
+000  DIRCHK  .COM - Gives sector allocation of files and spots directory
+000               -   errors.
+000  NEWCAT  .COM - A set of programs to catalog the contents of your
+000  CAT     .COM -   disks and tell you what is where.
+000  CAT2    .COM -   |
+000  NEWCAT28.DOC -   |  
+000  READ    .COM - TYPE to console with pause.
+000  EX14    .COM - A fantastic replacement for SUBMIT and XSUB.
+000  EX14    .DOC - 
+000  PRINT   .BAS - Epson printer print mode controller.
+000  QUIET   .COM - Turns off keyboard click.
+000  LOUD    .COM - Turns click back on.
+000  NSWP207 .COM - A powerful file moving and maintenance utility.
+000  NSWP207 .DOC - 
+000  PRINT   .COM - Prints files in paged format.  Several options.
+000  PRINT   .DOC - 
+000  KTRADE  .BAS - Dramatically improved Star Traders.
+000  ZCHESS  .COM - A Z80 chess game with variable look-ahead.
+000  DU-V89  .COM - A powerful, useful disk editor.
+000  DU-V87  .DOC - 
+000  DASM    .COM - A conversational Z80 disassembler.
+000  DASM    .DOC - 
+000  QK      .COM - A resident keystroke command system that allows you to
+000  QK      .DOC -   redefine any keya at any time.
+***
+001               -       CP/M Utilities
+001  -KAYFUN .001 - This disk originally BAKUP Volume 1.
+001  DISK-001.DOC - A description of the files on this disk.
+001  DU      .COM - A powerful, useful disk editor.
+001  DU      .DOC - 
+001  FINDBAD .COM - Finds and locks out bad sectors on a disk.
+001  PACMAN  .COM - Pacman-type game.
+001  PACMAN  .DAT - Used by above.
+001  SCREEN  .CNT -   |
+001  REZ80   .COM - A conversational Z80 disassembler.
+001  RESOURCE.DOC - Documentation for above.
+001  SUPERSUB.COM - Improved version of SUBMIT.COM.
+001  UNLOAD  .COM - A hex dump utility.
+001  XDIR    .COM - Extended directory program.
+001  ZCPR    .ASM - An improved CCP for CP/M.  Requires MAC.
+001  ZCPR    .DOC - 
+001  ZCPR    .HEX - Above, for Kaypro 2.  Assembled, ready to install.
+001  ZCPRKPII.DOC - Easy installation instructions for above.
+***
+002               -       MODEM 7
+002  -KAYFUN .002 - This disk originally BAKUP Volume 2.
+002  DISK-002.DOC - A description of the files on this disk.
+002  CRCK4   .COM - Tests the accuracy of copied or transmitted files.
+002  CRCK4   .ASM - Source for above.
+002  CRCKLIST.CRC - CRC list for this Volume.  Used by above.
+002  MDM7KPII.COM - MODEM 7 for the Kaypro. Common telecommunications
+002               -   program.
+002  MODEM7  .DOC - 
+002  MDM7    .ASM - Source for above.  Requires MAC for assembly.
+002  MODEM   .LIB - Macro library for MODEM 7.
+002  MDM7KPII.ASM -   |
+002  MDM7GBT .ASM -   |
+002  MDMAL   .ASM - Overlays for first portion of MODEM 7. Allows you to
+002  MDMHIO  .ASM -   get MODEM 7 running on these and other machines
+002  MDMOS   .ASM -   without MAC.  See MODEM7.DOC for how.
+002  MDMSS1  .ASM -   |
+002  MDMTS802.ASM -   |
+002  MDMTV   .ASM -   |
+002  MDMINDEX.DOC -   |
+002  SQ-15   .COM - Squeezes files for storage or transmission.
+002  USQ-15  .COM - Undoes above.
+002  PIPPATCH.ASM - Patches PIP.  Adds: reset disks, repeat last command.
+002  PIPPATCH.AQM - Squeezed version of above.
+***
+003               -       MODEM 73
+003  -KAYFUN .003 - This disk originally BAKUP Volume 3.
+003  DISK-003.DOC - A description of the files on this disk.
+003  DIF     .COM - Creates an editor script of file differences.
+003  MODEM73 .COM - A more versatile form of MODEM 7.
+003  MODEM73 .DOC - 
+003  MODEM   .DOC - 
+003  MODEM73 .MAC - Source for above.
+003  CRCLIB  .MAC -   |
+003  MODLIB  .MAC -   |
+003  PHNLIB  .MAC -   |
+003  XTCPM   .AQM - CP/M memory extender of questionable value.
+003               -   (Squeezed).
+003  PACMANKP.COM - Another Pacman-type game.
+***
+004               -       Catalog & BASICS
+004  -KAYFUN .004 - This disk originally BAKUP Volume 4.
+004  DISK-004.DOC - A description of the files on this disk.
+004  ALIENS  .COM - Space Invaders-type game.
+004  BASIC   .COM - BASIC-E compiler.  (A predecessor of CBASIC)
+004  RUN     .COM - BASIC-E run-time package.
+004  NEWCAT  .COM - A set of programs to catalog the contents of your
+004               -   disks and tell you what is where.
+004  CAT     .COM -   |
+004  CAT2    .COM -   |
+004  NEWCAT28.DOC -   |
+004  CATALOG .DOC -   |
+004  CBIOS   .MAC - Custom Basic Input/Output System for the Kaypro 2.
+004  LLLBASIC.COM - A simple-minded interpretive BASIC.
+004  LLLBASIC.DOC - 
+004  TEST    .FIL - Sample program for above.
+004  RATFOR  .COM - Rational FORTRAN pre-processor.
+004  BAGELS  .BAS - Miscellaneous BASIC games.  Nearly all run under
+004               -   OBASIC.  Not all that entertaining.
+004  BLACKJAC.BAS -   |
+004  BULLSEYE.BAS -   |
+004  CHECKERS.BAS -   |
+004  KINGDOM .BAS -   |
+004  NFL     .BAS -   |
+004  SWARMS  .BAS -   |
+004  LINETEST.BAS - A set of useful SBASIC functions.
+***
+005               -       AMODEM & RCP/M's
+005  -KAYFUN .005 - This disk originally NWKUG I and then BAKUP Volume 5.
+005  DISK-005.DOC - A description of the files on this disk.
+005  AMODEM  .COM - Improved MODEM 7.  Menus and help commands.
+005  AMODEM  .DQC - Very good documentation for above.  (Squeezed).
+005  MODEM7  .COM - More pedestrian MODEM 7.
+005  MODEM7  .DOC - 
+005  RCPMDATA.18  - Etiquette for using RCP/M's.
+005  RCPMLIST.029 - List of RCP/M's.
+005  SMODEM  .COM - Smart-Modem version of MODEM 7.
+005  SQ      .COM - File squeezing utility.
+005  USQ     .COM - File unsqueezing utility.
+005  SQUEEZE .DOC - Documentation for both of above.
+005  XMODEM  .COM - Quiet, No-Menu version of MODEM 7.
+***
+006               -       Son of CP/M Utilities
+006  -KAYFUN .006 - This disk originally NWKUG II and then BAKUP Volume 6.
+006  DISK-006.DOC - A description of the files on this disk.
+006  ALLOC   .COM - Shows allocations of blocks on disk.
+006  BIO     .COM - Biorhythm chart generator.
+006  BLOCK   .COM - Prints big block letter messages.
+006  CAL     .COM - Prints calendars for whenever.
+006  CAL     .DOC - 
+006  COMPARE .COM - Compares text files.
+006  CRCK44  .COM - Tests the accuracy of copied or transmitted files.
+006  CURSOR  .DOC - Documentation on Kaypro 2 cursor control.
+006  DIRCHK  .COM - Tells you if your directory info is fouled up.
+006  DIRCHK  .DOC - 
+006  DU-78   .COM - A powerful, useful disk editor.  Version 7.8.
+006  DU      .DOC - 
+006  ERAQ    .COM - Erases with query.
+006  HEX2CHAR.DOC - For checking out printer control.
+006  LISTT   .COM - Prints files with pagination.
+006  LISTT   .DOC - 
+006  LU      .COM - Creates libraries of files.
+006  LRUN    .COM - Run a program from a library.
+006  LU      .DOC - 
+006  READ    .COM - TYPE to console with pause.
+006  SD-44   .COM - Produces a sorted directory with file sizes.
+006  SD-44   .DOC - 
+006  SORT    .COM - Sorts file line by line.
+006  SPELL-11.COM - Creates spelling dictionaries.
+006  SPELL-11.DOC - 
+006  SPELL-ED.COM - Checks spelling using SPELL-11 dict.
+006  SPELL-ED.DOC - 
+006  CMPRLEX .COM - Compresses SPELL dictionaries.
+006  SUPERSUB.COM - Improved version of SUBMIT.COM.
+006  SUPERSUB.DOC - 
+006  TAIL    .COM - Spits out the end of a file.
+006  UNERASE .COM - Unerases accidentally erased file.
+006  WCOUNT  .COM - Determines word count of text file.
+006  XAMN    .DOC - Documentation on SBASIC XAMN program.
+***
+007               -       ADVENTURE
+007  -KAYFUN .007 - This disk originally NWKUG III and then BAKUP Volume 7.
+007  ADV     .COM - ADVENTURE, a prose dungeons and dragons type game.
+007  ADVI    .DAT -   CAUTION: ADDICTIVE!
+007  ADVI    .PTR - 
+007  ADVT    .DAT - 
+007  ADVT    .PTR - 
+***
+008               -       Miscellany I
+008  -KAYFUN .008 - This disk originally NWKUG IV and then BAKUP Volume 8.
+008  DISK-007.DOC - A description of the files on this disk.
+008  ADV-SAVE.DOC - How to save Volume 7 Adventure games.
+008  BLKJK   .COM - Blackjack game.
+008  CHASE   .COM - A Robotron-type game.
+008  DATE    .    - 
+008  FOOD    .COM - An inventory program.
+008  FOOD    .DOC - 
+008  FOODCRT .    - Used by food.
+008  FOODDATA.    -   |
+008  FOODINDE.X   -   |
+008  FORTH   .COM - A FORTH interpreter.  Won't save programs.
+008  INDEX101.COM - Will index WordStar type text files.
+008  INDEX101.DOC - 
+008  MAZE    .COM - Draws mazes.  Why is unclear.
+008  OTHELLO .COM - Othello game.
+008  SORT2   .COM - Improved sorting program.
+008  SWEEP-37.COM - File maintenance and moving utility.
+008  SWEEP-37.DOC - 
+***
+009               -       Assemblers, Etc.
+009  -KAYFUN .009 - This disk originally BAKUP Volume 9.
+009  DISK-009.DOC - A description of the files on this disk.
+009  BEEP    .COM - Turns keyboard click on or off.
+009  CACHE   .COM - Creates 8k memory cache for capturing list or console
+009  CACHE   .DOC -   output in a disk file.
+009  CBIOS56C.MAC - Source of replacement BIOS for above.
+009  CRAWL   .COM - A graphic dungeons and dragons type game.
+009  DIR22   .COM - Sorted directory with file sizes.  Nice formatting.
+009  LINES   .COM - Counts lines and bytes in a file.
+009  LIST    .COM - Types a file from a given line # on.
+009  LIST    .DOC - 
+009  LOUD    .COM - Restores silenced keyboard click.
+009  MACASM  .COM - A macro-assembler.  (Intel-type)
+009  MACASM  .DOC - Inadequate documentation for above.
+009  MDIAGLPT.COM - Super Memory Diagnostic.  Requires parallel printer.
+009  MDIAGTTY.COM - Same for serial printer.
+009  MEMDIAG .DOC - Documentation for both of above.
+009  PASSWORD.COM - Rigs .COM files to require password for execution.
+009  PASSWORD.ASM - Source for above.
+009  PRINT   .COM - Epson MX print mode controller.
+009  PRINT   .BAS - Source for above.
+009  QUIET   .COM - Silences keyboard click.
+009  TELL    .COM - Locates important BIOS & BDOS points.
+009  TELL    .ASM - Source for above.
+009  UNIXCONV.COM - Strips files of line feeds for UNIX storage.
+009  UNIXCONV.BAS - Source for above.
+009  UNXMDM  .COM - A MODEM 7-type utility for moving files to and from
+009               -   UNIX.
+009  UNXMDM  .DOC - 
+009  WASH    .COM - File moving and maintenance utility.
+009  Z80ASM  .COM - Z80 mnemonic assembler.
+009  Z80ASM  .DOC - 
+009  TEST1A  .ASM - Sample programs for above.
+009  TEST2   .ASM -   |
+009  ZCHESS  .COM - A Z80 chess game with variable look-ahead.
+009  ZCPRKPII.DOC - Installation instructions for ZCPR.HEX on Disk 009.
+***
+010               -       KMDM795 & More.
+010  -KAYFUN .010 - This disk originally BAKUP Volume 10.
+010  DISK-010.DOC - A description of the files on this disk.
+010  AUTOON  .COM - Turns disk into auto-load disk.
+010  AUTO    .COM - Executes on auto-load, submits INIT.SUB.
+010  AUTOOFF .COM - Turns off auto-load feature.
+010  AUTO    .DOC - 
+010  CPUDIAG .COM - CPU diagnostic.  Tests 8080 op-codes only.
+010  CPUDIAG .ASM - Source for above.
+010  CPUDIAG .DOC - 
+010  CRCK    .COM - Tests the accuracy of copied or transmitted files.
+010  CRCK    .DOC - 
+010  CRCKLIST.CRC - CRC list for this disk.  Used by above.
+010  DSKOFF1 .COM - Alters BIOS to shut off drives after swaps.
+010  DSKON1  .COM - Restores BIOS to normal.
+010  DSKOFF2 .COM - Same as above for different CP/M version.
+010  DSKON2  .COM - 
+010  DSKOFF  .DOC - Documentation for DSKON and DSKOFF.
+010  FINDBAD .DOC - Documentation on using Volume 1's FINDBAD.COM.
+010  KMDM795 .COM - A more versatile version of MODEM 7.
+010  KMDM795 .DOC - 
+010  MODEMPAT.COM - Sets word length, stop bits, baud rate.
+010  MODEMPAT.ASM - Very illuminating source for above.
+010  MODEM7+ .COM - MODEM 7 with MODEMPAT grafted on.
+010  MODEM7  .DOC - 
+010  PROM    .MAC - Code and instructions for moving PROM to RAM.
+010  SELCONPW.DOC - Documentation on converting SELECT files to PW files.
+010  SQ      .COM - File squeezing utility.
+010  USQ     .COM - File unsqueezing utility.
+010  TERM    .DOC - Information on controlling Kaypro 2 screen.
+010  TERM    .MAC - Disassembly of TERM.COM for customization.
+010  UNERA13 .DOC - Documentation for Volume 4's UNERASE.COM.
+010  UNLOCK  .BAS - MBASIC program for unlocking 'protected' programs.
+010  UNLOCK  .DOC - 
+010  UNSPOOL .COM - Allows concurrent printing and program running.
+010  UNSPOOL .DOC - 
+010  SETPAD  .COM - These 2 programs allow you to assign your own character
+010  KEYPAD  .COM -   strings to the keypad & cursor keys.
+010  KEYLOUD .COM - A version of KEYPAD which does not silence drives as
+010  KEYPAD  .DOC -   the above does.
+***
+020               -       Goldston's Goodies.
+020  -KAYFUN .020 - This disk originally BAKUP Volume 20.
+020  DISK-020.DOC - A description of the files on this disk.
+020  README  .PW  - Documentation on BAKUP's Leo Goldston's contributions.
+020  DOCUMENT.BAS - Precise Perfect Formatting System.
+020  PF      .DAT - Works with above.
+020  EPSONENV.RUN - Envelope form for Epson printers.
+020  DAISYENV.RUN - Same for Daisy's.
+020  COMPRESS.BAS - Epson print compression.
+020  CPMCOM  .PC  - Leo's reference cards.  All use Perfect Calc to print
+020               -   out.
+020  PCCOM   .PC  -   |
+020  FILERCOM.PC  -   |
+020  CHEKBOOK.PC  -   |
+020  PFCOM   .PC  -   |
+020  PWCOM   .PC  -   |
+020  EUCLID  .BAS - A set of exemplary MBASIC programs from Leo.  Very
+020  FRACTION.BAS -   useful to BASIC beginners as examples.
+020  MAGIC3X3.BAS -   |
+020  MAGIC4X4.BAS -   |
+020  SORT    .BAS -   |
+020  TIMER   .BAS -   |
+020  TOSSDICE.BAS -   |
+020  WORDPROB.BAS -   |
+020  BUBBLE  .BAS - Bubble Sort code in MBASIC.
+020  BUBBLE  .DOC - 
+020  CASTLE  .BAS - Adventure-type game.
+020  CASTLE  .DOC - Great documentation for above.
+020  CIA     .BAS - Excellent spy role-playing game.
+020  GAMMON  .BAS - Other MBASIC games.
+020  LEM     .BAS -   |
+020  NUCREAC .BAS -   |
+***
+021               -       The Help System
+021  -KAYFUN .021 - This disk originally BAKUP Volume 21.
+021  DISK-021.DOC - A description of the files on this disk.
+021  NDIR    .COM - Yet another extended directory program.
+021  NDIR    .DOC - 
+021  HELP    .COM - The CP/M HELP command.  Use with .HLP files to get more
+021  2SIDEDIS.HLP -   information on CP/M and many utilities that run under
+021  ASM2    .HLP -   it.  Invoke it as HELP HELP to find out more.
+021  BDS-C   .HLP -   |
+021  CPM2    .HLP -   |
+021  EBASIC  .HLP -   |
+021  FILES   .HLP -   |
+021  FORTRAN .HLP -   |
+021  HELP    .HLP -   |
+021  MAC     .HLP -   |
+021  MASM    .HLP -   |
+021  MBASIC  .HLP -   |
+021  NDIR    .HLP -   |
+021  PASCAL  .HLP -   |
+021  PW      .HLP -   |
+021  RBBS    .HLP -   |
+021  UNERA   .HLP -   |
+021  XDIR    .HLP -   |
+021  ZCPR    .HLP -   |
+***
+022               -       FORTH 1983 Standard -- Part 1
+022  -KAYFUN .022 - 
+022  F83     .COM - 
+022  FORTH   .BLK - 
+022  FORTH80 .BLK - 
+022  MACH80  .BLK - 
+***
+023               -       FORTH 1983 Standard -- Part 2
+023  -KAYFUN .023 - 
+023  META    .BLK - 
+023  PIP     .COM - 
+***
+024               -       KERMIT, RAM Drive, and TTYPE
+024  -KAYFUN .024 - This disk originally BAKUP Volume 24.
+024  DISK-0EX.DOC - A description of the files on this disk.
+024  MKERMIT .COM - Micro end of KERMIT link to CMS or UNIX.
+024  CMS     .DOC - Documentation for CMS/KERMIT.
+024  UNIX    .DOC - Documentation for UNIX/KERMIT.
+024  PW2WS   .COM - Perfect Writer to Wordstar conversion.
+024  PW2WS   .C   - C code for above.
+024  RAMDRIV .ASM - Public domain RAM drive software.
+024  RAMLD   .ASM -   |
+024  RAMDRIV .DOC -   |
+024  RCPM-035.LST - Current list of RCPM access numbers.
+024  TTYPE   .BAS - Touch typing training program - MBASIC.
+024  TTYPE   .DOC - 
+024  TTYPE   .WST - Wordstar version of TTYPE.DOC.
+024  TTKEYBD .DAT - TTYPE data files.  See TTYPE.DOC.
+024  TTHELP0 .DAT -   |
+024  TTHELP1 .DAT -   |
+024  TTHELP2 .DAT -   |
+024  TTHELP3 .DAT -   |
+024  TTHELP4 .DAT -   |
+024  TTHELP5 .DAT -   |
+024  TTYPEXA .DAT -   |
+024  TTYPEXB .DAT -   |
+024  TTYPEXC .DAT -   |
+024  TTYPEXD .DAT -   |
+024  TTYPEXE .DAT -   |
+024  TTYPEXF .DAT -   |
+024  TTYPEXG .DAT -   |
+024  TTYPEXH .DAT -   |
+024  TTYPEXI .DAT -   |
+024  TTYPEXJ .DAT -   |
+***
+025               -       Miscellany II
+025  -KAYFUN .025 - This disk originally BAKUP Volume 25.
+025  DISK-025.DOC - A description of the files on this disk.
+025  /       .COM - An instant submit program from command line.
+025  CHECKBAS.COM - Compares two MBASIC source files.
+025  CHECKBAS.BAS - Source for above.
+025  CHECKBAS.DOC - 
+025  COMHEX  .COM - Converts a .COM file back into .HEX.  Very useful for
+025  COMHEX  .ASM -   transfers without error checking.
+025  COMHEX  .DOC - 
+025  LTYPE   .COM - Program to convert Kaypro into a correcting typewriter.
+025  LTYPE   .C   - C source for above.
+025  PIPPATCH.ASM - Patches PIP to enable disk reset.
+025  HELP    .COM - CP/M HELP utility.  See Volume 21.
+025  MEMCHECK.COM - Extensive memory check utility.
+025  MEMCHEK .HLP - Documentation for above.
+025  READIT  .COM - An improved HEX dump utility.
+025  READIT  .BAS - S-BASIC ource for above.
+025  TX      .COM - Transmit/Receive error checking communications utility.
+025  TX-KPRO .ASM - Source for above, tailored for the KAYPRO. Originally
+025  RX      .COM -   from Dr. Dobb's.
+025  RX-KPRO .ASM -   |
+025  SKEW    .BAS - SBASIC array test.
+025  STRINGS .BAS - SBASIC string array test.
+025  TBUFF   .BAS - SBASIC program to examine CP/M TBUFF.
+025  WASH    .DOC - Documentation for Volume 0's WASH.COM.
+025  ELIZA   .BAS - The famous Therapist program in MBASIC.
+025  GRANPRIX.BAS - Miscellaneous MBASIC games.
+025  HEXAPAWN.BAS -   |
+025  CHECKERS.BAS -   |
+025  CHOMP   .BAS -   |
+025  DSPACE  .BAS -   |
+025  MONOPOLY.BAS -   |
+025  TRAP    .BAS -   |
+025  WEEKDAY .BAS -   |
+***
+026               -       ANIMAL's & Utilities
+026  -KAYFUN .026 - This disk originally BAKUP Volume 26.
+026  DISK-026.DOC - A description of the files on this disk.
+026  ANIMAL  .COM - Steve Willett's SBASIC learning game in source and
+026  ANIMAL  .BAS -  object.  Plays 20 questions-type game.  Learns when it
+026  ANIMAL  .DOC -  loses.
+026  ANIMAL  .FIL - Start-up data file for above.
+026  ANIMALED.COM - Set-up utility for above.
+026  ANIMALED.BAS - Source for above.
+026  KTRADE  .BAS - Blake Hannaford's latest revision of Star Traders.
+026  CP      .COM - Unix-like file copying utility.
+026  CP      .DOC - 
+026  NEWSWEEP.COM - WASH & SWEEP rolled into one and improved.
+026  NEWSWEEP.DOC - 
+026  LISTIT  .COM - Multiple file printing utility.
+026  INDEX101.COM - Document index-creating utility.
+026  INDEX101.DOC - 
+026  INDEX101.C   - C source for above.
+026  PWWS    .COM - Converts files from ASCII to Wordstar.
+026  WSPW    .COM - Converts files from Wordstar to ASCII.
+026  PWWS    .DOC - Documentation for above 2 programs.
+026  MAGE    .COM - Recovers WS text after crashes/power failures.
+026  MAGE    .DOC - 
+026  WORDSTAR.DOC - Good Wordstar command summary.
+026  WSNOTE15.DOC - Short Wordstar command guide.
+026  WSPATCH .TXT - Guide to undocumented WS patch areas.
+026  WS30    .DOC - Fixes WS 3.0 problems.  (Experts only)
+026  WSEPSON .MOD - Patches to run WS better with Epson printers.
+026  WSNEC   .DOC - Same for NEC printers.
+***
+027               -       Gilderfluke & DU-V86
+027  -KAYFUN .027 - This disk originally BAKUP Volume 27.
+027  DISK-027.DOC - A description of the files on this disk.
+027  CAT     .COM - Concatenate, redirect files.
+027  SUBHELP .COM - Creates SUBMIT files with ambiguous file names.
+027  SUBHELP .C   - C language source.
+027  SUB-UNIX.DOC - Info on UNIX-like command line options for CAT, SUBHELP
+027               -   LU, ERASE, CP, and other BDS C programs.
+027  DU-V86  .COM - 1984 version of Disk Utility.  (DU).
+027  DU-V86  .DOC - 
+027  DU-TUTORIAL  - Many files which comprise a fancy, split screen Disk
+027               -   Utility tutorial.
+027  MENU    .COM - Invoke MENU to begin DU tutorial.
+027  GILDERFLUKE  - Several Screen Graphics Adaptor Demo Programs for
+027               -   the H19 terminal.
+027  GREP    .COM - UNIX pattern scanning and processing utility.
+027  GREP    .DOC - Article on above.
+027  LISTOFF .COM - Often better than Ctrl-P for sending everything that
+027  LISTON  .COM -   appears on the screen to printer.
+***
+028               -       Miscellany III
+028  -KAYFUN .028 - This disk originally BAKUP Volume 28.
+028  DISK-028.DOC - A description of the files on this disk.
+028  README  .DOC - A little more info on this disk.
+028  KPMDM729.COM - Recent MODEM 7 with auto dial/redial from list.
+028  M7KP-2  .ASM - Easily change MDM729 default values.
+028  M7NM-6  .ASM - Add phone numbers to MDM729 auto dial list.
+028  MAKESWAP.COM - Creates a new 2 to 256k swap file.  (Any version)
+028  MAKESWAP.C   - Source in C language.
+028  PW      .SWP - 1k swap file used with MAKESWAP to make a 16-256k swap
+028               -   file.
+028  PW-QUIET.COM - Ctrl-G turns off keyboard click and keeps it off.
+028  SDUMP   .COM - Dumps screen to printer.
+028  UPDICT  .CMP - 6,001 word supplementary dictionary for The Word Plus
+028               -   (Too big for the Kaypro II)
+028  PIPATCH1.SUB - Ken Fowler's easy installation of PIPPATCH from Volume
+028  PIPATCH1.ASM -   25.  Allows disk reset while using PIP.
+028  PIPATCH1.DOC - 
+028  BAKUPLIB.TXT - BAKUP library descriptions in database form.
+028  KAY-RCPM.CAT - Catalog of an all-Kaypro remote computer.
+***
+029               -       Disassembly/Utility
+029  -KAYFUN .029 - This disk originally BAKUP Volume 29.
+029  DISK-029.DOC - A description of the files on this disk.
+029  DASM    .COM - A version of RESOURCE (the Christensen disassembler)
+029  DASM    .DOC -   which gives true Zilog mnemonics and other goodies.
+029  FORMAT  .BAS - Asks questions about Perfect Writer style options and
+029  FORMAT  .DOC -   creates file containing style commands.
+029  NSWP205 .COM - A powerful file moving and maintenance utility.  This
+029  NSWP205 .DOC -   version (4/11/84) allows squeezing and unsqueezing
+029  NSWP205 .UPD -   files, including files assembled into libraries.
+029  PRINTER .COM - John Wood's Epson printer initialization program.
+029  PW-RESET.COM - D. Jamieson's drive reset modification for PW - run it!
+029  ROMDUMP .COM - Steve Willett's program to dump an image of ROM to a
+029  ROMDUMP .ASM -   disk file, in source and object.  See DASM-CPM.DOC.
+029  DASM-CPM.DOC - Documentation for CPM and ROMDUMP files on this disk.
+029  CPM     .CTL - Files created by Steve Willett for disassembling CP/M
+029  CPM     .SYM -   with the DASM disassembler.  They are for CP/M 2.2 as
+029  CPM     .DOC -   distributed with the Kaypro 2.
+029  SDUMP   .COM - Ken Fowler's Screen Dump utility.  Send everything on
+029  SDUMP   .DOC -   your screen to the printer.  Works with PW, WS etc.
+***
+030               -       Calculator/Utilities
+030  -KAYFUN .030 - This disk originally BAKUP Volume 30.
+030  DISK-030.DOC - A description of the files on this disk.
+030  CALC    .COM - Emulates an H-P calculator.  Look for improvements.
+030  CALC    .DOC - 
+030  SIMPLE  .CLC - CALC programs.
+030  SUM     .CLC -   |
+030  EQN     .CLC -   |
+030  QUADRAT .CLC -   |
+030  TERM    .COM - CALC config file.  DON'T MESS.
+030  TERM    .DEF - CALC config data.
+030  COLUMNS .COM - For multi-column text formatting.  Works straight-
+030               -   forward with WordStar.  Not as sure about how it
+030               -   works with PW.  Self-documenting.
+030  COLTEST .TXT - Sample text for use with above.
+030  CPMLABEL.BAS - MBASIC label maker from CP/M User's Group.
+030  DEFIN   .TXT - Instructions on using DU-77 to deFIN a FIN file so that
+030  DEFIN   .FIN -   it may be edited.  As announced in PROFILES.
+030  FILTER11.COM - To clean up deFINned text.
+030  FILTER  .FIL - Sample file for FILTER11.
+030  TEXCLEAN.COM - To clean up deFINned text.
+030  DU-V86  .COM - Version 8.2 of DU (8.6?)
+030  DUMPX   .COM - A dump utility that dumps a file in hex and ASCII.
+030  EJECT   .ASM - Source code of program to eject pages.  See also
+030  EJECT   .DOC -   FORMFEED.
+030  FMAP    .COM - File map - If you understand it you'll know how to use
+030               -   it.  (hacker stuff)
+030  FORMFEED.COM - Must be the shortest program in BAKUP library.
+030  FORMFEED.DOC -   (7 bytes)
+030  LABELS  .COM - S. Willett's label maker for BAKUP disks.
+030  LABELS  .BAS - SBASIC source code.
+030  TITLES  .BKP - Data for the LABELS program.
+030  SCRAMBLE.ASM - Scrambles/Unscrambles a file using a password.
+030  SCRAMBLE.DOC -   CAREFUL!
+***
+031               -       REFLIST, PW MENU
+031  -KAYFUN .031 - 
+031  DISK-031.DOC - A description of the files on this disk.
+031  REFLIST .BAS - System to generate references properly formatted for
+031  REFLIST .DOC -   different journals or publications.  Read the DOC
+031  FILEREFS.BAS -   file.
+031  READTEXT.BAS -   |
+031  MASTFILE.    -   |
+031  EXAMPLE .MSS - A sample text to try with the above REFLIST system.
+031  EXAMPLE .REF -   |
+031  PROTOTYP.A&R - 15 prototype reference formats (1k each) for use with
+031     thru      -   the above REFLIST system.
+031  PROTOTYP.VIR -
+031  DB2INFO .DOC - Two documents with information on dBase II and Filer
+031  PFTODBAS.DOC -   and how to convert from PF to dB II.
+031  EX14    .COM - An improved SUBMIT utility.  Much better than SUPERSUB.
+031  EX14    .DOC - 
+031  MENU    .COM - A replacement for the Perfect Writer Menu and an
+031  MENU    .CPR -   expanded Help file for PW which can save a chunk of
+031  PW      .HLP -   space on your PW Edit disk.  Read the DOC file.
+031  SUPERHLP.DOC - 
+031  GENPTS  .BAS - MBASIC programs for use with the Epson MX-80 printer to
+031  MX-PLOT .BAS -   make plots.
+031  LISTT16 .COM - Another quick print utility with pagination.
+031  PW-PROG .DOC - Some suggestions on programming with Perfect Writer.
+031  QK20    .COM - A resident keystroke command system that allows you to
+031               -   redefine and key at any time.  Read DISK-031.DOC.
+031  SBASIC  .IDX - An index for the SBASIC manual!  That's right!
+031  SD-81   .COM - Another version of the Super Directory program.
+031  SD-81   .DOC - 
+031  SDT     .SUB - A SUBMIT file to patch an enhanced version of the
+031  SDT     .DOC -   DDT utility.  Read the DOC file.
+031  WSFAST11.SUB - A SUBMIT file to patch a faster WordStar logon.
+***
+032               -       REFILE, BANNED, Etc.
+032  -KAYFUN .032 - This disk originally BAKUP Volume 32.
+032  DISK-032.DOC - A description of the files on this disk.
+032  BANNED  .BAS - Steve Willett's banner printing program to print two
+032  BANNED  .DOC -   line banners - complete with data files and programs
+032  CHAR3   .BAS -   to modify the font.  MBASIC program  -  read the
+032  CHAR3   .DAT -   DOC file.
+032  ELEMENT3.BAS -   |
+032  ELEMENT3.DAT -   |
+032  CALC    .BAS -   SBASIC source code for Volume 30's CALC program.
+032  COLUMNS .COM -   Pascal source code and expanded version of Volume
+032  COLUMNS .PAS -     30's multi-column formatting program.
+032  DUCK    .BAS -   MBASIC games - DUCK is for later (graphic) Kaypro's
+032  SWORDS  .BAS -     SWORDS is a Swords and Sorcerer type text game
+032  USOPEN  .BAS -     USOPEN is a non-graphic (older KPII) version of
+032               -     this game - all three from Blake Hannaford.
+032  WSMCI   .COM -   Another contribution from Blake H. - this is a
+032  WSMCI   .DOC -     utility to convert WS files to be compatible with
+032               -     MCI mail.
+032  XDIR    .COM -   Another sorted directory utility from Ted De Castro.
+032               -     There's no documentation, but try "XDIR /?" to call
+032               -     up a command summary.
+032  FX-80   .COM -   Yet another Epson selection program - this from
+032  FX-80   .BAS -     Steve Willett in SBASIC with source code.
+032  REFILE  .COM - Steve Willett's Perfect Filer utility which permits
+032  REFILE  .DOC -   uploading data from a properly formatted text file
+032  REFILE  .PAS -   into PF's DATABASE and HASHTAB files.  Comes with
+032  REFILE1 .PAS -   TURBO Pascal code.  Read the DOC file.
+032  FILER   .DOC - Info on PF's structure.
+***
+033               -       LBRDISK, MDM740, Etc.
+033  -KAYFUN .033 - This disk originally BAKUP Volume 33.
+033  DISK-033.DOC - A description of the files on this disk.
+033  -READ   .ME  - More info on contents of this disk.
+033  CREATE  .COM - Utility for creating Libraries and Archives
+033  DB14    .COM - A mailing list and phone directory.  Simple and fast.
+033  KP-DB14 .DOC - 
+033  DATABASE.DAT - Data file for above.
+033  SORT    .COM - Sorts lines in a text or data file on specified field.
+033  SORT    .DOC - Info on using to sort DB14 Database files.
+033  KAYPRO  .DOC - Useful programming info about Kaypro terminal and
+033               -   ports.
+033  KPLBRDSK.COM - Utility to use a library file as a disk drive. C:,D:,??
+033  KPLBRDSK.DOC -   Installed for Kaypro 2,4.  For Kaypro 10 and 84
+033               -   series, see DOC.
+033  SETRSX  .COM - Resident System Extension to use with above.
+033  KPMDM740.COM - Latest, greatest, and last? of the MODEM7 series.
+033  KPMDM740.DOC - 
+033  M7LIB   .COM - Program to change the phone numbers in KPMDM740.COM.
+033  M7LIB   .DOC - 
+033  MFDISK  .DOC - Public domain disk format conversion programs.
+033  MFDISK2 .COM -   for Kaypro 2
+033  MFDISK4 .COM -   for Kaypro 4.  Version for Kaypro 10 also available.
+***
+034               -       Investors and Miscellaneous
+034  -KAYFUN .034 - This disk originally BAKUP Volume 34.
+034  DISK-034.DOC - A description of the files on this disk.
+034  BOND    .BAS - This group of programs comes from the American
+034  BUDGET  .BAS -   Association of Individual Investors (from Michael
+034  DURATION.BAS -   Weiss).  They are MBASIC programs which were donated
+034  DURATION.DOC -   to CP/M groups around the country by members of AAII.
+034  FINPAK  .BAS -   In addition to the DOC files, check the source code
+034  GAF     .BAS -   for comments.
+034  GAF     .DOC -   |
+034  OPTFUT  .BAS -   |
+034  SHARPMOD.BAS -   |
+034  SHARPMOD.DOC -   |
+034  STATS   .BAS -   |
+034  STKOPT  .BAS -   |
+034  TBILL   .BAS -   |
+034  CHGCHAR .COM - Changes every occurrence of a character in a file to a
+034  CHGCHAR .DOC -   specified character.
+034  CRC50   .COM - Tests the accuracy of copied or transmitted files.
+034  CRC50   .DOC - 
+034  DUALPORT.COM - Software and instructions for connecting Kaypros
+034  DUALPORT.DOC -   together to demonstrate software.
+034  FILE/A-B.COM - Programs to locate files on multi-drive systems.
+034  FILE/A-C.COM -   |
+034  FILE/A-X.DOC -   |
+034  FOOTNOTE.COM - Utility to merge footnotes into a WS document.
+034  FOOTNOTE.DOC - 
+034  GRAPHICS.BAS - SBASIC routines to utilize primitive character graphics
+034  GRAPHICS.DOC -   on KP2 and pixels on KP10.
+034  OUTLINE .COM - Utility to generate an outline of a document.
+034  OUTLINE .DOC - 
+034  RECVER21.COM - This utility will attempt to recover the erased files
+034  RECVER21.DOC -   on a disk.
+034  REFILE20.COM - Version 2.0 of the Perfect Filer utility which was on
+034  REFILE20.DOC -   volume 32.  This allows use of sort images.
+034  RENAME1 .COM - Mass file renaming utility.
+034  RENAME2 .COM - RENAME2 works with named directories.
+034  WORDS   .COM - Creates a list of words from a file or from console.
+034  WORDS   .DOC -   One word per line.
+***
+035               -       Kaypro 10 Utilities
+035  -KAYFUN .035 - 
+035  DISK-035.DOC - 
+035  CRC     .COM - Tests the accuracy of transmitted or copied files.
+035  CRC     .DOC - 
+035  CRCKLIST.CRC - CRC list for this disk.  Used by above.
+035  NSWP205 .COM - Volume 29's file maintenance utility.  Use it at least
+035  NSWP205 .DOC -   for unsqueezing the squeezed files on this Volume.
+035  NSWP205 .UPD -   Read the DOC and UPD files.
+035  NULU    .COM - A library handling utility.  Use it to extract files
+035  NULU    .DQC -   from the 2 libraries below.  Read the DQC file with
+035               -   NSWP205.
+035  KP10UTIL.LBR - A library of Kaypro 10 utilities.
+035  ZCPRKP10.LBR - A library for installing ZCPR2 on the 10.
+***
+036               -       Word Processing Utilities
+036  -KAYFUN .036 - This disk originally BAKUP Volume 36.
+036  DISK-036.DOC - A description of the files on this disk.
+036  APPEND  .COM - A utility which appends one text file to the end of
+036  APPEND  .DOC -   another without resorting to your word processor.
+036  ENDNOTE .COM - Two slightly different versions of a program which
+036  ENDNOTEB.COM -   allows you to create end notes in Perfect Writer of
+036  ENDNOTE .DOC -   indefinite length.  Read the .DOC.
+036  ENSOFT2 .COM - Both of these programs convert Wordstar files to ASCII
+036  ENSOFT2 .DOC -   and vice-versa.  They are fairly sophisticated in
+036  UNSOFT  .COM -   their judgement.
+036  UNSOFT  .DOC - 
+036  FIND    .COM - Searches 1 or more files on a disk for a given string
+036  FIND    .DOC -   without resorting to your word processor.
+036  PR2300  .BAS - MBASIC program for configuring Olivetti PR2300 printer.
+036  PR2300  .DOC - 
+036  RX80    .BAS - MBASIC program for configuring Epson RX-80 printer.
+036  RX80    .DOC - 
+036  SAME    .COM - Compares two files on different disks to see if they
+036  SAME    .DOC -   are the same.
+036  SPLITTER.COM - Allows you to split a large file into smaller pieces.
+036  SPLITTER.DOC - 
+036  TRAVESTY.COM - Takes a sample of text (two are included for you to
+036  TRAVESTY.DOC -   play with) and creates scrambled text which almost
+036  MOBY    .    -   seems to make sense.
+036  SMITHY  .    - 
+036  TYPER   .COM - This is a typewriter emulator program to make your
+036  TYPER   .DOC -   Kaypro/printer combination act like a typewriter.
+036  TYPER   .C   - C source for above.
+036  VDO     .COM - A fast full-screen non-document editor that uses a
+036  VDO23   .DOC -   subset of Wordstar commands.
+036  WEEKDAY .COM - Calculates the day of the week given a date.  Requires
+036               -   uppercase input.
+036  CRC     .COM - Verifies the accuracy of a copy of this disk.
+036  CRC     .DOC - 
+036  CRCKLIST.CRC - CRC list for this disk.  Used by above.
+***
+037               -       Bakup News, PATCH16
+037  -KAYFUN .037 - This disk originally BAKUP Volume 37.
+037  DISK-037.DOC - A description of the files on this disk.
+037  83-AT   .IDX - Indexes for BAKUP NEWS - 1983 and 84.  By author and
+037  83-SUB  .IDX -   subject.
+037  84-AT   .IDX - 
+037  84-SUB  .IDX - 
+037  83/4-IDX.DOC - 
+037  FIX     .COM - A verbose disk editor.  Different from DU.
+037  FIX     .DOC - 
+037  GOTHIC  .COM - Prints a banner in gothic letters on your printer.
+037               -   Requires 132 character lines.
+037  I/O-CAP .COM - Captures console input/output and saves it in a file
+037  I/O-CAP .DOC -   called USER.LOG.
+037  PATCH   .COM - A full screen disk and memory editor.  This
+037  PATCH   .DOC -   version is set up for the old Kaypros.  If you have
+037  PATCH   .DTA -   something else run the PATCHINS program first.  This
+037  PATCH   .INS -   is a neat program.
+037  PATCH16 .MOD - 
+037  PATCHINS.BUG - 
+037  PATCHINS.COM - 
+037  QK20    .COM - A resident keystroke command system that allows you to
+037  QK20    .DOC -   redefine any key at any time.  Read the .DOC file and
+037               -   take note of the warnings on incompatibility.
+037  ROI     .BAS - Another investor's MBASIC program.  (See Volume 34).
+037  ROMNUM  .COM - Converts between decimal and Roman numerals.
+037  CRC     .COM - Verifies the accuracy of a copy of this disk.
+037  CRC     .DOC - 
+037  CRCKLIST.CRC - CRC list for this disk.  Used by above.
+***
+038               -       Deskmaster & Utilities
+038  -KAYFUN .038 - This disk originally BAKUP Volume 38.
+038  DISK-038.DOC - A description of the files on this disk.
+038  CERTIFY .COM - A menu driven disk utility to test for bad sectors on a
+038  CERTIFY .DOC -   disk.  Has some features of both FINDBAD and DU.
+038  DESK-DM .BAS - These programs make up an integrated "desk top manager"
+038  CALC-DM .BAS -   in MBASIC which includes an appointment calendar, a
+038  DDISK-DM.BAS -   memo pad, and a calculator.  You need MBASIC to run
+038  INIT-DM .BAS -   this program.
+038  IDENT   .BAS - 
+038  COMMENT .DOC - Documentation for above.
+038  DU-V89  .COM - A powerful, useful disk editor.
+038  DU-V87  .DOC - 
+038  FBAD59  .COM - Tests for and locks out bad sectors on a disk.
+038  FBAD59  .DOC - 
+038  FILE21  .COM - Searches your disks for a specified file.  Useful for
+038  FILE21  .DOC -   Kaypros with a lot of disk capacity.
+038  FIND51  .COM - Searches 1 or more files on a disk for a given string
+038  FIND51  .DOC -   so that you don't have to resort to a word processor.
+038  FLYKPRO .COM - A flight simulator program, especially for newer
+038               -   Kaypros.
+038  N30     .COM - Allows the evaluation of numerical and logical
+038  N30     .DOC -   expressions.  Read the DOC.
+038  NSWP207 .COM - A powerful file moving and maintenance utility.
+038  NSWP207V.COM - A version of the above program that uses some of the
+038  NSWP207 .DOC -   video capabilities of the newer Kaypros.
+038  SAP42   .COM - Sorts and packs a disk directory.
+038  SAP40   .DOC - 
+038  SD98    .COM - Produces a detailed, sorted directory with file sizes.
+038  SD98    .DOC - 
+038  UNERA30 .COM - Unerases accidentally erased files.  Read the DOC.
+038  UNERA30 .DOC - 
+038  CRC     .COM - Verifies the accuracy of a copy of this disk.
+038  CRC     .DOC - 
+038  CRCKLIST.CRC - CRC list for this disk.  Used by above.
+***
+

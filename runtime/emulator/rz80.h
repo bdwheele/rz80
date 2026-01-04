@@ -6,12 +6,12 @@
 #include "../z80ex-1.1.21/include/z80ex.h"
 #include "../z80ex-1.1.21/include/z80ex_dasm.h"
 
-
 #ifndef __RZ80_H
 
 
 struct state {
-    int trace;
+    int trace_instruction;
+    int trace_port;
     int halted;
     FILE *log;
     Z80EX_CONTEXT *cpu;
@@ -26,11 +26,11 @@ struct state {
     uint16_t fbase;
     uint16_t bbase;
     uint16_t dpbase;
-    //FILE *disk[3];
     char *disk_names[3];
     int disk_fd[3];
     struct termios *old_settings;
     struct termios *new_settings;
+    long throttle;
 };
 
 /* RAM and ROM*/
@@ -43,11 +43,15 @@ void load_rom(struct state *state, char *filename);
 
 
 /* DEBUGGING */
-#define debug(fmt, ...) fprintf(state->log, fmt, ##__VA_ARGS__) 
+#define debug(fmt, ...) if(state->log) fprintf(state->log, fmt, ##__VA_ARGS__)
+#define error(fmt, ...) fprintf(stderr, "ERROR: " fmt, ##__VA_ARGS__) 
+#define info(fmt, ...) fprintf(stderr, "INFO: " fmt, ##__VA_ARGS__)
+#define warning(fmt, ...) fprintf(stderr, "WARNING: " fmt, ##__VA_ARGS__)
 Z80EX_BYTE debug_mem_read(Z80EX_WORD addr, void *user_data);
 void trace(struct state *state, uint16_t addr);
 
 /* Disk */
+void disk_init(struct state *state);
 int lba_from_dts(struct state *state);
 int disk_read(struct state *state);
 int disk_write(struct state *state);
@@ -78,6 +82,9 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
 /* Terminal */
 void terminal_setup(struct state *state);
 void terminal_restore(struct state *state);
+Z80EX_BYTE terminal_status(struct state *state);
+Z80EX_BYTE terminal_read(struct state *state);
+void terminal_write(struct state *state, char c);
 
 
 
