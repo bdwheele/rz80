@@ -64,7 +64,7 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
         case 9:
             // select disk
             int dsk = getC();
-            if(dsk < 0 || dsk > 2) {
+            if(dsk < 0 || dsk > 2 || state->disk[dsk].type == DISK_NONE) {
                 setHL(0);
             } else {
                 state->drive = dsk;

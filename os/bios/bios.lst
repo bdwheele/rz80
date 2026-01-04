@@ -250,39 +250,40 @@
  187:     -	8000'         	HD32M_SIZE = 32*1024             ; kB; this is the *maximum* size
  188:     -	0800'         	HD32M_BLOCKS = HD32M_SIZE / 16 ; 16kB blocks, no reserved tracks
  189:     -	00E3'         	hd32m:
- 190:     -	00E3' 0004    	    dw 256*4        ; Number of CP/M sectors per track
- 191:     -	00E5' 077F    	    db 7, 127       ; BSH/BLM for 16384-byte blocks
- 192:     -	00E7' 07      	    db 7            ; EXM for 16384-byte allocation units and >255 blocks
- 193:     -	00E8' FF07    	    dw HD32M_BLOCKS-1 ; DSM
- 194:     -	00EA' FF01    	    dw 511          ; DRM, one fewer than the number of directory entries
- 195:     -	00EC' 8000    	    db 0x80, 0x00   ; Initial allocation vector for one directory block
- 196:     -	00EE' 0000    	    dw 0            ; Size of disk change check vector: zero as this is a fixed disk
- 197:     -	00F0' 0000    	    dw 0            ; Number of reserved tracks
- 198:				
- 199:				; Drive Bitmaps
- 200:     -	00F2'         	drive_a_bitmap:  ds (FD1440_BLOCKS+7) / 8
- 201:     -	014C'         	drive_b_bitmap:  ds (FD1440_BLOCKS+7) / 8
- 202:     -	01A6'         	drive_c_bitmap:  ds (HD32M_BLOCKS+7) / 8
- 203:				
- 204:				; Drive Check Vectors
- 205:     -	02A6'         	drive_a_check_vector: ds 32
- 206:     -	02C6'         	drive_b_check_vector: ds 32
- 207:				
- 208:     -	02E6'         	dirbuf: ds 128  ; BDOS scratch directory
- 209:				
- 210:     -	0366' 525A3830	welcome: db "RZ80 BIOS 1.0", 10, 13, 0
+ 190:				    ;dw 256*4        ; Number of CP/M sectors per track
+ 191:     -	00E3' 2000    	    dw 32           ; Number of CP/M sectors per track
+ 192:     -	00E5' 077F    	    db 7, 127       ; BSH/BLM for 16384-byte blocks
+ 193:     -	00E7' 07      	    db 7            ; EXM for 16384-byte allocation units and >255 blocks
+ 194:     -	00E8' FF07    	    dw HD32M_BLOCKS-1 ; DSM
+ 195:     -	00EA' FF01    	    dw 511          ; DRM, one fewer than the number of directory entries
+ 196:     -	00EC' 8000    	    db 0x80, 0x00   ; Initial allocation vector for one directory block
+ 197:     -	00EE' 0000    	    dw 0            ; Size of disk change check vector: zero as this is a fixed disk
+ 198:     -	00F0' 0000    	    dw 0            ; Number of reserved tracks
+ 199:				
+ 200:				; Drive Bitmaps
+ 201:     -	00F2'         	drive_a_bitmap:  ds (FD1440_BLOCKS+7) / 8
+ 202:     -	014C'         	drive_b_bitmap:  ds (FD1440_BLOCKS+7) / 8
+ 203:     -	01A6'         	drive_c_bitmap:  ds (HD32M_BLOCKS+7) / 8
+ 204:				
+ 205:				; Drive Check Vectors
+ 206:     -	02A6'         	drive_a_check_vector: ds 32
+ 207:     -	02C6'         	drive_b_check_vector: ds 32
+ 208:				
+ 209:     -	02E6'         	dirbuf: ds 128  ; BDOS scratch directory
+ 210:				
+ 211:     -	0366' 525A3830	welcome: db "RZ80 BIOS 1.0", 10, 13, 0
 	              2042494F
 	              5320312E
 	              300A0D00
- 211:				
- 212:     -	0376'         	end:    
- 213:     -	0376' 0000    	        dw CBASE
- 214:     -	0378' 0000    	        dw FBASE
- 215:     -	037A' 0000    	        dw BBASE
- 216:     -	037C' A400    	        dw DPBASE
- 217:				    public sig
- 218:     -	037E' AA55    	sig:    dw  0x55aa
- 219:				
+ 212:				
+ 213:     -	0376'         	end:    
+ 214:     -	0376' 0000    	        dw CBASE
+ 215:     -	0378' 0000    	        dw FBASE
+ 216:     -	037A' 0000    	        dw BBASE
+ 217:     -	037C' A400    	        dw DPBASE
+ 218:				    public sig
+ 219:     -	037E' AA55    	sig:    dw  0x55aa
+ 220:				
 
 
 

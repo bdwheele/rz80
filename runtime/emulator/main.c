@@ -8,11 +8,14 @@ extern char *optarg;
 int main(int argc, char *argv[]) {
     // set up the default system state
     struct state *state = calloc(1, sizeof(struct state));
-    state->disk_names[0] = "disk_a.img";
-    state->disk_names[1] = "disk_b.img";
-    state->disk_names[2] = "disk_c.img";
+    state->disk[0].name = "disk_a.img";
+    state->disk[0].type = DISK_FLOPPY;
+    state->disk[1].name = "disk_b.img";
+    state->disk[1].type = DISK_NONE;
+    state->disk[2].name = "disk_c.img";
+    state->disk[2].type = DISK_FIXED;
     for(int i=0; i < 3; i++) {
-        state->disk_fd[i] = -1;
+        state->disk[i].fd = -1;
     }    
     
     // parse arguments
@@ -42,15 +45,16 @@ int main(int argc, char *argv[]) {
                 break;
             case 'a':
                 info("Using %s for drive a\n", optarg);
-                state->disk_names[0] = optarg;
+                state->disk[0].name = optarg;
                 break;
             case 'b':
                 info("Using %s for drive b\n", optarg);
-                state->disk_names[1] = optarg;
+                state->disk[1].name = optarg;
+                state->disk[1].type = DISK_FLOPPY;
                 break;
             case 'c':
                 info("Using %s for drive c\n", optarg);
-                state->disk_names[2] = optarg;
+                state->disk[2].name = optarg;
                 break;
             case 'T':
                 state->throttle = strtol(optarg, NULL, 10);

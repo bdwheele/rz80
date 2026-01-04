@@ -8,6 +8,9 @@
 
 #ifndef __RZ80_H
 
+#define DISK_NONE 0
+#define DISK_FLOPPY 1
+#define DISK_FIXED 2
 
 struct state {
     int trace_instruction;
@@ -26,8 +29,15 @@ struct state {
     uint16_t fbase;
     uint16_t bbase;
     uint16_t dpbase;
-    char *disk_names[3];
-    int disk_fd[3];
+    struct {
+        char *name;
+        int fd;
+        int track;
+        int motor;
+        int type;
+    } disk[3];
+    //char *disk_names[3];
+    //int disk_fd[3];
     struct termios *old_settings;
     struct termios *new_settings;
     long throttle;
@@ -86,6 +96,8 @@ Z80EX_BYTE terminal_status(struct state *state);
 Z80EX_BYTE terminal_read(struct state *state);
 void terminal_write(struct state *state, char c);
 
+/* Utils */
+void msleep(int millis);
 
 
 #define __RZ80_H

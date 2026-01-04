@@ -13,19 +13,31 @@ int lba_from_dts(struct state *state) {
 #define READ 1
 #define WRITE 2
 
-#define fail(x) {setA(x); state->disk_fd[state->drive] = -1; return -1; }
+#define fail(x) {setA(x); state->disk[state->drive].fd = -1; return -1; }
 
 
 int disk_op(struct state *state, int operation) {
-    int fd = state->disk_fd[state->drive];
+    int fd = state->disk[state->drive].fd;
     if(fd < 0) {
         // something has happened and we need (re)open the disk
-        fd = open(state->disk_names[state->drive], O_RDWR | O_SYNC);
+        fd = open(state->disk[state->drive].name, O_RDWR | O_SYNC);
         if(fd < 0) {
             fail(1);
         }
-        state->disk_fd[state->drive] = fd;
+        state->disk[state->drive].fd = fd;
     }
+
+    if(state->disk[state->drive].type == DISK_FLOPPY) {
+        // if we're changing tracks we'll end up with a head settle time
+        if(state->track != state->disk[state->drive].track) {
+            msleep(15);
+        }
+        // Fake the track seek time. Teac FD-235 has a 3ms track-to-track seek.
+        msleep(3 * abs(state->track - state->disk[state->drive].track));
+        state->disk[state->drive].track = state->track;
+    
+    }
+
     if(lseek(fd, lba_from_dts(state) * 128, SEEK_SET) < 0) {
         // the seek failed.  blech.
         fail(1);
