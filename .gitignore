@@ -7,6 +7,8 @@ disks/
 *.rom
 *.log
 runtime/hardware/cache/*
+runtime/hardware/*.img
+
 
 # Prerequisites
 *.d
