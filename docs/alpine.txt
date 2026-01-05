@@ -1,0 +1,20 @@
+Setting up Alpine Linux for raspberry pi zero...
+
+Modify cmdline.txt so the console is ttyS0
+Add usercfg.txt with this content:
+    enable_uart=1
+
+Root user with no password
+
+UART adapter is connected to the GPIO pins.
+
+It looks like one can set the kernel command line init to the emulator and It
+should do what we want.  It would likely be wise to start a shell on tty2
+
+Also, it looks like the disk image is pretty straightforward -- partition 1 is
+a fat filesystem that's got all of the bits we need that's put into a memory 
+filesystem.  
+
+We need to build an APK for the emulator
+
+We can put the CP/M hard disk onto a separate partition for persistence.
