@@ -18,3 +18,9 @@ filesystem.
 We need to build an APK for the emulator
 
 We can put the CP/M hard disk onto a separate partition for persistence.
+
+The tarball for alpine can be found at https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/armhf/alpine-rpi-3.23.2-armhf.tar.gz
+
+
+https://pkgs.alpinelinux.org/package/v3.23/main/armhf/musl-dev
+https://dl-cdn.alpinelinux.org/alpine/v3.23/main/armhf/musl-dev-1.2.5-r21.apk

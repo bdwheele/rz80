@@ -6,7 +6,7 @@ bin/zmac
 disks/
 *.rom
 *.log
-
+runtime/hardware/cache/*
 
 # Prerequisites
 *.d

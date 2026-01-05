@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <malloc.h>
 #include <termios.h>
-#include "../z80ex-1.1.21/include/z80ex.h"
-#include "../z80ex-1.1.21/include/z80ex_dasm.h"
+#include "z80ex.h"
+#include "z80ex_dasm.h"
 
 #ifndef __RZ80_H
 

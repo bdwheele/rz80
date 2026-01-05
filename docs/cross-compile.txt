@@ -1,0 +1,27 @@
+Notes on cross compiling to Alpine on a Raspberry PI 0
+
+
+Host system: Fedora 43
+
+Install:
+* gcc-arm-linux-gnu-15.2.1
+
+
+Compilation flags:
+-march=armv6zk -mcpu=arm1176jzf-s -mfloat-abi=hard -mfpu=vfp
+
+Alpine uses musl as it's libc, but truth be told we are creating a static binary
+so ANY libc should do the trick.
+
+
+It looks like the port is "armhf"
+
+
+arm-linux-gnu-gcc -c -march=armv6zk -mcpu=arm1176jzf-s -mfloat-abi=hard -mfpu=vfp -I ~/projects/rz80/runtime/z80ex-1.1.21/include -I usr/include -I ~/projects/rz80/runtime/z80ex-1.1.21/ -DZ80EX_VERSION_MAJOR=1 -DZ80EX_VERSION_MINOR=21 -DZ80EX_API_REVISION=1 ~/projects/rz80/runtime/z80ex-1.1.21/z80ex*.c
+
+arm-linux-gnu-gcc -c -march=armv6zk -mcpu=arm1176jzf-s -mfloat-abi=hard -mfpu=vfp -I ~/projects/rz80/runtime/z80ex-1.1.21/include -I usr/include   ~/projects/rz80/runtime/emulator/*.c
+
+# missing crt1.o, crti.o
+arm-linux-gnu-gcc -static -o emulator *.o -L usr/lib/
+
+arm-linux-gnu-gcc --sysroot=`pwd` -L usr/lib/  -static -o emulator *.o 
