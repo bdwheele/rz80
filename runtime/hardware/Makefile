@@ -1,7 +1,8 @@
 .PHONY: all clean
 
 Z80EX=../z80ex-1.1.21
-ARCH_ARGS=-march=armv6zk -mcpu=arm1176jzf-s -mfloat-abi=hard -mfpu=vfp
+#ARCH_ARGS=-march=armv6zk -mcpu=arm1176jzf-s -mfloat-abi=hard -mfpu=vfp
+ARCH_ARGS=-march=armv6  -mfloat-abi=hard -mfpu=vfp
 EM_SOURCE=../emulator
 
 all:
