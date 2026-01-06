@@ -8,6 +8,10 @@ disks/
 *.log
 runtime/hardware/cache/*
 runtime/hardware/*.img
+runtime/emulator/emulator
+runtime/emulator/disk_a.img
+runtime/emulator/disk_b.img
+runtime/emulator/disk_c.img
 
 
 # Prerequisites
