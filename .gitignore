@@ -1,6 +1,7 @@
 # output
 bin/ld80
 bin/zmac
+bin/cross-pi-gcc-14.2.0-0/
 *.rel
 *.cim
 disks/
@@ -12,7 +13,6 @@ runtime/emulator/emulator
 runtime/emulator/disk_a.img
 runtime/emulator/disk_b.img
 runtime/emulator/disk_c.img
-
 
 # Prerequisites
 *.d

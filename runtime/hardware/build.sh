@@ -12,23 +12,29 @@ for n in https://dl-cdn.alpinelinux.org/alpine/v3.23/main/armhf/musl-dev-1.2.5-r
     fi
 done
 
-# unpack the musl dev environment
-tar -C sysroot -xf musl-dev-1.2.5-r21.apk 2>&1 | grep -v APK-TOOLS
+# unpack the musl dev environment if necessary
+if [ ! -e sysroot/success ]; then
+    (tar -C sysroot -xf musl-dev-1.2.5-r21.apk 2>&1 | grep -v APK-TOOLS) && \
+        touch sysroot/success
+fi
 
 # build the emulator
+PATH=../../../bin/cross-pi-gcc-14.2.0-0/bin:$PATH
 Z80EX=../../z80ex-1.1.21
-#ARCH_ARGS=-march=armv6zk -mcpu=arm1176jzf-s -mfloat-abi=hard -mfpu=vfp
-ARCH_ARGS="-march=armv6  -mfloat-abi=hard -mfpu=vfp"
 EM_SOURCE=../../emulator
+ARCH_ARGS="-mmusl -marm -mcpu=arm1176jzf-s -mfloat-abi=hard -mfpu=vfp"
 
-arm-linux-gnu-gcc --sysroot=sysroot -static -o emulator-arm \
+arm-linux-gnueabihf-gcc --sysroot=sysroot -static -o emulator-arm \
     $ARCH_ARGS \
     -I $Z80EX -I $Z80EX/include -I $EM_SOURCE \
-    -DWORDS_LITTLE_ENDIAN -DZ80EX_VERSION_STR=1.1.21 -DZ80EX_API_REVISION=1 -DZ80EX_VERSION_MAJOR=1 -DZ80EX_VERSION_MINOR=1 \
+    -DWORDS_LITTLE_ENDIAN -DZ80EX_VERSION_STR=1.1.21 -DZ80EX_API_REVISION=1 \
+    -DZ80EX_VERSION_MAJOR=1 -DZ80EX_VERSION_MINOR=1 \
     $Z80EX/z80ex*.c $EM_SOURCE/*.c \
 
 # unpack the alpine distro
-tar -C alpine -xf alpine-rpi-3.23.2-armhf.tar.gz
+if [ ! -e alpine/success ]; then 
+    tar -C alpine -xf alpine-rpi-3.23.2-armhf.tar.gz && touch alpine/success
+fi
 
 # patch the distro
 cp ../cmdline.txt ../usercfg.txt alpine
