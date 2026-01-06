@@ -34,7 +34,7 @@ int block_op(struct state *state, int operation, int drive, int lbn) {
         // something has happened and we need (re)open the disk
         fd = open(state->disk[drive].name, (operation == WRITE? O_RDWR : O_RDONLY) | O_SYNC);
         if(fd < 0) {
-            fail(1);
+            fail(operation == WRITE? 2 : 1);
         }
         state->disk[drive].mode = operation == WRITE?  DISK_MODE_WRITE : DISK_MODE_READ;
         state->disk[drive].fd = fd;
