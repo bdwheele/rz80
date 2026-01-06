@@ -5,7 +5,7 @@
 
 #define READ 1
 #define WRITE 2
-#define fail(x) {state->disk[state->drive].fd = -1; return x; }
+#define fail(x) {close(state->disk[state->drive].fd); state->disk[state->drive].fd = -1; return x; }
 
 
 void disk_reset(struct state *state) {
@@ -23,12 +23,20 @@ int llbn_from_dts(struct state *state) {
 
 int block_op(struct state *state, int operation, int drive, int lbn) {    
     int fd = state->disk[drive].fd;
+    if(state->disk[drive].mode == DISK_MODE_READ && operation == WRITE) {
+        // the disk was open for reading but we need to write.  Close the
+        // current handle so it can be reopened r/w
+        close(state->disk[drive].fd);
+        fd = -1;
+    }
+    
     if(fd < 0) {
         // something has happened and we need (re)open the disk
-        fd = open(state->disk[drive].name, O_RDWR | O_SYNC);
+        fd = open(state->disk[drive].name, (operation == WRITE? O_RDWR : O_RDONLY) | O_SYNC);
         if(fd < 0) {
             fail(1);
         }
+        state->disk[drive].mode = operation == WRITE?  DISK_MODE_WRITE : DISK_MODE_READ;
         state->disk[drive].fd = fd;
     }
     if(lseek(fd, lbn * 512, SEEK_SET) < 0) {

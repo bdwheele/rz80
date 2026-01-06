@@ -13,6 +13,8 @@
 #define DISK_FIXED 2
 #define DISK_IMAGE 0
 #define DISK_PHYSICAL 1
+#define DISK_MODE_READ 0
+#define DISK_MODE_WRITE 1
 
 struct state {
     int trace_instruction;
@@ -32,6 +34,7 @@ struct state {
     uint16_t bbase;
     uint16_t dpbase;
     struct {
+        int mode;
         char *name;
         int fd;
         int track;
