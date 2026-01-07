@@ -1,0 +1,54 @@
+.op
+                         ASCWM and WMASC
+
+Microsoft's Basic-80 language provides a facility for breaking up 
+a  logicial  line of source code into several physical  lines  by 
+using  line-feed or ^J.   This inserts a LFCR (line-feed/carrige-
+return)  sequence  into the file as opposed to  the  normal  CRLF 
+sequence used to end a statement (and ASCII records).
+
+Using  line-feeds  and tabs one can code BASIC programs that  are 
+more pleasing to read,  easier to debug and more self-documenting 
+then  by simply allowing the program lines to 'wrap' around  from 
+the right side of the screen to the left side.
+
+Example -
+
+100 IF NUMBER%=VALUE%
+          THEN VALUE%=NEXT.NUMBER% :GOTO 1234
+          ELSE IF NUMBER%=OTHER.NUMBER%
+                    THEN VALUE%=0
+                    ELSE GOTO 5678           'Check values
+
+The  problem with using this technique is that most printers  and 
+full-screen  video  editors  cannot  handle  the  LFCR   sequence 
+correctly.   BPSXREF  solves  the  printer problem  and  provides 
+facilities for further formatting of the program listing.
+
+Included  with  BPSXREF are two utilities that can be of  use  in 
+conjunction  with  a full-screen editor (such  as  WordMaster  or 
+MINCE).
+
+The program ASCWM simply replaces all occurences of LFCR with the 
+backslash  (\) character and a CRLF sequence.   Input is expected 
+to  be a BASIC ASCII file with an extension of '.ASC' as  created 
+by  the BASIC-80 interpreter SAVE command using the  'A'  option.  
+
+E.G.   SAVE "PROGNAME.ASC",A
+
+This is the format required by Microsoft's BASIC compiler BASCOM.  
+ASCWM will output a new file with an extension of '.WM'.  Editors 
+will  have no problems with this file.   Use a backslash and  the 
+return  key (\CR) instead of the line-feed key when editing these 
+files.
+
+WMASC  reverses  the process and replaces all backslash (\)  CRLF 
+sequences  with a LFCR sequence.   The input file is expected  to 
+have  an  extension  of '.WM' and the output file  will  have  an 
+extension of '.ASC'.   Incidentally WMASC can be used to help  in 
+the  conversion  of  CBASIC2 programs to BASIC-80 as  the  CBASIC 
+language uses the backslash(\) to split logical lines.
+
+These programs are not copyrighted.   Also, backslash is produced 
+by ^9 (cntrl-9) on the TRS-80 Model II.
+

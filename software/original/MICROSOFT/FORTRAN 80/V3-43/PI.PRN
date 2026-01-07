@@ -1,0 +1,337 @@
+FORTRAN-80 Ver. 3.43 Copyright 1978-1981 (C) By Microsoft -- Bytes: 31352
+Created: 26-Jun-81
+00100		DOUBLE PRECISION PILOW,SLNGTH,PIUP,FACT
+00200		DOUBLE PRECISION K,SIDES,SUM,SSQ,TERM,TEMP
+00300		BYTE ITU(80)
+00400	
+00500	
+00600		CALL OPEN (6,'RFILE   DAT',0)
+*****	0000'	LXI	B,$$L
+*****	0003'	JMP	$INIT
+00700	
+00800		WRITE(6,198,REC=1)
+*****	0006'	LXI	B,[00 00 00 00]
+*****	0009'	LXI	D,H:0001
+*****	000C'	LXI	H,[06 00 00 00]
+*****	000F'	CALL	OPEN
+*****	0012'	LXI	B,00AC"
+*****	0015'	LXI	D,198L
+*****	0018'	LXI	H,[06 00 00 00]
+*****	001B'	CALL	$W5
+00900	198	FORMAT(10X,' BOUNDS ON PI - DOUBLE PRECISION BINOMIAL THEOREM',
+*****	001E'	CALL	$ND
+01000	     1  ' VERSION.')
+01100		WRITE(6,199,REC=2)
+*****	0021'	LXI	B,00F7"
+*****	0024'	LXI	D,199L
+*****	0027'	LXI	H,[06 00 00 00]
+*****	002A'	CALL	$W5
+01200	199	FORMAT('   N     SIDES    SIDE LENGTH   PI - LOWER BOUND',
+*****	002D'	CALL	$ND
+01300	     1  '   PI - UPPER BOUND')
+01400		SIDES=4.0
+01500		SUM=2.0
+01600		N=3
+01700	1	SIDES=2.0*SIDES
+*****	0030'	LXI	H,[00 00 00 83]
+*****	0033'	CALL	$L1
+*****	0036'	CALL	$CK
+*****	0039'	LXI	H,SIDES
+*****	003C'	CALL	$T3
+*****	003F'	LXI	H,[00 00 00 82]
+*****	0042'	CALL	$L1
+*****	0045'	CALL	$CK
+*****	0048'	LXI	H,SUM
+*****	004B'	CALL	$T3
+*****	004E'	LXI	H,0003
+*****	0051'	SHLD	N
+01800		SSQ=SUM
+01900		SUM=0.0
+02000		TERM=.25*SSQ
+02100		K=1
+02200	2	TEMP=TERM+SUM
+*****	0054'	LXI	H,[00 00 00 82]
+*****	0057'	CALL	$L1
+*****	005A'	CALL	$CK
+*****	005D'	LXI	H,SIDES
+*****	0060'	CALL	$MU
+*****	0063'	LXI	H,SIDES
+*****	0066'	CALL	$T3
+*****	0069'	LXI	H,SUM
+*****	006C'	CALL	$L3
+*****	006F'	LXI	H,SSQ
+*****	0072'	CALL	$T3
+*****	0075'	LXI	H,[00 00 00 00]
+*****	0078'	CALL	$L1
+*****	007B'	CALL	$CK
+*****	007E'	LXI	H,SUM
+*****	0081'	CALL	$T3
+*****	0084'	LXI	H,[00 00 00 7F]
+*****	0087'	CALL	$L1
+*****	008A'	CALL	$CK
+*****	008D'	LXI	H,SSQ
+*****	0090'	CALL	$MU
+*****	0093'	LXI	H,TERM
+*****	0096'	CALL	$T3
+*****	0099'	LXI	H,0001
+*****	009C'	CALL	$CC
+*****	009F'	LXI	H,K
+*****	00A2'	CALL	$T3
+02300		IF(TEMP.LE.SUM) GOTO 4
+*****	00A5'	LXI	H,TERM
+*****	00A8'	CALL	$L3
+*****	00AB'	LXI	H,SUM
+*****	00AE'	CALL	$AU
+*****	00B1'	LXI	H,TEMP
+*****	00B4'	CALL	$T3
+*****	00B7'	LXI	H,SUM
+*****	00BA'	CALL	$SU
+*****	00BD'	DCR	A
+*****	00BE'	ADI	81
+*****	00C0'	SBB	A
+*****	00C1'	STA	T:000002
+02400		SUM=TEMP
+*****	00C4'	ORA	A
+*****	00C5'	JNZ	4L
+02500		FACT=(2.0*K-1.00)/(K+1.0)
+02600		TERM=FACT*SSQ*TERM/8.0
+02700		K=K+1.0
+02800		GOTO 2
+*****	00C8'	LXI	H,TEMP
+*****	00CB'	CALL	$L3
+*****	00CE'	LXI	H,SUM
+*****	00D1'	CALL	$T3
+*****	00D4'	LXI	H,K
+*****	00D7'	CALL	$L3
+*****	00DA'	LXI	H,[00 00 00 81]
+*****	00DD'	CALL	$AR
+*****	00E0'	LXI	H,T:000003
+*****	00E3'	CALL	$T3
+*****	00E6'	LXI	H,[00 00 00 82]
+*****	00E9'	CALL	$L1
+*****	00EC'	CALL	$CK
+*****	00EF'	LXI	H,K
+*****	00F2'	CALL	$MU
+*****	00F5'	LXI	H,[00 00 00 81]
+*****	00F8'	CALL	$SR
+*****	00FB'	LXI	H,T:000003
+*****	00FE'	CALL	$DU
+*****	0101'	LXI	H,FACT
+*****	0104'	CALL	$T3
+*****	0107'	LXI	H,TERM
+*****	010A'	CALL	$L3
+*****	010D'	LXI	H,SSQ
+*****	0110'	CALL	$MU
+*****	0113'	LXI	H,FACT
+*****	0116'	CALL	$MU
+*****	0119'	LXI	H,[00 00 00 84]
+*****	011C'	CALL	$DR
+*****	011F'	LXI	H,TERM
+*****	0122'	CALL	$T3
+*****	0125'	LXI	H,T:000003
+*****	0128'	CALL	$L3
+*****	012B'	LXI	H,K
+*****	012E'	CALL	$T3
+02900	4	SLNGTH=DSQRT(SUM)
+*****	0131'	JMP	2L
+03000		PILOW=0.5*SIDES*SLNGTH
+03100		PIUP=SIDES*SLNGTH/(2.0-SLNGTH)
+03200		WRITE(6,200,REC=N) N,SIDES,SLNGTH,PILOW,PIUP
+*****	0134'	LXI	H,SUM
+*****	0137'	CALL	DSQRT
+*****	013A'	LXI	H,SLNGTH
+*****	013D'	CALL	$T3
+*****	0140'	LXI	H,[00 00 00 80]
+*****	0143'	CALL	$L1
+*****	0146'	CALL	$CK
+*****	0149'	LXI	H,SIDES
+*****	014C'	CALL	$MU
+*****	014F'	LXI	H,SLNGTH
+*****	0152'	CALL	$MU
+*****	0155'	LXI	H,PILOW
+*****	0158'	CALL	$T3
+*****	015B'	LXI	H,[00 00 00 82]
+*****	015E'	CALL	$L1
+*****	0161'	CALL	$CK
+*****	0164'	LXI	H,SLNGTH
+*****	0167'	CALL	$SU
+*****	016A'	LXI	H,T:000003
+*****	016D'	CALL	$T3
+*****	0170'	LXI	H,SIDES
+*****	0173'	CALL	$L3
+*****	0176'	LXI	H,SLNGTH
+*****	0179'	CALL	$MU
+*****	017C'	LXI	H,T:000003
+*****	017F'	CALL	$DU
+*****	0182'	LXI	H,PIUP
+*****	0185'	CALL	$T3
+*****	0188'	LXI	B,0152"
+*****	018B'	LXI	D,200L
+*****	018E'	LXI	H,[06 00 00 00]
+*****	0191'	CALL	$W5
+03300		IF(N.EQ.20) GOTO 8
+*****	0194'	LXI	D,N
+*****	0197'	LXI	H,[01 00 00 00]
+*****	019A'	MVI	A,02
+*****	019C'	CALL	$I0
+*****	019F'	LXI	B,0158"
+*****	01A2'	LXI	D,SIDES
+*****	01A5'	LXI	H,[01 00 00 00]
+*****	01A8'	MVI	A,05
+*****	01AA'	CALL	$I3
+*****	01AD'	CALL	$ND
+*****	01B0'	LHLD	N
+*****	01B3'	LXI	D,FFEC
+*****	01B6'	DAD	D
+*****	01B7'	MOV	A,L
+*****	01B8'	RLC
+*****	01B9'	ORA	L
+*****	01BA'	ANI	7F
+*****	01BC'	ORA	H
+*****	01BD'	SUI	01
+*****	01BF'	SBB	A
+*****	01C0'	STA	T:000002
+03400		N=N+1
+*****	01C3'	ORA	A
+*****	01C4'	JNZ	8L
+03500		GOTO 1
+*****	01C7'	LHLD	N
+*****	01CA'	INX	H
+*****	01CB'	SHLD	N
+03600	200	FORMAT(1X,I3,F9.0,F15.6,2F19.12)
+*****	01CE'	JMP	1L
+03700	
+03800	8	READ(6,300,REC=1) ITU
+*****	01D1'	LXI	B,0178"
+*****	01D4'	LXI	D,300L
+*****	01D7'	LXI	H,[06 00 00 00]
+*****	01DA'	CALL	$R5
+03900	300	FORMAT(80A1)
+*****	01DD'	LXI	D,ITU
+*****	01E0'	LXI	H,[50 00 00 00]
+*****	01E3'	MVI	A,02
+*****	01E5'	CALL	$I2
+*****	01E8'	CALL	$ND
+04000		WRITE(1,300) ITU
+*****	01EB'	LXI	D,300L
+*****	01EE'	LXI	H,[01 00 00 00]
+*****	01F1'	CALL	$W2
+04100		WRITE(1,302)
+*****	01F4'	LXI	D,ITU
+*****	01F7'	LXI	H,[50 00 00 00]
+*****	01FA'	MVI	A,02
+*****	01FC'	CALL	$I2
+*****	01FF'	CALL	$ND
+*****	0202'	LXI	D,302L
+*****	0205'	LXI	H,[01 00 00 00]
+*****	0208'	CALL	$W2
+04200		READ(6,300,REC=2) ITU
+*****	020B'	CALL	$ND
+*****	020E'	LXI	B,0184"
+*****	0211'	LXI	D,300L
+*****	0214'	LXI	H,[06 00 00 00]
+*****	0217'	CALL	$R5
+04300		WRITE(1,300) ITU
+*****	021A'	LXI	D,ITU
+*****	021D'	LXI	H,[50 00 00 00]
+*****	0220'	MVI	A,02
+*****	0222'	CALL	$I2
+*****	0225'	CALL	$ND
+*****	0228'	LXI	D,300L
+*****	022B'	LXI	H,[01 00 00 00]
+*****	022E'	CALL	$W2
+04400	302	FORMAT(1X)
+*****	0231'	LXI	D,ITU
+*****	0234'	LXI	H,[50 00 00 00]
+*****	0237'	MVI	A,02
+*****	0239'	CALL	$I2
+*****	023C'	CALL	$ND
+04500		DO 9 I = 3,20
+04600		READ(6,300,REC=I) ITU
+*****	023F'	LXI	H,0003
+*****	0242'	SHLD	I
+*****	0245'	LXI	B,0190"
+*****	0248'	LXI	D,300L
+*****	024B'	LXI	H,[06 00 00 00]
+*****	024E'	CALL	$R5
+04700	9	WRITE(1,300) ITU
+*****	0251'	LXI	D,ITU
+*****	0254'	LXI	H,[50 00 00 00]
+*****	0257'	MVI	A,02
+*****	0259'	CALL	$I2
+*****	025C'	CALL	$ND
+*****	025F'	LXI	D,300L
+*****	0262'	LXI	H,[01 00 00 00]
+*****	0265'	CALL	$W2
+04800		WRITE(1,302)
+*****	0268'	LXI	D,ITU
+*****	026B'	LXI	H,[50 00 00 00]
+*****	026E'	MVI	A,02
+*****	0270'	CALL	$I2
+*****	0273'	CALL	$ND
+*****	0276'	LHLD	I
+*****	0279'	INX	H
+*****	027A'	MVI	A,14
+*****	027C'	SUB	L
+*****	027D'	MVI	A,00
+*****	027F'	SBB	H
+*****	0280'	JP	0242'
+*****	0283'	LXI	D,302L
+*****	0286'	LXI	H,[01 00 00 00]
+*****	0289'	CALL	$W2
+04900		STOP
+*****	028C'	CALL	$ND
+*****	028F'	CALL	$ST
+05000		END
+*****	0292'	202020202020
+*****	0298'	00 00 00 81 
+*****	029C'	00 00 00 00 
+*****	02A0'	02 00 00 00 
+*****	02A4'	01 00 00 00 
+*****	02A8'	00 00 00 00 
+*****	02AC'	50 00 00 00 
+*****	02B0'	06 00 00 00 
+*****	02B4'	00 00 00 83 
+*****	02B8'	00 00 00 82 
+*****	02BC'	00 00 00 7F 
+*****	02C0'	00 00 00 84 
+*****	02C4'	00 00 00 80 
+
+Program Unit Length=02C8 (712) Bytes
+Data Area Length=0196 (406) Bytes
+
+Subroutines Referenced:
+
+$I3			$I2			$I0			
+DSQRT			$INIT			OPEN			
+$W5			$ND			$L1			
+$CK			$T3			$MU			
+$L3			$CC			$AU			
+$SU			$AR			$SR			
+$DU			$DR			$R5			
+$W2			$ST
+
+Variables:
+
+PILOW	0001"		SLNGTH	0009"		PIUP	0011"		
+FACT	0019"		K	0021"		SIDES	0029"		
+SUM	0031"		SSQ	0039"		TERM	0041"		
+TEMP	0049"		ITU	0051"		H:0001	00A1"		
+N	0147"		T:000002	0149"	T:000003	014A"	
+I	018E"
+
+Labels:
+
+$$L	0006'		198L	00B2"		199L	00FD"		
+1L	0054'		2L	00A5'		4L	0134'		
+200L	015E"		8L	01D1'		300L	017E"		
+302L	018A"		9L	025F'
+
+
+I2			$I0			
+DSQRT			$INIT			OPEN			
+$W5			$ND			$L1			
+$CK			$T3			$MU			
+$L3			$CC			$AU			
+$SU			$AR			$SR			
+$DU			

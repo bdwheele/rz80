@@ -1,0 +1,21 @@
+% File:  TAYLOR.DIF  (c)	10/01/80	The Soft Warehouse %
+
+
+FUNCTION TAYLOR (EXPN, X, A, N,
+    % Local % J, C, ANS, NUMNUM, DENNUM),
+  NUMNUM: DENNUM: 30,
+  J: ANS: 0,
+  C: 1,
+  LOOP
+    ANS: ANS + C * EVSUB (EXPN, X, A),
+    WHEN J=N, ANS EXIT,
+    EXPN: DIF (EXPN, X),
+    J: J + 1,
+    C: C * (X-A) / J
+  ENDLOOP
+ENDFUN $
+
+STOP $
+
+RDS () $
+
