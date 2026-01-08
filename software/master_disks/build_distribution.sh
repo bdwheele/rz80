@@ -43,9 +43,11 @@ cpmcp -f rz80_floppy boot.img  \
 
 # user 4 is multiplan
 cpmcp -f rz80_floppy boot.img  \
-      $MS_SRC/MULTIPLAN/V1-05/* \
+      $MS_SRC/MULTIPLAN/V1-06/* \
       ../original/ppip.com \
       4:
+
+
 
 
 

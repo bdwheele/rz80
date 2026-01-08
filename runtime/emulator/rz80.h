@@ -104,7 +104,7 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
 /* Terminal */
 void terminal_setup(struct state *state);
 void terminal_restore(struct state *state);
-Z80EX_BYTE terminal_status(struct state *state);
+Z80EX_BYTE terminal_status(struct state *state, int us_delay);
 Z80EX_BYTE terminal_read(struct state *state);
 void terminal_write(struct state *state, char c);
 

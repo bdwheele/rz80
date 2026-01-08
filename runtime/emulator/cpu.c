@@ -39,7 +39,7 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
             break;
         case 2:
             // console status
-            setA(terminal_status(state));
+            setA(terminal_status(state, 100));
             break;        
         case 3:
             // console input
