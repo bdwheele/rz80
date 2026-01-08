@@ -1,0 +1,10 @@
+Some arch thoughts
+
+* Emulator runs on RPI0 under alpine linux.  Fast, small, quick boot up
+* USB hub connected to RPI0's OTG port
+    * extension cable to back for keyboard
+    * USB connection to arduino for ArduinoFDC dev
+
+* connection to ESP32/ESP8266 for ZIModem device to onboard serial?  Maybe
+  use USB for this if possible?  Can I do this with native alpine?
+* mini-HDMI to HDMI adapter with extension cable to rear bulkhead

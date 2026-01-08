@@ -1,0 +1,22 @@
+* reconfigure distribution
+    * boot/utils
+        * 0: regular cpm stuff
+        * 1: text editors?
+        * 2: other utils?
+    * office
+        * 0: wordstar
+        * 1: multiplan
+        * 2: dbase ii
+    * development
+        * 0: mbasic/obasic
+        * 1: microsoft basic compiler
+        * 2: aztec c
+    * games
+        * 0: zork?
+        * 1: arcade things?
+
+* why can't I edit text in multiplan?
+* build fdc stuff
+* build wifi serial stuff
+* productionize rpi0 stuff
+* kaypro compatibility?
