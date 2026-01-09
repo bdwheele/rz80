@@ -143,7 +143,9 @@ Z80EX_BYTE terminal_read(struct state *state) {
         return buffer[BPOS(bread - 1)]; 
     } else if(c == 0x11) {
         //state->halted = 1;
+        return c;
     } else {
+        debug("normal key: %02x\n", c);
         return c;
     }
 }
