@@ -20,7 +20,6 @@ void terminal_setup(struct state *state) {
     state->new_settings->c_cc[VMIN] = 1;
     state->new_settings->c_cc[VTIME] = 0;
     tcsetattr(fileno(stdin), TCSAFLUSH, state->new_settings);
-
 }
 
 void terminal_restore(struct state *state) {
@@ -63,10 +62,7 @@ Z80EX_BYTE terminal_read(struct state *state) {
         debug("bread=%d, bwrite=%d, char=%02x\n", bread, bwrite, buffer[BPOS(bread - 1)]);
         return buffer[BPOS(bread - 1)];
     }
-    // the only way we can get here is if bread == bwrite
-    //fread(&c, 1, 1, stdin);
     read(0, &c, 1);
-
     if(c == 0x1b) {
         /* escape.  Give us just a little bit to see if there's
            another character.  If there isn't we'll just return the escape.
@@ -82,7 +78,6 @@ Z80EX_BYTE terminal_read(struct state *state) {
         while(in_escape) {
             debug("Wait for next character kstate=%d\n", kstate);            
             if(terminal_status(state, 200000)) {
-                //fread(&c, 1, 1, stdin);
                 read(0, &c, 1);
                 debug("Got next character %02x\n", c);
                 bwrite++;
@@ -156,8 +151,6 @@ Z80EX_BYTE terminal_read(struct state *state) {
 
 void terminal_write(struct state *state, char c) {
     static int in_escape = 0;    
-    //char escape_buffer[9];
-    //char *escape_p = &escape_buffer;
     c &= 0x7f;  // not 8-bit clean?
     if(!in_escape) {
         switch(c) {
@@ -278,7 +271,6 @@ void terminal_write(struct state *state, char c) {
                     default:
                         debug("term: disable unhandled attribute %c\n", c);
                         break;
-
                 }
                 in_escape = 0;
                 break;
