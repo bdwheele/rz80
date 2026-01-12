@@ -85,8 +85,12 @@ int main(int argc, char *argv[]) {
     // terminal
     terminal_setup(state);
 
+    // calibrate time
+    int mstime = calibrate_timer(state, 0x4000);
+    z80ex_set_reg(state->cpu, regPC, 0);
+
     // main loop   
-    int counter = 0;
+    int sleep_counter = 0, inst_counter = 0, event_timer = 0;
     while(!state->halted) {
         if(state->trace_instruction) {
             trace(state, getPC());
@@ -97,9 +101,15 @@ int main(int argc, char *argv[]) {
                 break;
             }
         }
-        if(counter++ > 100 && state->throttle) {
+        if(sleep_counter++ > 100 && state->throttle) {
             usleep(state->throttle);
-            counter = 0;
+            sleep_counter = 0;
+        }
+        inst_counter++;
+        if(inst_counter % mstime == 0) {
+            /* in theory a "millisecond" has passed, update the timer */
+            event_timer++;
+            event_handler(state, event_timer);            
         }
     }
     terminal_restore(state);

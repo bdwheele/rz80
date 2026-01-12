@@ -15,6 +15,7 @@
 #define DISK_PHYSICAL 1
 #define DISK_MODE_READ 0
 #define DISK_MODE_WRITE 1
+#define EVENTS 16
 
 struct state {
     int trace_instruction;
@@ -49,11 +50,14 @@ struct state {
         int lbn;
         uint8_t *buffer;
     } deblock;
-    //char *disk_names[3];
-    //int disk_fd[3];
     struct termios *old_settings;
     struct termios *new_settings;
     long throttle;
+    struct {
+        int after;
+        int id;
+        void (*callback)(struct state *state, int id);
+    } events[EVENTS];
 };
 
 /* RAM and ROM*/
@@ -110,6 +114,14 @@ void terminal_write(struct state *state, char c);
 
 /* Utils */
 void msleep(int millis);
+
+/* Events */
+int calibrate_timer(struct state *state, uint16_t addr);
+void event_add(struct state *state, int id, int after, int (*callback)(struct state *state, int id));
+void event_cancel(struct state *state, int id);
+void event_handler(struct state *state, int after);
+
+
 
 
 #define __RZ80_H
