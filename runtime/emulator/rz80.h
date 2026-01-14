@@ -15,7 +15,16 @@
 #define DISK_PHYSICAL 1
 #define DISK_MODE_READ 0
 #define DISK_MODE_WRITE 1
-#define EVENTS 16
+#define DISK_MOTOR_ON 1
+#define DISK_MOTOR_OFF 0
+
+
+#define EVENT_DISK_MOTOR_A 0x0100
+#define EVENT_DISK_MOTOR_B 0x0101
+#define EVENTS 2
+
+
+#define KBD_BUF 16
 
 struct state {
     int trace_instruction;
@@ -58,6 +67,11 @@ struct state {
         int id;
         void (*callback)(struct state *state, int id);
     } events[EVENTS];
+    struct {
+        char buffer[KBD_BUF];
+        int read;
+        int write
+    } keybuf;
 };
 
 /* RAM and ROM*/
@@ -81,6 +95,9 @@ void trace(struct state *state, uint16_t addr);
 void disk_reset(struct state *state);
 int disk_read(struct state *state);
 int disk_write(struct state *state, int type);
+void stop_motor(struct state *state, int id);
+void start_motor(struct state *state, int id);
+void disk_motor(struct state *state, int disk, int mode);
 
 
 /* CPU */
@@ -117,9 +134,10 @@ void msleep(int millis);
 
 /* Events */
 int calibrate_timer(struct state *state, uint16_t addr);
-void event_add(struct state *state, int id, int after, int (*callback)(struct state *state, int id));
+void event_add(struct state *state, int id, int after, void (*callback)(struct state *state, int id));
 void event_cancel(struct state *state, int id);
 void event_handler(struct state *state, int after);
+void event_reset(struct state *state);
 
 
 

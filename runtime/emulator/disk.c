@@ -11,6 +11,9 @@
 void disk_reset(struct state *state) {
     // I probably do some sanity checking
     state->deblock.valid = 0;
+    for(int i = 0; i < 2; i++) {
+        disk_motor(state, i, DISK_MOTOR_OFF);
+    }
 }
 
 int llbn_from_dts(struct state *state) {
@@ -23,6 +26,7 @@ int llbn_from_dts(struct state *state) {
 
 int block_op(struct state *state, int operation, int drive, int lbn) {    
     int fd = state->disk[drive].fd;
+    disk_motor(state, drive, DISK_MOTOR_ON);
     if(state->disk[drive].mode == DISK_MODE_READ && operation == WRITE) {
         // the disk was open for reading but we need to write.  Close the
         // current handle so it can be reopened r/w
@@ -136,3 +140,27 @@ int disk_write(struct state *state, int type) {
     return 0;
 }
 
+
+void stop_motor(struct state *state, int id) {
+    debug("Stopping motor on %c\n", (id & 0xff) + 'A');
+    state->disk[id & 0xff].motor = DISK_MOTOR_OFF;
+}
+
+void start_motor(struct state *state, int id) {
+    int disk = id & 0xff;
+    debug("Starting motor on %c\n", disk + 'A');
+    state->disk[disk].motor = DISK_MOTOR_ON;
+}
+
+
+void disk_motor(struct state *state, int disk, int mode) {
+    if(mode == DISK_MOTOR_ON) {
+        start_motor(state, disk);
+        // we need to schedule a time to shut off the motor in 2 seconds
+        event_add(state, EVENT_DISK_MOTOR_A + disk, 2000, stop_motor);
+    } else {
+        stop_motor(state, disk);
+        event_cancel(state, EVENT_DISK_MOTOR_A + disk);
+    }
+    state->disk[disk].motor = mode;
+}

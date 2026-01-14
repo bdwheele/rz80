@@ -1,5 +1,16 @@
 #include "rz80.h"
 #include <sys/time.h>
+#include <math.h>
+#include <unistd.h>
+
+
+inline double gettime() {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec + (tv.tv_usec / 1000000.0);
+}
+
+
 
 #define INSTR_COUNT 10000000  /* 10,000,000 instructions */
 
@@ -43,7 +54,7 @@ int calibrate_timer(struct state *state, uint16_t addr) {
 }
 
 /* THings dealing with the events list */
-void event_add(struct state *state, int id, int after, int (*callback)(struct state *state, int id)) {
+void event_add(struct state *state, int id, int after, void (*callback)(struct state *state, int id)) {
     int is_available = -1;
     for(int i = 0; i < EVENTS; i++) {
         if(state->events[i].id == id) {
@@ -86,5 +97,12 @@ void event_handler(struct state *state, int after) {
             state->events[i].id = 0;
             state->events[i].after = 0; 
         }
+    }
+}
+
+void event_reset(struct state *state) {
+    for(int i = 0; i < EVENTS; i++) {
+        state->events[i].id = 0;
+        state->events[i].after = 0;
     }
 }
