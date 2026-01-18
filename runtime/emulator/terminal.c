@@ -3,7 +3,7 @@
 #include <sys/select.h>
 #include <unistd.h>
 
-void terminal_setup(struct state *state) {
+void terminal_setup() {
     state->old_settings = calloc(1, sizeof(struct termios));
     state->new_settings = calloc(1, sizeof(struct termios));
     
@@ -22,11 +22,35 @@ void terminal_setup(struct state *state) {
     tcsetattr(fileno(stdin), TCSAFLUSH, state->new_settings);
 }
 
-void terminal_restore(struct state *state) {
+void terminal_restore() {
     tcsetattr(fileno(stdin), TCSAFLUSH, state->old_settings);
 }
 
-Z80EX_BYTE terminal_status(struct state *state, int usdelay) {
+void poll_keyboard() {
+    // Check to see if there's a character there and if so,
+    // put it into the keyboard buffer
+    fd_set fds;
+    FD_ZERO(&fds);
+    int stdin_fileno = fileno(stdin);
+    FD_SET(stdin_fileno, &fds);
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    select(stdin_fileno + 1, &fds, NULL, NULL, &tv);
+    if(FD_ISSET(stdin_fileno, &fds)) {
+        if((state->keybuf.write + 1) % KBD_BUF == state->keybuf.read % KBD_BUF) {
+            // buffer is full, moose out front should have told you.
+            fputc('\a', stdout);
+        } else {
+            char c;
+            read(0, &c, 1);
+            state->keybuf.write++;
+            state->keybuf.buffer[state->keybuf.write % KBD_BUF] = c; 
+        }
+    }
+}
+
+Z80EX_BYTE terminal_status(int usdelay) {
     fd_set fds;
     FD_ZERO(&fds);
     int stdin_fileno = fileno(stdin);
@@ -46,7 +70,7 @@ Z80EX_BYTE terminal_status(struct state *state, int usdelay) {
 
 #define KBUF 10
 #define BPOS(x) (x % KBUF)
-Z80EX_BYTE terminal_read(struct state *state) {
+Z80EX_BYTE terminal_read() {
     /* this has to be reasonably complicated, unfortuantely.
        If we get an escape it may be part of an escape sequence so we
        need to read as far as we can to decide what to send back. 
@@ -77,7 +101,7 @@ Z80EX_BYTE terminal_read(struct state *state) {
         int stdin_fileno = fileno(stdin);
         while(in_escape) {
             debug("Wait for next character kstate=%d\n", kstate);            
-            if(terminal_status(state, 200000)) {
+            if(terminal_status(200000)) {
                 read(0, &c, 1);
                 debug("Got next character %02x\n", c);
                 bwrite++;
@@ -151,7 +175,7 @@ Z80EX_BYTE terminal_read(struct state *state) {
 }
 
 
-void terminal_write(struct state *state, char c) {
+void terminal_write(char c) {
     static int in_escape = 0;    
     c &= 0x7f;  // not 8-bit clean?
     if(!in_escape) {

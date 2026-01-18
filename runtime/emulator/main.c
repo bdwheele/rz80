@@ -5,6 +5,8 @@
 #include "rz80.h"
 extern char *optarg;
 
+struct state *state;
+
 int main(int argc, char *argv[]) {
     // set up the default system state
     struct state *state = calloc(1, sizeof(struct state));
@@ -76,24 +78,29 @@ int main(int argc, char *argv[]) {
                               NULL, NULL);
     // memory systems
     state->memory = calloc(65536, 1);
-    load_rom(state, romname);
-    mem_reset(state);
+    load_rom(romname);
+    mem_reset();
 
     // disk systems
-    disk_reset(state);
+    disk_reset();
 
     // terminal
-    terminal_setup(state);
+    terminal_setup();
 
     // calibrate time
-    int mstime = calibrate_timer(state, 0x4000);
+    int mstime = calibrate_timer(0x4000);
     z80ex_set_reg(state->cpu, regPC, 0);
 
     // main loop   
     int sleep_counter = 0, inst_counter = 0, event_timer = 0;
     while(!state->halted) {
+        if(state->clock.triggered) {
+            state->clock.triggered = 0;
+            // poll the hardware
+            
+        }
         if(state->trace_instruction) {
-            trace(state, getPC());
+            trace(getPC());
         }
         while(1) {
             z80ex_step(state->cpu);
@@ -109,8 +116,8 @@ int main(int argc, char *argv[]) {
         if(inst_counter % mstime == 0) {
             /* in theory a "millisecond" has passed, update the timer */
             event_timer++;
-            event_handler(state, event_timer);            
+            event_handler(event_timer);            
         }
     }
-    terminal_restore(state);
+    terminal_restore();
 }

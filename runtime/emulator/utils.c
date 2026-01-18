@@ -4,6 +4,10 @@
 #include <math.h>
 
 void msleep(int millis) {
-    usleep(millis * 1000);
+    struct timespec ts;
+    ts.tv_sec = 0;
+    ts.tv_nsec = 1000000 * millis;
+    nanosleep(&ts, NULL);
+    //usleep(millis * 1000);
 }
 

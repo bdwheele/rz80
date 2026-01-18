@@ -1,11 +1,11 @@
 #include "rz80.h"
 
 Z80EX_BYTE debug_mem_read(Z80EX_WORD addr, void *user_data) {
-    return mem_read_byte(user_data, addr);
+    return mem_read_byte(addr);
 }
 
 
-void trace(struct state *state, uint16_t addr) {
+void trace(uint16_t addr) {
     static char *range[] = {"DPBASE", "  BIOS", "  BDOS", "   CCP", "     "};
     int base_addr = 0;
     char *base_name = range[4];
@@ -28,7 +28,7 @@ void trace(struct state *state, uint16_t addr) {
     char *p = byte_dump;
     for(int i = 0; i < 5; i++) {
         if(i < bytecount) {
-            sprintf(p, "%02x ", mem_read_byte(state, addr + i));
+            sprintf(p, "%02x ", mem_read_byte(addr + i));
         } else {
             sprintf(p, "   ");
         }

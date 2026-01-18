@@ -14,7 +14,7 @@ inline double gettime() {
 
 #define INSTR_COUNT 10000000  /* 10,000,000 instructions */
 
-int calibrate_timer(struct state *state, uint16_t addr) {
+int calibrate_timer(uint16_t addr) {
     /* create an infinite loop at the given memory address and run it for
        a bunch of iterations to figure out roughly how many instructions
        are executed in a millisecond */
@@ -54,7 +54,7 @@ int calibrate_timer(struct state *state, uint16_t addr) {
 }
 
 /* THings dealing with the events list */
-void event_add(struct state *state, int id, int after, void (*callback)(struct state *state, int id)) {
+void event_add(int id, int after, void (*callback)(int id)) {
     int is_available = -1;
     for(int i = 0; i < EVENTS; i++) {
         if(state->events[i].id == id) {
@@ -78,7 +78,7 @@ void event_add(struct state *state, int id, int after, void (*callback)(struct s
     }
 }
 
-void event_cancel(struct state *state, int id) {
+void event_cancel(int id) {
     for(int i = 0; i < EVENTS; i++) {
         if(state->events[i].id == id) {
             state->events[i].id = 0;
@@ -89,10 +89,10 @@ void event_cancel(struct state *state, int id) {
 }
 
 
-void event_handler(struct state *state, int after) {
+void event_handler(int after) {
     for(int i = 0; i < EVENTS; i++) {
         if(state->events[i].after > 0 && after >= state->events[i].after) {
-            state->events[i].callback(state, state->events[i].id);
+            state->events[i].callback(state->events[i].id);
             // clear the event
             state->events[i].id = 0;
             state->events[i].after = 0; 
@@ -100,7 +100,7 @@ void event_handler(struct state *state, int after) {
     }
 }
 
-void event_reset(struct state *state) {
+void event_reset() {
     for(int i = 0; i < EVENTS; i++) {
         state->events[i].id = 0;
         state->events[i].after = 0;

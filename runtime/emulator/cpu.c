@@ -2,11 +2,11 @@
 
 
 Z80EX_BYTE cpu_mem_read(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *user_data) {
-    return mem_read_byte(user_data, addr);
+    return mem_read_byte(addr);
 }
 
 void cpu_mem_write(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *user_data) {
-    mem_write_byte(user_data, addr, value);
+    mem_write_byte(addr, value);
 }
 
 
@@ -34,20 +34,20 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
     switch(port) {
         case 1:
             // warm boot
-            mem_reset(state);
-            disk_reset(state);
+            mem_reset();
+            disk_reset();
             break;
         case 2:
             // console status
-            setA(terminal_status(state, 100));
+            setA(terminal_status(100));
             break;        
         case 3:
             // console input
-            setA(terminal_read(state));
+            setA(terminal_read());
             break;
         case 4:
             // console output
-            terminal_write(state, getC());
+            terminal_write(getC());
             break;
         case 5:
             // list output (C)
@@ -87,11 +87,11 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
             break;
         case 13:
             // read block
-            setA(disk_read(state));
+            setA(disk_read());
             break;
         case 14:
             // write block
-            setA(disk_write(state, getC()));
+            setA(disk_write(getC()));
             break;
         case 15:
             // list status

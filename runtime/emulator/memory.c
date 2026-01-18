@@ -1,37 +1,37 @@
 #include "rz80.h"
 
-uint8_t mem_read_byte(struct state *state, uint16_t addr) {
+uint8_t mem_read_byte(uint16_t addr) {
     return state->memory[addr];
 }
 
-void mem_write_byte(struct state *state, uint16_t addr, uint8_t value) {
+void mem_write_byte(uint16_t addr, uint8_t value) {
     state->memory[addr] = value;
 }
 
-uint16_t mem_read_word(struct state *state, uint16_t addr) {
+uint16_t mem_read_word(uint16_t addr) {
     return state->memory[addr] + (state->memory[addr + 1] * 256);
 }
 
-void mem_write_word(struct state *state, uint16_t addr, uint16_t value) {
+void mem_write_word(uint16_t addr, uint16_t value) {
     state->memory[addr] = value & 0xff;
     state->memory[addr + 1] = (value & 0xff00) >> 8;
 }
 
-void mem_reset(struct state *state) {
+void mem_reset() {
     // reload the rom
     for(int i = 0; i < state->romsize; i++) {
         state->memory[i + state->cbase] = state->rom[i];
     }
     // reset the jump vectors to make sure
-    mem_write_byte(state, 0, 0xc3);
-    mem_write_word(state, 1, state->bbase);
-    mem_write_byte(state, 5, 0xc3);
-    mem_write_word(state, 6, state->fbase);
+    mem_write_byte(0, 0xc3);
+    mem_write_word(1, state->bbase);
+    mem_write_byte(5, 0xc3);
+    mem_write_word(6, state->fbase);
 }
 
 
 #define le_word(p) (*(p) + (*((p) + 1) * 256))
-void load_rom(struct state *state, char *filename) {
+void load_rom(char *filename) {
     state->rom = calloc(8192, 1);
     FILE *f = fopen(filename, "rb");
     state->romsize = fread(state->rom, 1, 8192, f);

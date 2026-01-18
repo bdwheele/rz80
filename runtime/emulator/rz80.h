@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <malloc.h>
 #include <termios.h>
+#include <time.h>
+#include <sys/types.h>
 #include "z80ex.h"
 #include "z80ex_dasm.h"
 
@@ -65,22 +67,35 @@ struct state {
     struct {
         int after;
         int id;
-        void (*callback)(struct state *state, int id);
+        void (*callback)(int id);
     } events[EVENTS];
     struct {
         char buffer[KBD_BUF];
         int read;
-        int write
+        int write;
     } keybuf;
+    struct {
+        timer_t timerid;
+        struct sigevent *sevent;
+        int triggered;
+    } clock;
+    int ticks;
 };
 
+// how long a tick is, in milliseconds
+#define TICK 50
+
+/* For reasons I don't want to go into, I need the system state to be globally shared */
+extern struct state *state;
+
+
 /* RAM and ROM*/
-uint8_t mem_read_byte(struct state *state, uint16_t addr);
-void mem_write_byte(struct state *state, uint16_t addr, uint8_t value);
-uint16_t mem_read_word(struct state *state, uint16_t addr);
-void mem_write_word(struct state *state, uint16_t addr, uint16_t value);
-void mem_reset(struct state *state);
-void load_rom(struct state *state, char *filename);
+uint8_t mem_read_byte(uint16_t addr);
+void mem_write_byte(uint16_t addr, uint8_t value);
+uint16_t mem_read_word(uint16_t addr);
+void mem_write_word(uint16_t addr, uint16_t value);
+void mem_reset();
+void load_rom(char *filename);
 
 
 /* DEBUGGING */
@@ -89,15 +104,15 @@ void load_rom(struct state *state, char *filename);
 #define info(fmt, ...) fprintf(stderr, "INFO: " fmt, ##__VA_ARGS__)
 #define warning(fmt, ...) fprintf(stderr, "WARNING: " fmt, ##__VA_ARGS__)
 Z80EX_BYTE debug_mem_read(Z80EX_WORD addr, void *user_data);
-void trace(struct state *state, uint16_t addr);
+void trace(uint16_t addr);
 
 /* Disk */
-void disk_reset(struct state *state);
-int disk_read(struct state *state);
-int disk_write(struct state *state, int type);
-void stop_motor(struct state *state, int id);
-void start_motor(struct state *state, int id);
-void disk_motor(struct state *state, int disk, int mode);
+void disk_reset();
+int disk_read();
+int disk_write(int type);
+void stop_motor(int id);
+void start_motor(int id);
+void disk_motor(int disk, int mode);
 
 
 /* CPU */
@@ -123,21 +138,21 @@ Z80EX_BYTE cpu_port_read(Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data);
 void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *user_data);
 
 /* Terminal */
-void terminal_setup(struct state *state);
-void terminal_restore(struct state *state);
-Z80EX_BYTE terminal_status(struct state *state, int us_delay);
-Z80EX_BYTE terminal_read(struct state *state);
-void terminal_write(struct state *state, char c);
+void terminal_setup();
+void terminal_restore();
+Z80EX_BYTE terminal_status(int us_delay);
+Z80EX_BYTE terminal_read();
+void terminal_write(char c);
 
 /* Utils */
 void msleep(int millis);
 
 /* Events */
-int calibrate_timer(struct state *state, uint16_t addr);
-void event_add(struct state *state, int id, int after, void (*callback)(struct state *state, int id));
-void event_cancel(struct state *state, int id);
-void event_handler(struct state *state, int after);
-void event_reset(struct state *state);
+int calibrate_timer(uint16_t addr);
+void event_add(int id, int after, void (*callback)(int id));
+void event_cancel(int id);
+void event_handler(int after);
+void event_reset();
 
 
 

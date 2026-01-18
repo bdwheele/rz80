@@ -8,25 +8,25 @@
 #define fail(x) {close(state->disk[state->drive].fd); state->disk[state->drive].fd = -1; return x; }
 
 
-void disk_reset(struct state *state) {
+void disk_reset() {
     // I probably do some sanity checking
     state->deblock.valid = 0;
     for(int i = 0; i < 2; i++) {
-        disk_motor(state, i, DISK_MOTOR_OFF);
+        disk_motor(i, DISK_MOTOR_OFF);
     }
 }
 
-int llbn_from_dts(struct state *state) {
+int llbn_from_dts() {
     /* get logical block number from the bios disk parameter table */
-    int16_t dpb_addr = mem_read_word(state, state->dpbase + state->drive * 16 + 10);
-    int trklen = mem_read_word(state, dpb_addr);
+    int16_t dpb_addr = mem_read_word(state->dpbase + state->drive * 16 + 10);
+    int trklen = mem_read_word(dpb_addr);
     int lbn = trklen * state->track + state->sector;
     return lbn;   
 }
 
-int block_op(struct state *state, int operation, int drive, int lbn) {    
+int block_op(int operation, int drive, int lbn) {    
     int fd = state->disk[drive].fd;
-    disk_motor(state, drive, DISK_MOTOR_ON);
+    disk_motor(drive, DISK_MOTOR_ON);
     if(state->disk[drive].mode == DISK_MODE_READ && operation == WRITE) {
         // the disk was open for reading but we need to write.  Close the
         // current handle so it can be reopened r/w
@@ -59,8 +59,8 @@ int block_op(struct state *state, int operation, int drive, int lbn) {
     return 0;
 }
 
-int disk_read(struct state *state) {
-    int llbn = llbn_from_dts(state);
+int disk_read() {
+    int llbn = llbn_from_dts();
     int plbn = llbn / 4;
     int loff = llbn % 4;
     int read_cache = 0, flush_cache = 0;
@@ -73,7 +73,7 @@ int disk_read(struct state *state) {
         if(state->deblock.valid && state->deblock.dirty) {
             // we have the wrong block in cache and it's dirty so we write it.
             //debug("Flushing old block\n");
-            if(block_op(state, WRITE, state->deblock.drive, state->deblock.lbn)) {
+            if(block_op(WRITE, state->deblock.drive, state->deblock.lbn)) {
                 // failed to write dirty block
                 return 1;
             }
@@ -82,7 +82,7 @@ int disk_read(struct state *state) {
         state->deblock.valid = 0;
         state->deblock.drive  = state->drive;
         state->deblock.lbn = plbn;
-        if(block_op(state, READ, state->deblock.drive, state->deblock.lbn)) {
+        if(block_op(READ, state->deblock.drive, state->deblock.lbn)) {
             // failed to read the new block
             return 1;
         }
@@ -101,15 +101,15 @@ int disk_read(struct state *state) {
     return 0;
 }
 
-int disk_write(struct state *state, int type) {
-    int llbn = llbn_from_dts(state);
+int disk_write(int type) {
+    int llbn = llbn_from_dts();
     int plbn = llbn / 4;
     int loff = llbn % 4;
     int cache_valid = state->deblock.valid & (state->deblock.drive == state->drive) & (state->deblock.lbn == plbn);
     if(!cache_valid) {
         if(state->deblock.valid && state->deblock.dirty) {
             // we have the wrong block in cache and it's dirty so we write it.
-            if(block_op(state, WRITE, state->deblock.drive, state->deblock.lbn)) {
+            if(block_op(WRITE, state->deblock.drive, state->deblock.lbn)) {
                 // failed to write dirty block
                 return 1;
             }
@@ -118,7 +118,7 @@ int disk_write(struct state *state, int type) {
         state->deblock.valid = 0;
         state->deblock.drive  = state->drive;
         state->deblock.lbn = plbn;
-        if(block_op(state, READ, state->deblock.drive, state->deblock.lbn)) {
+        if(block_op(READ, state->deblock.drive, state->deblock.lbn)) {
             // failed to read the new block
             return 1;
         }
@@ -132,7 +132,7 @@ int disk_write(struct state *state, int type) {
     
     if(type == 1) {
         // a directory write, so we have to flush it now.
-        if(block_op(state, WRITE, state->deblock.drive, state->deblock.lbn)) {
+        if(block_op(WRITE, state->deblock.drive, state->deblock.lbn)) {
             return 1;
         }
         state->deblock.dirty = 0;
@@ -141,26 +141,26 @@ int disk_write(struct state *state, int type) {
 }
 
 
-void stop_motor(struct state *state, int id) {
+void stop_motor(int id) {
     debug("Stopping motor on %c\n", (id & 0xff) + 'A');
     state->disk[id & 0xff].motor = DISK_MOTOR_OFF;
 }
 
-void start_motor(struct state *state, int id) {
+void start_motor(int id) {
     int disk = id & 0xff;
     debug("Starting motor on %c\n", disk + 'A');
     state->disk[disk].motor = DISK_MOTOR_ON;
 }
 
 
-void disk_motor(struct state *state, int disk, int mode) {
+void disk_motor(int disk, int mode) {
     if(mode == DISK_MOTOR_ON) {
-        start_motor(state, disk);
+        start_motor(disk);
         // we need to schedule a time to shut off the motor in 2 seconds
-        event_add(state, EVENT_DISK_MOTOR_A + disk, 2000, stop_motor);
+        event_add(EVENT_DISK_MOTOR_A + disk, 2000, stop_motor);
     } else {
-        stop_motor(state, disk);
-        event_cancel(state, EVENT_DISK_MOTOR_A + disk);
+        stop_motor(disk);
+        event_cancel(EVENT_DISK_MOTOR_A + disk);
     }
     state->disk[disk].motor = mode;
 }
