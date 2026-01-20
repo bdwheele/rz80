@@ -159,14 +159,6 @@ void terminal_write(char c);
 /* Utils */
 void msleep(int millis);
 
-/* Events */
-//int calibrate_timer(uint16_t addr);
-//void event_add(int id, int after, void (*callback)(int id));
-//void event_cancel(int id);
-//void event_handler(int after);
-//void event_reset();
-
-
 /* Clock */
 #define TICKS_PER_SECOND 100
 //#define TICKS_PER_SECOND 1

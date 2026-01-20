@@ -40,6 +40,5 @@ void clock_start() {
 int ticks_for_ms(int ms) {
     // return the number of ticks needed for the given number of ms.
     int ticks = (ms / 1000.0) * TICKS_PER_SECOND;
-    //debug("For %d milliseconds, we need %d ticks\n", ms, ticks);
     return ticks;
 }

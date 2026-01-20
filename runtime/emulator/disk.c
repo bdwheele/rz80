@@ -66,10 +66,6 @@ int disk_read() {
     int read_cache = 0, flush_cache = 0;
     int cache_valid = state->deblock.valid & (state->deblock.drive == state->drive) & (state->deblock.lbn == plbn);
     if(!cache_valid) {
-        //debug("READ Disk %d/%d/%d (%d/%d), Cache is not valid (v:%d, d:%d, l:%d)\n", 
-        //      state->drive, state->track, state->sector, plbn, loff,
-        //      state->deblock.valid, state->deblock.drive, state->deblock.lbn);
-            
         if(state->deblock.valid && state->deblock.dirty) {
             // we have the wrong block in cache and it's dirty so we write it.
             //debug("Flushing old block\n");
@@ -87,8 +83,6 @@ int disk_read() {
             return 1;
         }
         state->deblock.valid = 1;
-        //debug("READ updated cache v:%d, d:%d, l:%d\n", 
-        //      state->deblock.valid, state->deblock.drive, state->deblock.lbn);
     } else {
         //debug("READ Disk %d/%d/%d (%d/%d), Cache is valid (v:%d, d:%d, l:%d)\n", 
         //      state->drive, state->track, state->sector, plbn, loff,

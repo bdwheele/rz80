@@ -21,9 +21,6 @@ void msleep(int millis) {
 
     int x = 8;
     while(x = clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, &remaining)) {
-//        if(millis > 20)
-//        debug("retry: tv.s: %d, tv.n: %d, rem.s: %d, rem.n: %d\n", 
-//              ts.tv_sec, ts.tv_nsec, remaining.tv_sec, remaining.tv_nsec);
         ts.tv_sec = remaining.tv_sec;
         ts.tv_nsec = remaining.tv_nsec;
     }

@@ -11,7 +11,6 @@ void cpu_mem_write(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *
 
 
 Z80EX_BYTE cpu_port_read(Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data) {
-    //struct state *state = user_data;
     debug("Read port %d\n", port);
 }
 
@@ -25,7 +24,6 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
     if(port < 17) {
         svc_name = svcs[port];
     }
-    //struct state *state = (struct state *)user_data;
     if(state->trace_port)
         debug("Port write %02x (%s), value (%02x) PC=%04x, AF=%04x, BC=%04x, DE=%04x SP=%04x HL=%04x\n",
             port, svc_name,  value,
@@ -39,7 +37,6 @@ void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void 
             break;
         case 2:
             // console status
-            //setA(terminal_status(100));
             setA(terminal_status());
             break;        
         case 3:

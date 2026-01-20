@@ -123,13 +123,6 @@ int main(int argc, char *argv[]) {
             usleep(state->throttle);
             sleep_counter = 0;
         }
-        inst_counter++;
-        
-        //if(inst_counter % mstime == 0) {
-        //    /* in theory a "millisecond" has passed, update the timer */
-        //    event_timer++;
-        //    event_handler(event_timer);            
-        //}
     }
     terminal_restore();
 }
