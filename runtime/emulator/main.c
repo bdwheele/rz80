@@ -10,7 +10,6 @@ struct state *state;
 void poll_hardware() {
     state->clock.triggered = 0;
     // poll the hardware
-    // debug("Clock has been triggered.  Ticks: %d\n", state->clock.ticks);
     terminal_poll();
     disk_poll();
 }
@@ -78,7 +77,7 @@ int main(int argc, char *argv[]) {
                 break;                
         }
     }
-    printf("Setting up CPU\n");
+
     // cpu
     state->cpu = z80ex_create(cpu_mem_read, state,
                               cpu_mem_write, state,
@@ -86,18 +85,12 @@ int main(int argc, char *argv[]) {
                               cpu_port_write, state,
                               NULL, NULL);
     // memory systems
-    printf("Setting up memory\n");
     state->memory = calloc(65536, 1);
-    printf("Loading rom, state=%p\n", state);
     load_rom(romname);
-    printf("Resetting memory\n");
     mem_reset();
 
-
     // disk systems
-    printf("Starting up disk systmes...\n");
     disk_reset();
-        printf("Disk reset complete\n");
     // terminal
     terminal_setup();
 
