@@ -160,11 +160,11 @@ void terminal_write(char c);
 void msleep(int millis);
 
 /* Events */
-int calibrate_timer(uint16_t addr);
-void event_add(int id, int after, void (*callback)(int id));
-void event_cancel(int id);
-void event_handler(int after);
-void event_reset();
+//int calibrate_timer(uint16_t addr);
+//void event_add(int id, int after, void (*callback)(int id));
+//void event_cancel(int id);
+//void event_handler(int after);
+//void event_reset();
 
 
 /* Clock */
