@@ -11,7 +11,7 @@ inline double gettime() {
 }
 
 
-
+ 
 #define INSTR_COUNT 10000000  /* 10,000,000 instructions */
 
 int calibrate_timer(uint16_t addr) {

@@ -141,26 +141,36 @@ int disk_write(int type) {
 }
 
 
-void stop_motor(int id) {
-    debug("Stopping motor on %c\n", (id & 0xff) + 'A');
-    state->disk[id & 0xff].motor = DISK_MOTOR_OFF;
+void stop_motor(int disk) {
+    debug("Stopping motor on %c, %d ticks\n", disk + 'A', state->clock.ticks);
+    state->disk[disk].motor = DISK_MOTOR_OFF;
 }
 
-void start_motor(int id) {
-    int disk = id & 0xff;
-    debug("Starting motor on %c\n", disk + 'A');
+void start_motor(int disk) {
+    debug("Starting motor on %c, %d ticks\n", disk + 'A', state->clock.ticks);
     state->disk[disk].motor = DISK_MOTOR_ON;
 }
 
-
 void disk_motor(int disk, int mode) {
     if(mode == DISK_MOTOR_ON) {
-        start_motor(disk);
-        // we need to schedule a time to shut off the motor in 2 seconds
-        event_add(EVENT_DISK_MOTOR_A + disk, 2000, stop_motor);
+        if(state->disk[disk].motor != DISK_MOTOR_ON) {
+            start_motor(disk);
+        }
+        // reset the motor timeout
+        int x = state->disk[disk].motor_timeout = ticks_for_ms(3000); // 3 seconds?
+        debug("Setting timer to %d ticks, ticks is: %d\n", x, state->clock.ticks);
     } else {
         stop_motor(disk);
-        event_cancel(EVENT_DISK_MOTOR_A + disk);
     }
-    state->disk[disk].motor = mode;
+}
+
+void disk_poll() {
+    for(int i = 0; i <= 3; i++) {
+        if(state->disk[i].motor == DISK_MOTOR_ON) {
+            state->disk[i].motor_timeout--;
+            if(state->disk[i].motor_timeout < 1) {
+                stop_motor(i);
+            }
+        }
+    }
 }

@@ -32,7 +32,9 @@ void mem_reset() {
 
 #define le_word(p) (*(p) + (*((p) + 1) * 256))
 void load_rom(char *filename) {
+    printf("Allocating rom space, state = %p, filename=%s\n", state, filename);
     state->rom = calloc(8192, 1);
+    printf("Loading rom %s\n", filename);
     FILE *f = fopen(filename, "rb");
     state->romsize = fread(state->rom, 1, 8192, f);
     fclose(f);

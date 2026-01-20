@@ -51,6 +51,7 @@ struct state {
         int fd;
         int track;
         int motor;
+        int motor_timeout;
         int type;
         int devtype;
     } disk[3];
@@ -61,8 +62,13 @@ struct state {
         int lbn;
         uint8_t *buffer;
     } deblock;
-    struct termios *old_settings;
-    struct termios *new_settings;
+    struct {
+        struct termios *old_settings;
+        struct termios *new_settings;
+        char keybuf[KBD_BUF];
+        char keywrite;
+        char keyread;
+    } terminal;
     long throttle;
     struct {
         int after;
@@ -76,17 +82,16 @@ struct state {
     } keybuf;
     struct {
         timer_t timerid;
-        struct sigevent *sevent;
         int triggered;
+        int ticks;
     } clock;
-    int ticks;
 };
 
-// how long a tick is, in milliseconds
-#define TICK 50
 
 /* For reasons I don't want to go into, I need the system state to be globally shared */
 extern struct state *state;
+
+
 
 
 /* RAM and ROM*/
@@ -110,9 +115,10 @@ void trace(uint16_t addr);
 void disk_reset();
 int disk_read();
 int disk_write(int type);
-void stop_motor(int id);
-void start_motor(int id);
+//void stop_motor(int id);
+//void start_motor(int id);
 void disk_motor(int disk, int mode);
+void disk_poll();
 
 
 /* CPU */
@@ -137,10 +143,16 @@ void cpu_mem_write(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *
 Z80EX_BYTE cpu_port_read(Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data);
 void cpu_port_write(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *user_data);
 
+
+/* Main */
+void poll_hardware();
+
 /* Terminal */
 void terminal_setup();
 void terminal_restore();
-Z80EX_BYTE terminal_status(int us_delay);
+void terminal_poll();
+//Z80EX_BYTE terminal_status(int us_delay);
+Z80EX_BYTE terminal_status();
 Z80EX_BYTE terminal_read();
 void terminal_write(char c);
 
@@ -155,7 +167,12 @@ void event_handler(int after);
 void event_reset();
 
 
-
+/* Clock */
+#define TICKS_PER_SECOND 100
+//#define TICKS_PER_SECOND 1
+void clock_init();
+void clock_start();
+int ticks_for_ms(int ms);
 
 #define __RZ80_H
 #endif
