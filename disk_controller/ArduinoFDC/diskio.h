@@ -1,6 +1,7 @@
 /*-----------------------------------------------------------------------/
 /  Low level disk interface modlue include file   (C)ChaN, 2014          /
 /-----------------------------------------------------------------------*/
+#include <stdint.h>
 
 #ifndef _DISKIO_DEFINED
 #define _DISKIO_DEFINED
@@ -12,11 +13,13 @@ extern "C" {
 #define _USE_WRITE	1	/* 1: Enable disk_write function */
 #define _USE_IOCTL	1	/* 1: Enable disk_ioctl function */
 
-#include "ff.h"
 
 
 /* Status of Disk Functions */
-typedef BYTE	DSTATUS;
+typedef uint8_t DSTATUS;
+typedef uint8_t BYTE;
+typedef uint16_t DWORD;
+typedef unsigned int UINT;
 
 /* Results of Disk Functions */
 typedef enum {

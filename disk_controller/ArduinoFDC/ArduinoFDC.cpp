@@ -90,15 +90,15 @@ asm ("   .equ TIFR,    0x16\n"  // timer 1 flag register
 #define PIN_INDEX      8  // accesses via IDXPORT/IDXBIT #defines below
 #define PIN_WRITEDATA  9  // must be pin 9 (OCP for timer1)
 #define PIN_WRITEGATE 10  // accessed via WGPORT/WGBIT #defines below
-#if !defined(RZ80_FDC) && defined(ARDUINO_AVR_LEONARDO)
-#define PIN_TRACK0    11  // can be changed to different pin
-#define PIN_WRITEPROT 12  // can be changed to different pin or commented out
-#define PIN_DENSITY   13  // can be changed to different pin or commented out
-#else
+//#if !defined(RZ80_FDC) && defined(ARDUINO_AVR_LEONARDO)
+//#define PIN_TRACK0    11  // can be changed to different pin
+//#define PIN_WRITEPROT 12  // can be changed to different pin or commented out
+//#define PIN_DENSITY   13  // can be changed to different pin or commented out
+//#else
 #define PIN_TRACK0    14  // can be changed to different pin
 #define PIN_WRITEPROT 15  // can be changed to different pin or commented out
 #define PIN_DENSITY   16  // can be changed to different pin or commented out
-#endif
+//#endif
 #define PIN_MOTORB    A0  // can be changed to different pin or commented out (together with PIN_SELECTB)
 #define PIN_SELECTB   A1  // can be changed to different pin or commented out (together with PIN_MOTORB)
 #define PIN_DSKCHG    A2  // can be changed to different pin or commented out
